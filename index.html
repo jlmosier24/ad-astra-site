@@ -208,6 +208,7 @@
         const calendarEl = document.getElementById('calendar');
         const calendar = new FullCalendar.Calendar(calendarEl, {
             initialView: 'dayGridMonth',
+            height: 'auto', // This makes the calendar expand to full height
             headerToolbar: { left: 'prev,next', center: 'title', right: '' },
             events: [
                 { 
@@ -284,5 +285,4 @@
     }
 </script>
 </body>
-
 </html>
