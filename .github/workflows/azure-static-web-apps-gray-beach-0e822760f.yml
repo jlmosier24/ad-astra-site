@@ -43,6 +43,7 @@ jobs:
           app_location: "/" # The location of your index.html
           api_location: "" # Leave this blank
           output_location: "/" # VERY IMPORTANT: Change this to "/" to skip the build step
+          skip_app_build: true  # Add this line to bypass the Node.js check
           github_id_token: ${{ steps.idtoken.outputs.result }}
           ###### End of Repository/Build Configurations ######
 
@@ -56,6 +57,7 @@ jobs:
         uses: Azure/static-web-apps-deploy@v1
         with:
           action: "close"
+
 
 
 
