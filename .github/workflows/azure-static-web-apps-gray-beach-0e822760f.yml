@@ -40,9 +40,9 @@ jobs:
           action: "upload"
           ###### Repository/Build Configurations - These values can be configured to match your app requirements. ######
           # For more information regarding Static Web App workflow configurations, please visit: https://aka.ms/swaworkflowconfig
-          app_location: "/" # This is where your index.html is
-          api_location: "" 
-          output_location: "/" # This tells Azure there is no 'dist' or 'build' folder
+          app_location: "/" # The location of your index.html
+          api_location: "" # Leave this blank
+          output_location: "/" # VERY IMPORTANT: Change this to "/" to skip the build step
           github_id_token: ${{ steps.idtoken.outputs.result }}
           ###### End of Repository/Build Configurations ######
 
@@ -56,4 +56,5 @@ jobs:
         uses: Azure/static-web-apps-deploy@v1
         with:
           action: "close"
+
 
