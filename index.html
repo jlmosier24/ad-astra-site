@@ -68,7 +68,7 @@
             justify-content: center;
         }
 
-        /* --- Event Card Styling --- */
+        /* --- Event Card Styling (Static) --- */
         .event-card {
             background: white;
             width: 320px;
@@ -76,17 +76,13 @@
             overflow: hidden;
             box-shadow: 0 10px 25px rgba(0,0,0,0.1);
             position: relative;
-            transition: transform 0.3s ease;
             display: flex;
             flex-direction: column;
             border: 1px solid #eee;
+            /* transform and transition removed to keep card static */
         }
 
-        .event-card:hover {
-            transform: translateY(-10px);
-        }
-
-        /* Date Ribbon matching your image */
+        /* Date Ribbon */
         .date-ribbon {
             position: absolute;
             top: 0;
@@ -102,37 +98,31 @@
 
         .card-image {
             width: 100%;
-            height: 380px; /* Tall like a movie poster */
+            height: 380px; 
             object-fit: cover;
         }
 
         .card-content {
             padding: 20px;
             text-align: left;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
         }
 
         .card-title {
             font-family: 'Luckiest Guy', cursive;
             font-size: 1.6rem;
             color: var(--text-dark);
-            margin-bottom: 5px;
+            margin-bottom: 10px;
         }
 
-        .card-meta {
-            font-size: 0.85rem;
-            color: #777;
-            font-weight: 600;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .tag-pg {
-            background: #eee;
-            padding: 2px 6px;
-            border-radius: 4px;
-            color: #333;
+        .card-description {
+            font-size: 0.9rem;
+            color: #555;
+            line-height: 1.4;
+            margin-bottom: 20px;
+            flex-grow: 1;
         }
 
         .btn-card-register {
@@ -151,7 +141,7 @@
             background: var(--earth-brown);
         }
 
-        /* --- Modal Styling (Kept from original) --- */
+        /* --- Modal Styling --- */
         #modal-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
@@ -210,7 +200,7 @@
                     <option value="K">Kindergarten</option>
                     <option value="1">1st Grade</option>
                     <option value="2">2nd Grade</option>
-                    </select>
+                </select>
             </div>
             <button class="btn-submit" onclick="submitRegistration()">Complete Registration</button>
         </div>
@@ -228,21 +218,17 @@
             title: 'Forest Bug Safari',
             dateLabel: 'MAR 15',
             fullDate: 'Sunday, March 15, 2026',
-            rating: 'PG',
-            category: 'Nature',
             price: 'FREE',
             img: 'safari.png',
-            desc: "Identify native insects and build bug hotels."
+            desc: "Grab your magnifying glass! Identify native insects, learn about forest ecosystems, and build bug hotels."
         },
         {
             title: 'Telescope Night',
             dateLabel: 'MAR 18',
             fullDate: 'Wednesday, March 18, 2026',
-            rating: 'PG-13',
-            category: 'Astronomy',
             price: '$25.00',
             img: 'telescope.png',
-            desc: "View the craters of the moon and distant planets."
+            desc: "Join us under the stars! Use high-powered telescopes to view the craters of the moon and distant planets."
         }
     ];
 
@@ -254,10 +240,7 @@
                 <img src="${event.img}" class="card-image" alt="${event.title}">
                 <div class="card-content">
                     <div class="card-title">${event.title}</div>
-                    <div class="card-meta">
-                        <span class="tag-pg">${event.rating}</span>
-                        <span>• ${event.category}</span>
-                    </div>
+                    <div class="card-description">${event.desc}</div>
                     <button class="btn-card-register" onclick="openModal('${event.title}', '${event.fullDate}')">Register • ${event.price}</button>
                 </div>
             </div>
@@ -292,7 +275,6 @@
         closeModal();
     }
 
-    // Initialize
     renderEvents();
 </script>
 
