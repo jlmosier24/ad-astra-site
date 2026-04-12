@@ -210,7 +210,6 @@
 </div>
 
 <script>
-    const APPROVED_EMAILS = ["yourname@example.com", "test@test.com"];
     let selectedEventTitle = "";
 
     const events = [
@@ -260,14 +259,20 @@
         document.getElementById('reg-form').style.display = 'none';
     }
 
-    function verifyEmail() {
-        const email = document.getElementById('emailInput').value.toLowerCase().trim();
-        if (APPROVED_EMAILS.includes(email)) {
-            document.getElementById('email-section').style.display = 'none';
-            document.getElementById('reg-form').style.display = 'block';
-        } else {
-            alert("Email not on approved list.");
-        }
+    async function verifyEmail() {
+    const email = document.getElementById('emailInput').value.toLowerCase().trim();
+    if (!email) return alert("Please enter an email.");
+
+    // Fetch result from your new Azure Function
+    const response = await fetch(`/api/verifyEmail?email=${encodeURIComponent(email)}`);
+    const data = await response.json();
+
+    if (data.isApproved) {
+        document.getElementById('email-section').style.display = 'none';
+        document.getElementById('reg-form').style.display = 'block';
+    } else {
+        alert("Email not authorized.");
+    }
     }
 
     function submitRegistration() {
