@@ -119,6 +119,7 @@
             line-height: 1.4;
             margin-bottom: 20px;
             flex-grow: 1;
+            white-space: pre-line; /* Allows \n to render as new lines */
         }
 
         .btn-card-register {
@@ -149,7 +150,6 @@
             text-align: center; max-height: 90vh; overflow-y: auto;
         }
 
-        /* New Status Message Styling */
         #status-message {
             display: none;
             padding: 12px;
@@ -197,15 +197,23 @@
                 <input type="text" id="parentName">
             </div>
             <div class="form-group">
-                <label>Student Name</label>
-                <input type="text" id="studentName">
+                <label>Adults</label>
+                <select id="adultCount">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                </select>
             </div>
             <div class="form-group">
-                <label>Grade</label>
-                <select id="studentGrade">
-                    <option value="K">Kindergarten</option>
-                    <option value="1">1st Grade</option>
-                    <option value="2">2nd Grade</option>
+                <label>Children</label>
+                <select id="childCount">
+                    <option value="0">0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
                 </select>
             </div>
             <button class="btn-submit" onclick="submitRegistration()">Complete Registration</button>
@@ -225,7 +233,7 @@
             fullDate: 'Wednesday, September 2, 2026',
             price: '$20.00',
             img: 'jamestown2.png',
-            desc: "Experience the dawn of American history by exploring life-sized colonial ships and immersive living history exhibits along the scenic James River at Jamestown Settlement."
+            desc: "Experience the dawn of American history by exploring life-sized colonial ships and immersive living history exhibits along the scenic James River at Jamestown Settlement.\nCost: $20"
         },
         {
             title: 'Telescope Night',
@@ -233,7 +241,7 @@
             fullDate: 'Wednesday, March 18, 2026',
             price: '$25.00',
             img: 'telescope.png',
-            desc: "Join us under the stars! Use high-powered telescopes to view the craters of the moon and distant planets."
+            desc: "Join us under the stars! Use high-powered telescopes to view the craters of the moon and distant planets.\nCost: $25"
         }
     ];
 
@@ -256,8 +264,6 @@
         const statusDiv = document.getElementById('status-message');
         statusDiv.innerText = message;
         statusDiv.style.display = 'block';
-        
-        // Match the Ad Astra colors
         statusDiv.style.backgroundColor = isError ? '#fed7d7' : '#c6f6d5';
         statusDiv.style.color = isError ? '#c53030' : '#22543d';
         statusDiv.style.border = isError ? '1px solid #feb2b2' : '1px solid #9ae6b4';
@@ -304,42 +310,42 @@
     }
 
     async function submitRegistration() {
-    const parentName = document.getElementById('parentName').value;
-    const studentName = document.getElementById('studentName').value;
-    const email = document.getElementById('emailInput').value;
+        const parentName = document.getElementById('parentName').value;
+        const adults = document.getElementById('adultCount').value;
+        const children = document.getElementById('childCount').value;
+        const email = document.getElementById('emailInput').value;
 
-    if (!parentName || !studentName) {
-        showStatus("Please fill out all fields.");
-        return;
-    }
-
-    // Show a "Processing" message to the user
-    showStatus("Sending your confirmation...", false);
-
-    try {
-        const response = await fetch('/api/sendConfirmation', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                parentName: parentName,
-                studentName: studentName,
-                email: email,
-                tripTitle: selectedEventTitle
-            })
-        });
-
-        if (response.ok) {
-            showStatus(`Success! A confirmation for ${studentName} has been sent to ${email}.`, false);
-            // Wait 3 seconds so they can read the message before closing
-            setTimeout(closeModal, 3000);
-        } else {
-            const errorText = await response.text(); // This grabs our new "Error: ..." message
-            showStatus("Registration saved, but email failed: " + errorText);
+        if (!parentName) {
+            showStatus("Please enter your name.");
+            return;
         }
-    } catch (error) {
-        showStatus("Connection error. Please try again.");
+
+        showStatus("Sending your confirmation...", false);
+
+        try {
+            const response = await fetch('/api/sendConfirmation', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    parentName: parentName,
+                    adults: adults,
+                    children: children,
+                    email: email,
+                    tripTitle: selectedEventTitle
+                })
+            });
+
+            if (response.ok) {
+                showStatus(`Success! Registration for ${selectedEventTitle} has been sent to ${email}.`, false);
+                setTimeout(closeModal, 3000);
+            } else {
+                const errorText = await response.text();
+                showStatus("Registration saved, but email failed: " + errorText);
+            }
+        } catch (error) {
+            showStatus("Connection error. Please try again.");
+        }
     }
-}
 
     renderEvents();
 </script>
