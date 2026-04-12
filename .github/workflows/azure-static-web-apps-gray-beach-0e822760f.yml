@@ -41,7 +41,7 @@ jobs:
           ###### Repository/Build Configurations - These values can be configured to match your app requirements. ######
           # For more information regarding Static Web App workflow configurations, please visit: https://aka.ms/swaworkflowconfig
           app_location: "/" # The location of your index.html
-          api_location: "" # Leave this blank
+          api_location: "api" # Leave this blank
           output_location: "/" # VERY IMPORTANT: Change this to "/" to skip the build step
           skip_app_build: true  # Add this line to bypass the Node.js check
           github_id_token: ${{ steps.idtoken.outputs.result }}
