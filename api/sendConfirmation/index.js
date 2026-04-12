@@ -8,7 +8,7 @@ module.exports = async function (context, req) {
     const { email, parentName, tripTitle } = req.body;
 
     const emailMessage = {
-        senderAddress: "donotreply@3baad923-9af9-429b-9620-064e01fac201.azurecomm.net",
+        senderAddress: "DoNotReply@3baad923-9af9-429b-9620-064e01fac201.azurecomm.net",
         content: {
             subject: `Confirmed: ${tripTitle}`,
             plainText: `Hi ${parentName}, you're registered for the field trip!`,
