@@ -3,5 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "main": "verifyEmail.js",
-  "dependencies": {}
+  "dependencies": {
+  "@azure/communication-email": "^1.0.0"
+  }
 }
