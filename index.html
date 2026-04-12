@@ -333,7 +333,8 @@
             // Wait 3 seconds so they can read the message before closing
             setTimeout(closeModal, 3000);
         } else {
-            showStatus("Registration saved, but we couldn't send the email. Don't worry, we have your spot!");
+            const errorText = await response.text(); // This grabs our new "Error: ..." message
+            showStatus("Registration saved, but email failed: " + errorText);
         }
     } catch (error) {
         showStatus("Connection error. Please try again.");
