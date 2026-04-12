@@ -303,12 +303,42 @@
         }
     }
 
-    function submitRegistration() {
-        showStatus("Success! Registration submitted for " + selectedEventTitle, false);
-        setTimeout(() => {
-            closeModal();
-        }, 2000);
+    async function submitRegistration() {
+    const parentName = document.getElementById('parentName').value;
+    const studentName = document.getElementById('studentName').value;
+    const email = document.getElementById('emailInput').value;
+
+    if (!parentName || !studentName) {
+        showStatus("Please fill out all fields.");
+        return;
     }
+
+    // Show a "Processing" message to the user
+    showStatus("Sending your confirmation...", false);
+
+    try {
+        const response = await fetch('/api/sendConfirmation', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                parentName: parentName,
+                studentName: studentName,
+                email: email,
+                tripTitle: selectedEventTitle
+            })
+        });
+
+        if (response.ok) {
+            showStatus(`Success! A confirmation for ${studentName} has been sent to ${email}.`, false);
+            // Wait 3 seconds so they can read the message before closing
+            setTimeout(closeModal, 3000);
+        } else {
+            showStatus("Registration saved, but we couldn't send the email. Don't worry, we have your spot!");
+        }
+    } catch (error) {
+        showStatus("Connection error. Please try again.");
+    }
+}
 
     renderEvents();
 </script>
