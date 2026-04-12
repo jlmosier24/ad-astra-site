@@ -263,8 +263,9 @@
     const email = document.getElementById('emailInput').value.toLowerCase().trim();
     if (!email) return alert("Please enter an email.");
 
-    // Fetch result from your new Azure Function
+    // ADD THE LEADING SLASH BEFORE 'api'
     const response = await fetch(`/api/verifyEmail?email=${encodeURIComponent(email)}`);
+    
     const data = await response.json();
 
     if (data.isApproved) {
