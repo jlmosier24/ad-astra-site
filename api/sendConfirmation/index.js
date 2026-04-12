@@ -8,6 +8,7 @@ module.exports = async function (context, req) {
     const { email, parentName, tripTitle } = req.body;
 
     const emailMessage = {
+        // MATCHING THE PORTAL CASING EXACTLY
         senderAddress: "DoNotReply@3baad923-9af9-429b-9620-064e01fac201.azurecomm.net",
         content: {
             subject: `Confirmed: ${tripTitle}`,
@@ -23,6 +24,7 @@ module.exports = async function (context, req) {
         await poller.pollUntilDone();
         context.res = { status: 200, body: "Success" };
     } catch (e) {
-        context.res = { status: 500, body: "Failed" };
+        // UPDATED FOR DEBUGGING
+        context.res = { status: 500, body: "Error: " + e.message };
     }
 };
