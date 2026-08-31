@@ -170,7 +170,8 @@ async function loadWhoAmI() {
         const data = await res.json();
         const principal = data.clientPrincipal;
         if (principal) {
-            el.innerHTML = `${principal.userDetails} &nbsp;·&nbsp; <a href="/.auth/logout">Log out</a>`;
+            const roles = (principal.userRoles || []).join(', ') || 'none';
+            el.innerHTML = `${principal.userDetails} (roles: ${roles}) &nbsp;·&nbsp; <a href="/.auth/logout">Log out</a>`;
         } else {
             el.innerHTML = `<a href="/.auth/login/aad">Log in</a>`;
         }
@@ -185,12 +186,17 @@ async function loadTrips() {
     listEl.textContent = 'Loading trips…';
     try {
         const res = await fetch('/api/adminTrips');
-        if (!res.ok) throw new Error('Request failed: ' + res.status);
+        if (!res.ok) {
+            const text = await res.text();
+            listEl.className = 'empty-state';
+            listEl.textContent = `Could not load trips (HTTP ${res.status}): ${text || 'no details returned by the server'}`;
+            return;
+        }
         trips = await res.json();
         renderTrips();
     } catch (e) {
         listEl.className = 'empty-state';
-        listEl.textContent = 'Could not load trips. Are you logged in as an admin?';
+        listEl.textContent = 'Could not load trips: ' + e.message;
     }
 }
 
