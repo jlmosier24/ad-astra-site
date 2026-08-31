@@ -1,209 +1,241 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ad Astra Field Trips | Exploration & Discovery</title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
-    
-    <style>
-        :root {
-            --forest-green: #38a169;
-            --meadow-green: #c6f6d5;
-            --sky-blue: #7bb9e8;
-            --earth-brown: #8b5a2b;
-            --sun-yellow: #f6e05e;
-            --text-dark: #2d3748;
-            --bg-page: #f0fff4;
-            --accent-teal: #00b5ad;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ad Astra Active | Field Trips</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Public+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --cream: #F3EEE4;
+        --paper: #FFFFFF;
+        --ink: #221E19;
+        --sub: #6E6659;
+        --accent: #C1442E;
+        --forest: #2F4A3B;
+        --gold: #D99A3D;
+        --line: rgba(34,30,25,0.12);
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--cream); font-family: 'Public Sans', sans-serif; color: var(--ink); }
 
-        body {
-            font-family: 'Open Sans', sans-serif;
-            background-color: var(--bg-page);
-            margin: 0; padding: 0;
-            display: flex; flex-direction: column; align-items: center;
-        }
+    nav {
+        display: flex; align-items: center; justify-content: space-between;
+        max-width: 1080px; margin: 0 auto; padding: 22px 24px;
+    }
+    .brand { display: flex; align-items: center; gap: 9px; }
+    .brand-mark { width: 22px; height: 22px; }
+    .brand-name { font-weight: 800; font-size: 1rem; letter-spacing: -0.01em; }
+    .nav-links { display: flex; gap: 28px; font-size: 0.88rem; font-weight: 600; }
+    .nav-links a { color: var(--ink); text-decoration: none; }
+    .nav-links a:hover { color: var(--accent); }
 
-        header {
-            width: 100%;
-            background: var(--sky-blue) linear-gradient(180deg, var(--sky-blue) 0%, #ffffff 100%);
-            display: flex; flex-direction: column; align-items: center;
-            border-bottom: 6px solid var(--earth-brown);
-        }
+    .hero { position: relative; max-width: 1080px; margin: 0 auto 8px; padding: 0 24px; }
+    .hero-frame { position: relative; border-radius: 18px; overflow: hidden; height: 440px; background: #B7D8E0; }
+    .hero-bg-layer { position: absolute; inset: 0; }
+    .hero-slide-bg { position: absolute; inset: 0; opacity: 0; transition: opacity 0.7s ease; }
+    .hero-slide-bg.active { opacity: 1; }
+    .hero-slide-bg img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 40%; display: block; }
+    .hero-scrim { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0.12) 0%, rgba(0,0,0,0.03) 40%, rgba(0,0,0,0.45) 100%); z-index: 1; }
 
-        .header-banner {
-            width: 100%; max-width: 1100px;
-            height: auto;
-            margin-top: 20px;
-            border-radius: 15px 15px 0 0;
-            box-shadow: 0 -5px 15px rgba(0,0,0,0.1);
-        }
+    .hero-date-tag { position: absolute; top: 20px; right: 24px; z-index: 2; background: var(--accent); color: #fff; border-radius: 999px; padding: 5px 14px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; transition: opacity 0.3s ease; }
+    .hero-headline {
+        position: absolute; left: 24px; right: 24px; top: 44%; z-index: 2;
+        transform: translateY(-50%);
+        font-family: 'Anton', sans-serif; font-weight: 400;
+        font-size: clamp(2.2rem, 6.5vw, 4.4rem);
+        line-height: 0.95; color: #fff; text-transform: uppercase;
+        transition: opacity 0.3s ease;
+    }
+    .hero-headline .accent-word { color: var(--accent); }
+    .hero-caption { position: absolute; left: 24px; bottom: 24px; z-index: 2; color: #fff; font-size: 0.85rem; line-height: 1.4; max-width: 260px; opacity: 0.9; transition: opacity 0.3s ease; }
+    .hero-dots { position: absolute; left: 24px; bottom: 78px; z-index: 2; display: flex; gap: 8px; }
+    .hero-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.4); border: none; cursor: pointer; padding: 0; }
+    .hero-dot.active { background: #fff; }
+    .hero-cta {
+        position: absolute; right: 24px; bottom: 24px; z-index: 2; width: 84px; height: 84px; border-radius: 50%;
+        background: rgba(255,255,255,0.16); border: 1px solid rgba(255,255,255,0.5); backdrop-filter: blur(3px);
+        color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+        font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; cursor: pointer;
+    }
+    .hero-cta svg { width: 16px; height: 16px; }
 
-        .title-section {
-            background: white; width: 100%; text-align: center; padding: 20px 0;
-        }
+    .why { max-width: 1080px; margin: 0 auto; padding: 70px 24px 60px; display: grid; grid-template-columns: 1fr 1.15fr; gap: 50px; align-items: start; }
+    .why-left h2 { font-family: 'Anton', sans-serif; font-weight: 400; color: var(--accent); font-size: clamp(2rem, 4.5vw, 2.9rem); text-transform: uppercase; line-height: 0.98; margin: 0 0 28px; }
+    .collage { position: relative; height: 230px; }
+    .collage .c-frame { position: absolute; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 24px rgba(0,0,0,0.15); background: #B7D8E0; }
+    .collage .c-frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .collage .c1 { width: 62%; height: 62%; top: 0; right: 0; }
+    .collage .c2 { width: 58%; height: 62%; bottom: 0; left: 0; }
 
-        h1 {
-            font-family: 'Luckiest Guy', cursive;
-            color: var(--earth-brown);
-            font-size: 3.5rem; margin: 0;
-            text-shadow: 2px 2px 0px var(--sun-yellow);
-        }
+    .why-list { display: flex; flex-direction: column; }
+    .why-item { display: grid; grid-template-columns: 56px 1fr; gap: 18px; padding: 22px 0; border-top: 1px solid var(--line); }
+    .why-item:last-child { border-bottom: 1px solid var(--line); }
+    .why-num { font-family: 'Anton', sans-serif; font-size: 1.6rem; color: var(--sub); opacity: 0.55; }
+    .why-title { font-weight: 800; font-size: 1.05rem; margin-bottom: 4px; letter-spacing: -0.01em; }
+    .why-desc { font-size: 0.87rem; color: var(--sub); line-height: 1.5; }
 
-        .subtitle {
-            color: var(--forest-green);
-            font-weight: 700; font-size: 1.1rem;
-            margin: 5px 0 0 0; text-transform: uppercase; letter-spacing: 1px;
-        }
+    .trips { max-width: 1080px; margin: 0 auto; padding: 10px 24px 80px; }
+    .trips-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 26px; flex-wrap: wrap; gap: 8px; }
+    .trips-head h2 { font-family: 'Anton', sans-serif; font-weight: 400; text-transform: uppercase; font-size: clamp(1.6rem, 3.5vw, 2.2rem); margin: 0; letter-spacing: 0.01em; }
+    .trips-head p { color: var(--sub); font-size: 0.9rem; margin: 0; }
 
-        .main-container {
-            width: 95%; max-width: 1100px;
-            margin: 40px 0;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 30px;
-            justify-content: center;
-        }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
+    .card { background: var(--paper); border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 8px 22px rgba(34,30,25,0.06); }
+    .art-frame { position: relative; height: 210px; overflow: hidden; background: #B7D8E0; }
+    .art-frame img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 40%; display: block; }
+    .art-fade { position: absolute; left: 0; right: 0; bottom: 0; height: 60px; background: linear-gradient(to top, rgba(0,0,0,0.28), rgba(0,0,0,0)); pointer-events: none; }
+    .spots-tag { position: absolute; top: 14px; left: 14px; background: rgba(255,255,255,0.94); border-radius: 999px; padding: 4px 11px; font-size: 0.68rem; font-weight: 700; color: var(--ink); }
+    .date-tag { position: absolute; top: 14px; right: 14px; background: var(--accent); color: #fff; border-radius: 999px; padding: 4px 12px; font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; }
 
-        .event-card {
-            background: white;
-            width: 320px;
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            border: 1px solid #eee;
-        }
+    .card-body { padding: 20px 22px 22px; display: flex; flex-direction: column; flex-grow: 1; }
+    .card-title { font-family: 'Anton', sans-serif; font-weight: 400; text-transform: uppercase; font-size: 1.3rem; letter-spacing: 0.01em; margin: 0 0 4px; }
+    .card-flag { font-size: 0.78rem; color: var(--forest); font-weight: 700; margin-bottom: 10px; }
+    .card-desc { font-size: 0.89rem; line-height: 1.5; color: var(--sub); margin-bottom: 18px; flex-grow: 1; }
+    .card-footer { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--line); padding-top: 14px; gap: 10px; }
+    .price { font-weight: 800; font-size: 0.98rem; }
+    .price span { display: block; font-family: 'Public Sans', sans-serif; font-size: 0.68rem; font-weight: 500; color: var(--sub); }
+    .btn { background: var(--ink); color: #fff; border: none; padding: 10px 20px; border-radius: 999px; font-weight: 700; font-size: 0.84rem; cursor: pointer; white-space: nowrap; }
+    .btn:hover { background: var(--accent); }
 
-        .date-ribbon {
-            position: absolute;
-            top: 0;
-            right: 0;
-            background: var(--accent-teal);
-            color: black;
-            font-weight: 800;
-            padding: 8px 15px;
-            border-bottom-left-radius: 10px;
-            font-size: 0.9rem;
-            z-index: 10;
-        }
+    footer { text-align: center; padding: 30px 24px 50px; font-size: 0.8rem; color: var(--sub); border-top: 1px solid var(--line); }
 
-        .card-image {
-            width: 100%;
-            height: 380px; 
-            object-fit: cover;
-        }
+    /* Registration modal (functionality carried over from the previous site) */
+    #modal-overlay {
+        display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(34,30,25,0.55); backdrop-filter: blur(4px);
+        z-index: 1000; justify-content: center; align-items: center; padding: 20px;
+    }
+    .modal {
+        background: var(--paper); border-radius: 20px; padding: 32px;
+        width: 100%; max-width: 460px; max-height: 90vh; overflow-y: auto;
+    }
+    .modal h2 { font-family: 'Anton', sans-serif; font-weight: 400; text-transform: uppercase; color: var(--forest); margin: 0 0 4px; letter-spacing: 0.01em; }
+    .modal-date { color: var(--sub); font-size: 0.88rem; margin-bottom: 20px; }
+    #status-message { display: none; padding: 12px 14px; border-radius: 10px; margin-bottom: 18px; font-size: 0.88rem; font-weight: 600; }
+    #status-message.error { background: #FBE4DF; color: var(--accent); }
+    #status-message.success { background: #E4EBE6; color: var(--forest); }
+    #reg-form { display: none; }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-weight: 700; font-size: 0.85rem; margin-bottom: 6px; }
+    .form-group input { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; font-size: 0.95rem; font-family: inherit; }
+    .price-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; }
+    .price-row select { padding: 6px 8px; border-radius: 6px; border: 1px solid var(--line); font-family: inherit; }
+    .price-total-display { min-width: 60px; text-align: right; font-weight: 700; }
+    .grand-total-row { display: flex; justify-content: space-between; font-size: 1.1rem; font-weight: 800; border-top: 2px dashed var(--line); padding-top: 14px; margin: 6px 0 20px; color: var(--forest); }
+    .btn-submit { background: var(--accent); color: #fff; border: none; padding: 13px; border-radius: 999px; font-size: 1rem; font-weight: 700; cursor: pointer; width: 100%; }
+    .btn-submit:hover { background: var(--ink); }
+    .modal-cancel { text-align: center; color: var(--sub); cursor: pointer; margin-top: 14px; font-weight: 600; font-size: 0.88rem; }
 
-        .card-content {
-            padding: 20px;
-            text-align: left;
-            display: flex;
-            flex-direction: column;
-            flex-grow: 1;
-        }
-
-        .card-title {
-            font-family: 'Luckiest Guy', cursive;
-            font-size: 1.6rem;
-            color: var(--text-dark);
-            margin-bottom: 10px;
-        }
-
-        .card-description {
-            font-size: 0.9rem;
-            color: #555;
-            line-height: 1.4;
-            margin-bottom: 20px;
-            flex-grow: 1;
-            white-space: pre-line;
-        }
-
-        .btn-card-register {
-            background: var(--forest-green);
-            color: white;
-            border: none;
-            padding: 12px;
-            border-radius: 10px;
-            font-weight: 700;
-            width: 100%;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .btn-card-register:hover {
-            background: var(--earth-brown);
-        }
-
-        #modal-overlay {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
-            z-index: 1000; justify-content: center; align-items: center;
-        }
-
-        .modal {
-            background: white; border: 5px solid var(--forest-green);
-            border-radius: 30px; padding: 30px; width: 95%; max-width: 500px;
-            text-align: center; max-height: 90vh; overflow-y: auto;
-        }
-
-        #status-message {
-            display: none;
-            padding: 12px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            font-size: 0.95rem;
-            font-weight: 600;
-        }
-
-        #reg-form { display: none; text-align: left; margin-top: 20px; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; font-weight: 700; margin-bottom: 5px; }
-        input, select, textarea { width: 100%; padding: 10px; border: 2px solid var(--sky-blue); border-radius: 8px; box-sizing: border-box;}
-        
-        .btn-submit { background: var(--earth-brown); color: white; border: none; padding: 15px; border-radius: 12px; font-size: 1.2rem; font-weight: 700; cursor: pointer; width: 100%; margin-top: 10px; }
-
-        .price-row {
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            margin-bottom: 10px; 
-            padding: 10px; 
-            border: 1px solid var(--meadow-green); 
-            border-radius: 12px;
-        }
-        .price-total-display {
-            min-width: 60px; 
-            text-align: right; 
-            font-weight: 600;
-        }
-    </style>
+    @media (max-width: 720px) {
+        .why { grid-template-columns: 1fr; gap: 36px; }
+        .collage { display: none; }
+    }
+    @media (max-width: 560px) {
+        nav { flex-direction: column; gap: 14px; align-items: flex-start; }
+        .hero-frame { height: 380px; }
+        .hero-cta { width: 68px; height: 68px; font-size: 0.62rem; }
+        .hero-dots { bottom: 70px; }
+        .hero-caption { max-width: 150px; }
+        .grid { grid-template-columns: 1fr; }
+        .card-footer { flex-direction: column; align-items: stretch; gap: 12px; }
+        .btn { width: 100%; padding: 12px; }
+    }
+</style>
 </head>
 <body>
 
-<header>
-    <img src="header.png" class="header-banner" alt="Ad Astra Field Trips">
-    <div class="title-section">
-        <h1>AD ASTRA ACTIVE</h1>
-        <p class="subtitle">Nature & Science Outings • Academic Discovery</p>
+<nav>
+    <div class="brand">
+        <svg class="brand-mark" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+            <path d="M24 8 L27.2 19.6 L39 22 L27.2 24.4 L24 36 L20.8 24.4 L9 22 L20.8 19.6 Z" fill="#C1442E"/>
+        </svg>
+        <span class="brand-name">Ad Astra Active</span>
     </div>
-</header>
+    <div class="nav-links">
+        <a href="#trips">Trips</a>
+        <a href="#">About</a>
+        <a href="#">Contact</a>
+    </div>
+</nav>
 
-<div class="main-container" id="events-grid"></div>
+<div class="hero">
+    <div class="hero-frame">
+        <div class="hero-bg-layer" id="heroBgLayer"></div>
+        <div class="hero-scrim"></div>
+        <div class="hero-date-tag" id="heroDateTag"></div>
+        <div class="hero-headline" id="heroHeadline"></div>
+        <div class="hero-caption" id="heroCaption"></div>
+        <div class="hero-dots" id="heroDots"></div>
+        <div class="hero-cta" id="heroCta">
+            <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+            Register
+        </div>
+    </div>
+</div>
+
+<div class="trips" id="trips">
+    <div class="trips-head">
+        <h2>Upcoming Trips</h2>
+    </div>
+    <div class="grid" id="tripsGrid"></div>
+</div>
+
+<div class="why">
+    <div class="why-left">
+        <h2>WHY FAMILIES JOIN OUR TRIPS</h2>
+        <div class="collage">
+            <div class="c-frame c1"><img src="jamestown-illustration.jpg" alt="Colonial ships at Jamestown settlement"></div>
+            <div class="c-frame c2"><img src="telescope-illustration.jpg" alt="Telescope under a starry night sky"></div>
+        </div>
+    </div>
+    <div class="why-list">
+        <div class="why-item">
+            <div class="why-num">01</div>
+            <div>
+                <div class="why-title">Simple registration</div>
+                <div class="why-desc">Sign up in a couple minutes — no accounts, no paperwork to print.</div>
+            </div>
+        </div>
+        <div class="why-item">
+            <div class="why-num">02</div>
+            <div>
+                <div class="why-title">Trusted destinations</div>
+                <div class="why-desc">Every trip is vetted and planned by our own coordinator.</div>
+            </div>
+        </div>
+        <div class="why-item">
+            <div class="why-num">03</div>
+            <div>
+                <div class="why-title">Family pricing</div>
+                <div class="why-desc">Clear per-person rates for adults and kids, no surprises at checkout.</div>
+            </div>
+        </div>
+        <div class="why-item">
+            <div class="why-num">04</div>
+            <div>
+                <div class="why-title">Stay in the loop</div>
+                <div class="why-desc">Get a heads-up by email if plans change — delays, weather, updates.</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer>Ad Astra Active · Fredericksburg, VA</footer>
 
 <div id="modal-overlay">
     <div class="modal">
-        <h2 id="modal-title" style="font-family: 'Luckiest Guy'; color: var(--forest-green);"></h2>
-        <p id="modal-details" style="margin-bottom: 20px; color: #555;"></p>
+        <h2 id="modal-title"></h2>
+        <div class="modal-date" id="modal-details"></div>
 
         <div id="status-message"></div>
 
         <div id="email-section">
-            <input type="email" id="emailInput" placeholder="Enter approved email">
-            <button class="btn-submit" onclick="verifyEmail()" style="margin-top: 10px;">Verify Email</button>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="emailInput" placeholder="Enter approved email">
+            </div>
+            <button class="btn-submit" onclick="verifyEmail()">Verify Email</button>
         </div>
 
         <div id="reg-form">
@@ -215,7 +247,7 @@
             <div class="price-row">
                 <div id="adultLabel" style="font-weight: 700;">Adult</div>
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <select id="adultCount" onchange="updateTotals()" style="width: 65px;">
+                    <select id="adultCount" onchange="updateTotals()">
                         <option value="0">0</option>
                         <option value="1">1</option>
                         <option value="2">2</option>
@@ -229,7 +261,7 @@
             <div class="price-row">
                 <div id="childLabel" style="font-weight: 700;">Child</div>
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <select id="childCount" onchange="updateTotals()" style="width: 65px;">
+                    <select id="childCount" onchange="updateTotals()">
                         <option value="0">0</option>
                         <option value="1">1</option>
                         <option value="2">2</option>
@@ -241,7 +273,7 @@
                 </div>
             </div>
 
-            <div style="display: flex; justify-content: space-between; font-size: 1.25rem; font-weight: 800; border-top: 2px dashed var(--sky-blue); padding-top: 15px; margin-bottom: 20px; color: var(--earth-brown);">
+            <div class="grand-total-row">
                 <span>TOTAL DUE:</span>
                 <span id="grandTotal">$0.00</span>
             </div>
@@ -249,164 +281,242 @@
             <button class="btn-submit" onclick="submitRegistration()">Complete Registration</button>
         </div>
 
-        <p onclick="closeModal()" style="color: #999; cursor: pointer; margin-top: 15px; font-weight: 600;">Cancel</p>
+        <p class="modal-cancel" onclick="closeModal()">Cancel</p>
     </div>
 </div>
 
 <script>
-    let selectedEventTitle = "";
-    let currentAdultPrice = 0;
-    let currentChildPrice = 0;
+// Single source of truth for trip data — drives the hero carousel, the trip
+// cards, and the registration modal so they can't drift out of sync.
+const trips = [
+    {
+        id: "jamestown",
+        title: "Historic Jamestown",
+        location: "Jamestown, Virginia",
+        dateLabel: "Sept 2",
+        fullDate: "Wednesday, September 2, 2026",
+        desc: "Explore life-sized colonial ships and living-history exhibits along the James River.",
+        img: "jamestown-illustration.jpg",
+        alt: "Colonial ships at Jamestown settlement",
+        spotsText: "14 of 25 left",
+        adultPrice: 15.00,
+        childPrice: 10.00,
+        hero: { top: "HANDS-ON", bottom: "HISTORY", accent: "& DISCOVERY", caption: "Explore colonial ships along the James River." }
+    },
+    {
+        id: "telescope",
+        title: "Telescope Night",
+        location: "Locust Grove Overlook",
+        dateLabel: "Mar 18",
+        fullDate: "Wednesday, March 18, 2026",
+        desc: "Join us after dark with high-powered telescopes to spot lunar craters and distant planets.",
+        img: "telescope-illustration.jpg",
+        alt: "Telescope under a starry night sky",
+        spotsText: "9 of 20 left",
+        adultPrice: 10.00,
+        childPrice: 5.00,
+        hero: { top: "NIGHT SKY", bottom: "WONDER", accent: "& STARS", caption: "Spot lunar craters and planets after dark." }
+    }
+];
 
-    const events = [
-        {
-            title: 'Historic Jamestown',
-            dateLabel: 'SEPT 2',
-            fullDate: 'Wednesday, September 2, 2026',
-            price: 'From $10.00',
-            img: 'jamestown2.png',
-            desc: "Experience the dawn of American history by exploring life-sized colonial ships and immersive living history exhibits along the scenic James River.",
-            adultPrice: 15.00,
-            childPrice: 10.00
-        },
-        {
-            title: 'Telescope Night',
-            dateLabel: 'MAR 18',
-            fullDate: 'Wednesday, March 18, 2026',
-            price: 'From $5.00',
-            img: 'telescope.png',
-            desc: "Join us under the stars! Use high-powered telescopes to view the craters of the moon and distant planets.",
-            adultPrice: 10.00,
-            childPrice: 5.00
-        }
-    ];
+let heroIndex = 0;
+let heroTimer = null;
+let selectedTrip = null;
 
-    function renderEvents() {
-        const grid = document.getElementById('events-grid');
-        grid.innerHTML = events.map(event => `
-            <div class="event-card">
-                <div class="date-ribbon">${event.dateLabel}</div>
-                <img src="${event.img}" class="card-image" alt="${event.title}">
-                <div class="card-content">
-                    <div class="card-title">${event.title}</div>
-                    <div class="card-description">${event.desc}</div>
-                    <button class="btn-card-register" onclick="openModal('${event.title}', '${event.fullDate}', ${event.adultPrice}, ${event.childPrice})">
-                        Register • ${event.price}
-                    </button>
+function renderHeroLayer() {
+    const layer = document.getElementById('heroBgLayer');
+    layer.innerHTML = trips.map(t => `
+        <div class="hero-slide-bg" data-scene="${t.id}">
+            <img src="${t.img}" alt="${t.alt}">
+        </div>
+    `).join('');
+}
+
+function applyHeroSlide(idx) {
+    const t = trips[idx];
+    document.querySelectorAll('.hero-slide-bg').forEach(el => {
+        el.classList.toggle('active', el.dataset.scene === t.id);
+    });
+    document.getElementById('heroHeadline').innerHTML = `${t.hero.top}<br>${t.hero.bottom} <span class="accent-word">${t.hero.accent}</span>`;
+    document.getElementById('heroCaption').textContent = t.hero.caption;
+    document.getElementById('heroDateTag').textContent = t.dateLabel;
+    document.querySelectorAll('.hero-dot').forEach((d, i) => d.classList.toggle('active', i === idx));
+}
+
+function fadeToHeroSlide(idx) {
+    const headline = document.getElementById('heroHeadline');
+    const caption = document.getElementById('heroCaption');
+    const dateTag = document.getElementById('heroDateTag');
+    headline.style.opacity = 0;
+    caption.style.opacity = 0;
+    dateTag.style.opacity = 0;
+    setTimeout(() => {
+        applyHeroSlide(idx);
+        headline.style.opacity = 1;
+        caption.style.opacity = 0.9;
+        dateTag.style.opacity = 1;
+    }, 300);
+}
+
+function goToHeroSlide(idx) {
+    heroIndex = idx;
+    fadeToHeroSlide(heroIndex);
+    resetHeroTimer();
+}
+
+function nextHeroSlide() {
+    heroIndex = (heroIndex + 1) % trips.length;
+    fadeToHeroSlide(heroIndex);
+}
+
+function resetHeroTimer() {
+    if (heroTimer) clearInterval(heroTimer);
+    heroTimer = setInterval(nextHeroSlide, 5000);
+}
+
+function renderTripCards() {
+    const grid = document.getElementById('tripsGrid');
+    grid.innerHTML = trips.map(t => `
+        <div class="card">
+            <div class="art-frame">
+                <img src="${t.img}" alt="${t.alt}">
+                <div class="art-fade"></div>
+                <div class="spots-tag">${t.spotsText}</div>
+                <div class="date-tag">${t.dateLabel}</div>
+            </div>
+            <div class="card-body">
+                <div class="card-title">${t.title}</div>
+                <div class="card-flag">${t.location}</div>
+                <div class="card-desc">${t.desc}</div>
+                <div class="card-footer">
+                    <div class="price">$${t.adultPrice.toFixed(2)} <span>ages 12+ · $${t.childPrice.toFixed(2)} ages 2–11</span></div>
+                    <button class="btn" onclick="openModal('${t.id}')">Register</button>
                 </div>
             </div>
-        `).join('');
-    }
+        </div>
+    `).join('');
+}
 
-    function updateTotals() {
-        const adults = parseInt(document.getElementById('adultCount').value);
-        const children = parseInt(document.getElementById('childCount').value);
+function openModal(tripId) {
+    selectedTrip = trips.find(t => t.id === tripId);
+    if (!selectedTrip) return;
 
-        const adultTotal = adults * currentAdultPrice;
-        const childTotal = children * currentChildPrice;
-        const grandTotal = adultTotal + childTotal;
+    document.getElementById('modal-title').textContent = selectedTrip.title;
+    document.getElementById('modal-details').textContent = selectedTrip.fullDate;
+    document.getElementById('adultLabel').textContent = `Adult ($${selectedTrip.adultPrice.toFixed(2)})`;
+    document.getElementById('childLabel').textContent = `Child (2-11) ($${selectedTrip.childPrice.toFixed(2)})`;
 
-        document.getElementById('adultSubtotal').innerText = `$${adultTotal.toFixed(2)}`;
-        document.getElementById('childSubtotal').innerText = `$${childTotal.toFixed(2)}`;
-        document.getElementById('grandTotal').innerText = `$${grandTotal.toFixed(2)}`;
-    }
+    document.getElementById('modal-overlay').style.display = 'flex';
+    document.getElementById('adultCount').value = "0";
+    document.getElementById('childCount').value = "0";
+    updateTotals();
+}
 
-    function openModal(title, date, aPrice, cPrice) {
-        selectedEventTitle = title;
-        currentAdultPrice = aPrice;
-        currentChildPrice = cPrice;
+function updateTotals() {
+    if (!selectedTrip) return;
+    const adults = parseInt(document.getElementById('adultCount').value);
+    const children = parseInt(document.getElementById('childCount').value);
 
-        document.getElementById('modal-title').innerText = title;
-        document.getElementById('modal-details').innerText = date;
-        
-        // Update labels to show specific prices for this trip
-        document.getElementById('adultLabel').innerText = `Adult ($${aPrice.toFixed(2)})`;
-        document.getElementById('childLabel').innerText = `Child (2-11) ($${cPrice.toFixed(2)})`;
+    const adultTotal = adults * selectedTrip.adultPrice;
+    const childTotal = children * selectedTrip.childPrice;
+    const grandTotal = adultTotal + childTotal;
 
-        document.getElementById('modal-overlay').style.display = 'flex';
-        document.getElementById('adultCount').value = "0";
-        document.getElementById('childCount').value = "0";
-        updateTotals();
-    }
+    document.getElementById('adultSubtotal').textContent = `$${adultTotal.toFixed(2)}`;
+    document.getElementById('childSubtotal').textContent = `$${childTotal.toFixed(2)}`;
+    document.getElementById('grandTotal').textContent = `$${grandTotal.toFixed(2)}`;
+}
 
-    function showStatus(message, isError = true) {
-        const statusDiv = document.getElementById('status-message');
-        statusDiv.innerText = message;
-        statusDiv.style.display = 'block';
-        statusDiv.style.backgroundColor = isError ? '#fed7d7' : '#c6f6d5';
-        statusDiv.style.color = isError ? '#c53030' : '#22543d';
-        statusDiv.style.border = isError ? '1px solid #feb2b2' : '1px solid #9ae6b4';
-    }
+function showStatus(message, isError = true) {
+    const statusDiv = document.getElementById('status-message');
+    statusDiv.textContent = message;
+    statusDiv.style.display = 'block';
+    statusDiv.className = isError ? 'error' : 'success';
+}
 
-    function closeModal() {
-        document.getElementById('modal-overlay').style.display = 'none';
-        document.getElementById('email-section').style.display = 'block';
-        document.getElementById('reg-form').style.display = 'none';
-        document.getElementById('status-message').style.display = 'none';
-        document.getElementById('emailInput').value = '';
-        document.getElementById('parentName').value = '';
-    }
+function closeModal() {
+    document.getElementById('modal-overlay').style.display = 'none';
+    document.getElementById('email-section').style.display = 'block';
+    document.getElementById('reg-form').style.display = 'none';
+    document.getElementById('status-message').style.display = 'none';
+    document.getElementById('emailInput').value = '';
+    document.getElementById('parentName').value = '';
+    selectedTrip = null;
+}
 
-    async function verifyEmail() {
-        const email = document.getElementById('emailInput').value.toLowerCase().trim();
-        if (!email) { showStatus("Please enter an email address."); return; }
+async function verifyEmail() {
+    const email = document.getElementById('emailInput').value.toLowerCase().trim();
+    if (!email) { showStatus("Please enter an email address."); return; }
 
-        try {
-            const response = await fetch(`/api/verifyEmail?email=${encodeURIComponent(email)}`);
-            const data = await response.json();
-            if (data.isApproved) {
-                document.getElementById('status-message').style.display = 'none';
-                document.getElementById('email-section').style.display = 'none';
-                document.getElementById('reg-form').style.display = 'block';
-            } else {
-                showStatus("This email is not on the authorized list.");
-            }
-        } catch (error) {
-            showStatus("Connection error. Please try again.");
+    try {
+        const response = await fetch(`/api/verifyEmail?email=${encodeURIComponent(email)}`);
+        const data = await response.json();
+        if (data.isApproved) {
+            document.getElementById('status-message').style.display = 'none';
+            document.getElementById('email-section').style.display = 'none';
+            document.getElementById('reg-form').style.display = 'block';
+        } else {
+            showStatus("This email is not on the authorized list.");
         }
+    } catch (error) {
+        showStatus("Connection error. Please try again.");
+    }
+}
+
+async function submitRegistration() {
+    if (!selectedTrip) return;
+    const parentName = document.getElementById('parentName').value;
+    const adults = document.getElementById('adultCount').value;
+    const children = document.getElementById('childCount').value;
+    const total = document.getElementById('grandTotal').textContent;
+    const email = document.getElementById('emailInput').value;
+
+    if (!parentName || (adults == 0 && children == 0)) {
+        showStatus("Please enter your name and select at least one attendee.");
+        return;
     }
 
-    async function submitRegistration() {
-        const parentName = document.getElementById('parentName').value;
-        const adults = document.getElementById('adultCount').value;
-        const children = document.getElementById('childCount').value;
-        const total = document.getElementById('grandTotal').innerText;
-        const email = document.getElementById('emailInput').value;
+    showStatus("Sending your confirmation...", false);
 
-        if (!parentName || (adults == 0 && children == 0)) {
-            showStatus("Please enter your name and select at least one attendee.");
-            return;
+    try {
+        const response = await fetch('/api/sendConfirmation', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                parentName: parentName,
+                adults: adults,
+                children: children,
+                total: total,
+                email: email,
+                tripTitle: selectedTrip.title
+            })
+        });
+
+        if (response.ok) {
+            showStatus(`Success! Registration for ${selectedTrip.title} has been sent.`, false);
+            setTimeout(closeModal, 3000);
+        } else {
+            const errorText = await response.text();
+            showStatus("Error: " + errorText);
         }
-
-        showStatus("Sending your confirmation...", false);
-
-        try {
-            const response = await fetch('/api/sendConfirmation', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    parentName: parentName,
-                    adults: adults,
-                    children: children,
-                    total: total,
-                    email: email,
-                    tripTitle: selectedEventTitle
-                })
-            });
-
-            if (response.ok) {
-                showStatus(`Success! Registration for ${selectedEventTitle} has been sent.`, false);
-                setTimeout(closeModal, 3000);
-            } else {
-                const errorText = await response.text();
-                showStatus("Error: " + errorText);
-            }
-        } catch (error) {
-            showStatus("Connection error. Please try again.");
-        }
+    } catch (error) {
+        showStatus("Connection error. Please try again.");
     }
+}
 
-    renderEvents();
+// Init
+renderHeroLayer();
+renderTripCards();
+const dotsEl = document.getElementById('heroDots');
+trips.forEach((_, i) => {
+    const dot = document.createElement('button');
+    dot.className = 'hero-dot';
+    dot.setAttribute('aria-label', `Show trip ${i + 1}`);
+    dot.addEventListener('click', () => goToHeroSlide(i));
+    dotsEl.appendChild(dot);
+});
+document.getElementById('heroCta').addEventListener('click', () => openModal(trips[heroIndex].id));
+applyHeroSlide(0);
+resetHeroTimer();
 </script>
 
 </body>
