@@ -1,8 +1,11 @@
 const { getTripsTable, toTripDto, PARTITION_KEY } = require("../shared/tripsTable");
 
-// Reachable at /api/adminTrips (default folder-name routing — custom
-// nested "route" values aren't honored by this app's managed Functions).
-// Protected by the "/api/admin*" rule in staticwebapp.config.json
+// Reachable at /api/manageTripsList (default folder-name routing). Named to
+// avoid a literal "admin" prefix, since functions starting with "admin"
+// were being silently excluded from this app's managed Functions build --
+// Azure Functions reserves the /admin/* namespace for its own host
+// management API, and the build tooling appears to filter on that prefix.
+// Protected by an explicit route rule in staticwebapp.config.json
 // (requires the "administrator" role) — returns every trip, hidden or not.
 module.exports = async function (context, req) {
     try {
