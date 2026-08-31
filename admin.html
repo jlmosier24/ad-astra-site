@@ -288,7 +288,7 @@ async function saveTrip() {
         });
         if (!res.ok) {
             const text = await res.text();
-            showFormStatus('Error: ' + text);
+            showFormStatus(`Error (HTTP ${res.status}): ${text || 'no details returned by the server'}`);
             return;
         }
         closeForm();
@@ -304,7 +304,8 @@ async function removeTrip(id) {
     try {
         const res = await fetch(`/api/admin/trips/${encodeURIComponent(id)}`, { method: 'DELETE' });
         if (!res.ok) {
-            alert('Could not delete trip: ' + await res.text());
+            const text = await res.text();
+            alert(`Could not delete trip (HTTP ${res.status}): ${text || 'no details returned by the server'}`);
             return;
         }
         loadTrips();

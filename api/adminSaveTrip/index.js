@@ -11,7 +11,8 @@ async function generateUniqueId(table, title) {
             suffix += 1;
             candidate = `${base}-${suffix}`;
         } catch (e) {
-            if (e.statusCode === 404) return candidate;
+            const status = e.statusCode || (e.response && e.response.status);
+            if (status === 404) return candidate;
             throw e;
         }
     }
@@ -54,6 +55,6 @@ module.exports = async function (context, req) {
         context.res = { status: 200, body: toTripDto(entity) };
     } catch (e) {
         context.log.error("Failed to save trip:", e);
-        context.res = { status: 500, body: "Error: " + e.message };
+        context.res = { status: 500, body: "Error: " + (e.message || e.code || JSON.stringify(e)) };
     }
 };
