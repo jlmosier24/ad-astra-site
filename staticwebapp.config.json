@@ -2,7 +2,7 @@
   "routes": [
     { "route": "/admin", "allowedRoles": ["administrator"] },
     { "route": "/admin.html", "allowedRoles": ["administrator"] },
-    { "route": "/api/admin/*", "allowedRoles": ["administrator"] }
+    { "route": "/api/admin*", "allowedRoles": ["administrator"] }
   ],
   "responseOverrides": {
     "401": {

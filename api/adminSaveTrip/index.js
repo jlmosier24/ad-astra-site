@@ -18,7 +18,9 @@ async function generateUniqueId(table, title) {
     }
 }
 
-// Protected by the "admin/trips" route rule in staticwebapp.config.json
+// Reachable at /api/adminSaveTrip (default folder-name routing — custom
+// nested "route" values aren't honored by this app's managed Functions).
+// Protected by the "/api/admin*" rule in staticwebapp.config.json
 // (requires the "administrator" role). Creates a trip if no id is given,
 // otherwise updates the existing one in place.
 module.exports = async function (context, req) {

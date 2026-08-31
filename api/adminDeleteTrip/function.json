@@ -5,8 +5,7 @@
       "type": "httpTrigger",
       "direction": "in",
       "name": "req",
-      "methods": ["delete"],
-      "route": "admin/trips/{id}"
+      "methods": ["delete"]
     },
     {
       "type": "http",

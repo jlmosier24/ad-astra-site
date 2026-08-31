@@ -184,7 +184,7 @@ async function loadTrips() {
     listEl.className = 'loading-state';
     listEl.textContent = 'Loading trips…';
     try {
-        const res = await fetch('/api/admin/trips');
+        const res = await fetch('/api/adminTrips');
         if (!res.ok) throw new Error('Request failed: ' + res.status);
         trips = await res.json();
         renderTrips();
@@ -281,7 +281,7 @@ async function saveTrip() {
     }
 
     try {
-        const res = await fetch('/api/admin/trips/save', {
+        const res = await fetch('/api/adminSaveTrip', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -302,7 +302,7 @@ async function removeTrip(id) {
     const t = trips.find(t => t.id === id);
     if (!confirm(`Delete "${t ? t.title : id}"? This cannot be undone.`)) return;
     try {
-        const res = await fetch(`/api/admin/trips/${encodeURIComponent(id)}`, { method: 'DELETE' });
+        const res = await fetch(`/api/adminDeleteTrip?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
         if (!res.ok) {
             const text = await res.text();
             alert(`Could not delete trip (HTTP ${res.status}): ${text || 'no details returned by the server'}`);
