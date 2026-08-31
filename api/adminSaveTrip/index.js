@@ -1,0 +1,59 @@
+const { getTripsTable, toTripDto, slugify, PARTITION_KEY } = require("../shared/tripsTable");
+
+async function generateUniqueId(table, title) {
+    const base = slugify(title);
+    let candidate = base;
+    let suffix = 1;
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+        try {
+            await table.getEntity(PARTITION_KEY, candidate);
+            suffix += 1;
+            candidate = `${base}-${suffix}`;
+        } catch (e) {
+            if (e.statusCode === 404) return candidate;
+            throw e;
+        }
+    }
+}
+
+// Protected by the "admin/trips" route rule in staticwebapp.config.json
+// (requires the "administrator" role). Creates a trip if no id is given,
+// otherwise updates the existing one in place.
+module.exports = async function (context, req) {
+    const body = req.body || {};
+    const { id, title, location, date, heroHeadline, heroAccent, description, adultPrice, childPrice, capacity, spotsRemaining, image, hidden } = body;
+
+    if (!title || !location || !date || !description) {
+        context.res = { status: 400, body: "Missing required fields (title, location, date, description)." };
+        return;
+    }
+
+    try {
+        const table = getTripsTable();
+        const rowKey = id || await generateUniqueId(table, title);
+
+        const entity = {
+            partitionKey: PARTITION_KEY,
+            rowKey,
+            title,
+            location,
+            date,
+            heroHeadline: heroHeadline || "",
+            heroAccent: heroAccent || "",
+            description,
+            adultPrice: Number(adultPrice) || 0,
+            childPrice: Number(childPrice) || 0,
+            capacity: Number(capacity) || 0,
+            spotsRemaining: Number(spotsRemaining) || 0,
+            image: image || "",
+            hidden: !!hidden
+        };
+
+        await table.upsertEntity(entity, "Replace");
+        context.res = { status: 200, body: toTripDto(entity) };
+    } catch (e) {
+        context.log.error("Failed to save trip:", e);
+        context.res = { status: 500, body: "Error: " + e.message };
+    }
+};

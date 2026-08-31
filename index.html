@@ -286,38 +286,19 @@
 </div>
 
 <script>
-// Single source of truth for trip data — drives the hero carousel, the trip
-// cards, and the registration modal so they can't drift out of sync.
-const trips = [
-    {
-        id: "jamestown",
-        title: "Historic Jamestown",
-        location: "Jamestown, Virginia",
-        dateLabel: "Sept 2",
-        fullDate: "Wednesday, September 2, 2026",
-        desc: "Explore life-sized colonial ships and living-history exhibits along the James River.",
-        img: "jamestown-illustration.jpg",
-        alt: "Colonial ships at Jamestown settlement",
-        spotsText: "14 of 25 left",
-        adultPrice: 15.00,
-        childPrice: 10.00,
-        hero: { top: "HANDS-ON", bottom: "HISTORY", accent: "& DISCOVERY", caption: "Explore colonial ships along the James River." }
-    },
-    {
-        id: "telescope",
-        title: "Telescope Night",
-        location: "Locust Grove Overlook",
-        dateLabel: "Mar 18",
-        fullDate: "Wednesday, March 18, 2026",
-        desc: "Join us after dark with high-powered telescopes to spot lunar craters and distant planets.",
-        img: "telescope-illustration.jpg",
-        alt: "Telescope under a starry night sky",
-        spotsText: "9 of 20 left",
-        adultPrice: 10.00,
-        childPrice: 5.00,
-        hero: { top: "NIGHT SKY", bottom: "WONDER", accent: "& STARS", caption: "Spot lunar craters and planets after dark." }
-    }
-];
+// Trip data now comes from /api/trips (backed by Azure Table Storage,
+// managed via /admin.html) instead of being hardcoded here.
+let trips = [];
+
+function formatDateLabel(isoDate) {
+    const [y, m, d] = isoDate.split('-').map(Number);
+    return new Date(y, m - 1, d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase();
+}
+
+function formatFullDate(isoDate) {
+    const [y, m, d] = isoDate.split('-').map(Number);
+    return new Date(y, m - 1, d).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+}
 
 let heroIndex = 0;
 let heroTimer = null;
@@ -327,7 +308,7 @@ function renderHeroLayer() {
     const layer = document.getElementById('heroBgLayer');
     layer.innerHTML = trips.map(t => `
         <div class="hero-slide-bg" data-scene="${t.id}">
-            <img src="${t.img}" alt="${t.alt}">
+            <img src="${t.image}" alt="${t.title}">
         </div>
     `).join('');
 }
@@ -337,9 +318,11 @@ function applyHeroSlide(idx) {
     document.querySelectorAll('.hero-slide-bg').forEach(el => {
         el.classList.toggle('active', el.dataset.scene === t.id);
     });
-    document.getElementById('heroHeadline').innerHTML = `${t.hero.top}<br>${t.hero.bottom} <span class="accent-word">${t.hero.accent}</span>`;
-    document.getElementById('heroCaption').textContent = t.hero.caption;
-    document.getElementById('heroDateTag').textContent = t.dateLabel;
+    document.getElementById('heroHeadline').innerHTML = t.heroAccent
+        ? `${t.heroHeadline} <span class="accent-word">${t.heroAccent}</span>`
+        : t.heroHeadline;
+    document.getElementById('heroCaption').textContent = t.description;
+    document.getElementById('heroDateTag').textContent = formatDateLabel(t.date);
     document.querySelectorAll('.hero-dot').forEach((d, i) => d.classList.toggle('active', i === idx));
 }
 
@@ -379,15 +362,15 @@ function renderTripCards() {
     grid.innerHTML = trips.map(t => `
         <div class="card">
             <div class="art-frame">
-                <img src="${t.img}" alt="${t.alt}">
+                <img src="${t.image}" alt="${t.title}">
                 <div class="art-fade"></div>
-                <div class="spots-tag">${t.spotsText}</div>
-                <div class="date-tag">${t.dateLabel}</div>
+                <div class="spots-tag">${t.spotsRemaining} of ${t.capacity} left</div>
+                <div class="date-tag">${formatDateLabel(t.date)}</div>
             </div>
             <div class="card-body">
                 <div class="card-title">${t.title}</div>
                 <div class="card-flag">${t.location}</div>
-                <div class="card-desc">${t.desc}</div>
+                <div class="card-desc">${t.description}</div>
                 <div class="card-footer">
                     <div class="price">$${t.adultPrice.toFixed(2)} <span>ages 12+ · $${t.childPrice.toFixed(2)} ages 2–11</span></div>
                     <button class="btn" onclick="openModal('${t.id}')">Register</button>
@@ -402,7 +385,7 @@ function openModal(tripId) {
     if (!selectedTrip) return;
 
     document.getElementById('modal-title').textContent = selectedTrip.title;
-    document.getElementById('modal-details').textContent = selectedTrip.fullDate;
+    document.getElementById('modal-details').textContent = formatFullDate(selectedTrip.date);
     document.getElementById('adultLabel').textContent = `Adult ($${selectedTrip.adultPrice.toFixed(2)})`;
     document.getElementById('childLabel').textContent = `Child (2-11) ($${selectedTrip.childPrice.toFixed(2)})`;
 
@@ -487,6 +470,7 @@ async function submitRegistration() {
                 children: children,
                 total: total,
                 email: email,
+                tripId: selectedTrip.id,
                 tripTitle: selectedTrip.title
             })
         });
@@ -503,20 +487,37 @@ async function submitRegistration() {
     }
 }
 
-// Init
-renderHeroLayer();
-renderTripCards();
-const dotsEl = document.getElementById('heroDots');
-trips.forEach((_, i) => {
-    const dot = document.createElement('button');
-    dot.className = 'hero-dot';
-    dot.setAttribute('aria-label', `Show trip ${i + 1}`);
-    dot.addEventListener('click', () => goToHeroSlide(i));
-    dotsEl.appendChild(dot);
-});
-document.getElementById('heroCta').addEventListener('click', () => openModal(trips[heroIndex].id));
-applyHeroSlide(0);
-resetHeroTimer();
+async function init() {
+    try {
+        const res = await fetch('/api/trips');
+        trips = await res.json();
+    } catch (e) {
+        trips = [];
+    }
+
+    renderTripCards();
+    const heroEl = document.querySelector('.hero');
+    if (trips.length === 0) {
+        heroEl.style.display = 'none';
+        return;
+    }
+    heroEl.style.display = '';
+
+    renderHeroLayer();
+    const dotsEl = document.getElementById('heroDots');
+    trips.forEach((_, i) => {
+        const dot = document.createElement('button');
+        dot.className = 'hero-dot';
+        dot.setAttribute('aria-label', `Show trip ${i + 1}`);
+        dot.addEventListener('click', () => goToHeroSlide(i));
+        dotsEl.appendChild(dot);
+    });
+    document.getElementById('heroCta').addEventListener('click', () => openModal(trips[heroIndex].id));
+    applyHeroSlide(0);
+    if (trips.length > 1) resetHeroTimer();
+}
+
+init();
 </script>
 
 </body>
