@@ -26,6 +26,12 @@ function toTripDto(entity) {
     };
 }
 
+// Sorts trip DTOs soonest-first. Dates are stored as "YYYY-MM-DD" strings,
+// which sort correctly with plain string comparison.
+function sortByDate(trips) {
+    return trips.sort((a, b) => (a.date || "").localeCompare(b.date || ""));
+}
+
 function slugify(title) {
     return title
         .toLowerCase()
@@ -34,4 +40,4 @@ function slugify(title) {
         .replace(/(^-|-$)/g, "") || "trip";
 }
 
-module.exports = { getTripsTable, toTripDto, slugify, PARTITION_KEY };
+module.exports = { getTripsTable, toTripDto, sortByDate, slugify, PARTITION_KEY };
