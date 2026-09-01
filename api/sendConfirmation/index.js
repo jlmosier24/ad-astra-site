@@ -1,5 +1,5 @@
 const { EmailClient } = require("@azure/communication-email");
-const { getTripsTable, PARTITION_KEY } = require("../shared/tripsTable");
+const { getTripsTable, isPastTrip, PARTITION_KEY } = require("../shared/tripsTable");
 const { getRegistrationsTable } = require("../shared/registrationsTable");
 
 const connectionString = process.env.AZURE_COMMUNICATION_CONNECTION_STRING;
@@ -32,6 +32,10 @@ module.exports = async function (context, req) {
     }
     if (!trip) {
         context.res = { status: 400, body: "Unknown trip." };
+        return;
+    }
+    if (isPastTrip(trip)) {
+        context.res = { status: 400, body: "Registration for this trip has closed." };
         return;
     }
 

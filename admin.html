@@ -63,6 +63,8 @@
 
     .trip-count { font-size: 0.78rem; color: var(--sub); margin-top: 4px; }
 
+    .section-heading { font-family: 'Anton', sans-serif; font-weight: 400; text-transform: uppercase; font-size: 1.1rem; letter-spacing: 0.01em; color: var(--sub); margin: 36px 0 14px; }
+
     #roster-overlay { display: none; position: fixed; inset: 0; background: rgba(34,30,25,0.55); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
     .roster-modal { background: var(--paper); border-radius: 20px; padding: 32px; width: 100%; max-width: 640px; max-height: 85vh; overflow-y: auto; }
     .roster-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
@@ -80,26 +82,33 @@
         .trip-row { flex-direction: column; align-items: stretch; }
         .trip-actions { justify-content: flex-end; }
         .roster-row { flex-direction: column; align-items: flex-start; }
+        .topbar { flex-direction: column; align-items: flex-start; gap: 8px; }
+        .topbar h1 { font-size: 1.15rem; }
     }
 </style>
 </head>
 <body>
 
 <div class="topbar">
-    <h1>Trip Admin</h1>
+    <h1>Field Trip Administration</h1>
     <div class="whoami" id="whoami">Loading…</div>
 </div>
 
 <div class="wrap">
     <div class="toolbar">
-        <button class="btn" onclick="openForm()">+ Add Trip</button>
+        <button class="btn" onclick="openForm()">+ Add Field Trip</button>
     </div>
     <div id="tripList" class="loading-state">Loading trips…</div>
+
+    <div id="pastTripsSection" style="display: none;">
+        <h2 class="section-heading">Previous Field Trips</h2>
+        <div id="pastTripList" class="trip-list"></div>
+    </div>
 </div>
 
 <div id="modal-overlay">
     <div class="modal">
-        <h2 id="formTitle">Add Trip</h2>
+        <h2 id="formTitle">Add Field Trip</h2>
         <div id="status-message"></div>
         <input type="hidden" id="tripId">
 
@@ -277,18 +286,15 @@ async function loadTrips() {
     }
 }
 
-function renderTrips() {
-    const listEl = document.getElementById('tripList');
-    if (trips.length === 0) {
-        listEl.className = 'empty-state';
-        listEl.textContent = 'No trips yet — add one to get started.';
-        return;
-    }
-    listEl.className = 'trip-list';
-    listEl.innerHTML = trips.map(t => {
-        const regsForTrip = registrations.filter(r => r.tripId === t.id);
-        const paidCount = regsForTrip.filter(r => r.paid).length;
-        return `
+function getTodayIso() {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+}
+
+function tripRowHtml(t) {
+    const regsForTrip = registrations.filter(r => r.tripId === t.id);
+    const paidCount = regsForTrip.filter(r => r.paid).length;
+    return `
         <div class="trip-row ${t.hidden ? 'hidden-trip' : ''}">
             <div class="trip-info">
                 <h3>${t.title}${t.hidden ? '<span class="hidden-badge">Hidden</span>' : ''}</h3>
@@ -302,11 +308,38 @@ function renderTrips() {
             </div>
         </div>
     `;
-    }).join('');
+}
+
+function renderTrips() {
+    const listEl = document.getElementById('tripList');
+    const pastSectionEl = document.getElementById('pastTripsSection');
+    const pastListEl = document.getElementById('pastTripList');
+
+    if (trips.length === 0) {
+        listEl.className = 'empty-state';
+        listEl.textContent = 'No trips yet — add one to get started.';
+        pastSectionEl.style.display = 'none';
+        return;
+    }
+
+    const todayIso = getTodayIso();
+    const upcoming = trips.filter(t => t.date >= todayIso);
+    const past = trips.filter(t => t.date < todayIso).sort((a, b) => b.date.localeCompare(a.date));
+
+    if (upcoming.length === 0) {
+        listEl.className = 'empty-state';
+        listEl.textContent = 'No upcoming trips — add one to get started.';
+    } else {
+        listEl.className = 'trip-list';
+        listEl.innerHTML = upcoming.map(tripRowHtml).join('');
+    }
+
+    pastSectionEl.style.display = past.length === 0 ? 'none' : '';
+    pastListEl.innerHTML = past.map(tripRowHtml).join('');
 }
 
 function openForm() {
-    document.getElementById('formTitle').textContent = 'Add Trip';
+    document.getElementById('formTitle').textContent = 'Add Field Trip';
     document.getElementById('tripId').value = '';
     ['title', 'location', 'date', 'description', 'heroHeadline', 'heroAccent', 'image'].forEach(id => document.getElementById(id).value = '');
     ['adultPrice', 'childPrice', 'capacity', 'spotsRemaining'].forEach(id => document.getElementById(id).value = '');
@@ -321,7 +354,7 @@ function openForm() {
 function editTrip(id) {
     const t = trips.find(t => t.id === id);
     if (!t) return;
-    document.getElementById('formTitle').textContent = 'Edit Trip';
+    document.getElementById('formTitle').textContent = 'Edit Field Trip';
     document.getElementById('tripId').value = t.id;
     document.getElementById('title').value = t.title;
     document.getElementById('location').value = t.location;

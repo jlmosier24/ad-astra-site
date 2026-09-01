@@ -32,6 +32,15 @@ function sortByDate(trips) {
     return trips.sort((a, b) => (a.date || "").localeCompare(b.date || ""));
 }
 
+// Today's date as "YYYY-MM-DD", for comparing against trip.date strings.
+function todayIsoDate() {
+    return new Date().toISOString().slice(0, 10);
+}
+
+function isPastTrip(trip) {
+    return !!trip.date && trip.date < todayIsoDate();
+}
+
 function slugify(title) {
     return title
         .toLowerCase()
@@ -40,4 +49,4 @@ function slugify(title) {
         .replace(/(^-|-$)/g, "") || "trip";
 }
 
-module.exports = { getTripsTable, toTripDto, sortByDate, slugify, PARTITION_KEY };
+module.exports = { getTripsTable, toTripDto, sortByDate, todayIsoDate, isPastTrip, slugify, PARTITION_KEY };
