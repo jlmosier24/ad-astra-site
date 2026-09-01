@@ -90,7 +90,19 @@
 
     .card-body { padding: 20px 22px 22px; display: flex; flex-direction: column; flex-grow: 1; }
     .card-title { font-family: 'Anton', sans-serif; font-weight: 400; text-transform: uppercase; font-size: 1.3rem; letter-spacing: 0.01em; margin: 0 0 4px; }
-    .card-flag { font-size: 0.78rem; color: var(--forest); font-weight: 700; margin-bottom: 10px; }
+    .card-location { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+    .location-text { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; color: var(--forest); font-weight: 700; min-width: 0; }
+    .location-text span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .location-text svg { width: 14px; height: 14px; flex-shrink: 0; }
+    .directions-link {
+        display: flex; align-items: center; gap: 5px; flex-shrink: 0;
+        background: var(--cream); color: var(--ink); text-decoration: none;
+        border-radius: 999px; padding: 5px 11px 5px 8px; font-size: 0.72rem; font-weight: 700;
+        border: 1px solid var(--line);
+        transition: background 0.15s ease, color 0.15s ease;
+    }
+    .directions-link svg { width: 15px; height: 15px; flex-shrink: 0; }
+    .directions-link:hover { background: var(--forest); color: #fff; }
     .card-desc { font-size: 0.89rem; line-height: 1.5; color: var(--sub); margin-bottom: 18px; flex-grow: 1; }
     .card-footer { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--line); padding-top: 14px; gap: 10px; }
     .price { font-weight: 800; font-size: 0.98rem; }
@@ -361,6 +373,11 @@ function resetHeroTimer() {
     heroTimer = setInterval(nextHeroSlide, 5000);
 }
 
+function directionsUrl(t) {
+    const query = (t.lat != null && t.lon != null) ? `${t.lat},${t.lon}` : t.address;
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+}
+
 function renderTripCards() {
     const grid = document.getElementById('tripsGrid');
     grid.innerHTML = trips.map(t => `
@@ -373,7 +390,16 @@ function renderTripCards() {
             </div>
             <div class="card-body">
                 <div class="card-title">${t.title}</div>
-                <div class="card-flag">${t.address}</div>
+                <div class="card-location">
+                    <div class="location-text">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                        <span>${t.address}</span>
+                    </div>
+                    <a class="directions-link" href="${directionsUrl(t)}" target="_blank" rel="noopener">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+                        Directions
+                    </a>
+                </div>
                 <div class="card-desc">${t.description}</div>
                 <div class="card-footer">
                     <div class="price">${formatCardPrice(t)}</div>
