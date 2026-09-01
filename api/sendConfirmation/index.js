@@ -73,7 +73,7 @@ module.exports = async function (context, req) {
             html: `
                 <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
                     <div style="background-color: #38a169; color: white; padding: 20px; text-align: center;">
-                        <h1 style="margin: 0; font-size: 24px;">Ad Astra Explorers</h1>
+                        <h1 style="margin: 0; font-size: 24px;">Ad Astra Active</h1>
                     </div>
                     <div style="padding: 30px; color: #2d3748; line-height: 1.6;">
                         <h2 style="color: #2f855a;">Registration Confirmed!</h2>
