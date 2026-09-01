@@ -374,8 +374,7 @@ function resetHeroTimer() {
 }
 
 function directionsUrl(t) {
-    const query = (t.lat != null && t.lon != null) ? `${t.lat},${t.lon}` : t.address;
-    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(t.address)}`;
 }
 
 function renderTripCards() {
