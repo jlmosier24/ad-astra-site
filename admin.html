@@ -143,9 +143,11 @@
         </div>
 
         <div class="form-group">
-            <label>Image filename</label>
-            <input type="text" id="image" placeholder="jamestown-illustration.jpg">
-            <div class="hint">Must already exist in the site's files — this doesn't upload a new image.</div>
+            <label>Photo</label>
+            <input type="file" id="imageFile" accept="image/*" onchange="uploadImage()">
+            <div class="hint" id="uploadStatus">Choose a photo to upload, or leave blank to keep the current one.</div>
+            <img id="imagePreview" style="display:none; max-width: 160px; border-radius: 8px; margin-top: 10px;">
+            <input type="hidden" id="image">
         </div>
 
         <div class="checkbox-row">
@@ -234,6 +236,9 @@ function openForm() {
     ['title', 'location', 'date', 'description', 'heroHeadline', 'heroAccent', 'image'].forEach(id => document.getElementById(id).value = '');
     ['adultPrice', 'childPrice', 'capacity', 'spotsRemaining'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('hidden').checked = false;
+    document.getElementById('imageFile').value = '';
+    document.getElementById('imagePreview').style.display = 'none';
+    document.getElementById('uploadStatus').textContent = 'Choose a photo to upload, or leave blank to keep the current one.';
     document.getElementById('status-message').style.display = 'none';
     document.getElementById('modal-overlay').style.display = 'flex';
 }
@@ -255,6 +260,15 @@ function editTrip(id) {
     document.getElementById('spotsRemaining').value = t.spotsRemaining;
     document.getElementById('image').value = t.image;
     document.getElementById('hidden').checked = t.hidden;
+    document.getElementById('imageFile').value = '';
+    const preview = document.getElementById('imagePreview');
+    if (t.image) {
+        preview.src = t.image;
+        preview.style.display = 'block';
+    } else {
+        preview.style.display = 'none';
+    }
+    document.getElementById('uploadStatus').textContent = 'Choose a photo to replace the current one, or leave blank to keep it.';
     document.getElementById('status-message').style.display = 'none';
     document.getElementById('modal-overlay').style.display = 'flex';
 }
@@ -268,6 +282,46 @@ function showFormStatus(message, isError = true) {
     el.textContent = message;
     el.style.display = 'block';
     el.className = isError ? 'error' : 'success';
+}
+
+function readFileAsBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result.split(',')[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
+
+async function uploadImage() {
+    const fileInput = document.getElementById('imageFile');
+    const file = fileInput.files[0];
+    if (!file) return;
+
+    const statusEl = document.getElementById('uploadStatus');
+    statusEl.textContent = 'Uploading…';
+
+    try {
+        const dataBase64 = await readFileAsBase64(file);
+        const res = await fetch('/api/uploadTripImage', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ filename: file.name, contentType: file.type, dataBase64 })
+        });
+        if (!res.ok) {
+            const text = await res.text();
+            statusEl.textContent = `Upload failed (HTTP ${res.status}): ${text || 'no details returned by the server'}`;
+            return;
+        }
+        const { url } = await res.json();
+        document.getElementById('image').value = url;
+        const preview = document.getElementById('imagePreview');
+        preview.src = url;
+        preview.style.display = 'block';
+        statusEl.textContent = 'Uploaded.';
+    } catch (e) {
+        statusEl.textContent = 'Upload failed: ' + e.message;
+    }
 }
 
 async function saveTrip() {
