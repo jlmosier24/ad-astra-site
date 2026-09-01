@@ -180,13 +180,19 @@ async function loadWhoAmI() {
     }
 }
 
-async function loadTrips() {
+async function loadTrips(isRetry) {
     const listEl = document.getElementById('tripList');
     listEl.className = 'loading-state';
     listEl.textContent = 'Loading trips…';
     try {
         const res = await fetch('/api/manageTripsList');
         if (!res.ok) {
+            // The auth session occasionally needs a moment to settle right
+            // after a save/delete — retry once before treating it as real.
+            if (!isRetry) {
+                await new Promise(r => setTimeout(r, 1200));
+                return loadTrips(true);
+            }
             const text = await res.text();
             listEl.className = 'empty-state';
             listEl.textContent = `Could not load trips (HTTP ${res.status}): ${text || 'no details returned by the server'}`;
