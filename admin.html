@@ -60,10 +60,24 @@
     #status-message.error { background: #FBE4DF; color: var(--accent); }
     #status-message.success { background: #E4EBE6; color: var(--forest); }
 
+    .trip-count { font-size: 0.78rem; color: var(--sub); margin-top: 4px; }
+
+    #roster-overlay { display: none; position: fixed; inset: 0; background: rgba(34,30,25,0.55); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
+    .roster-modal { background: var(--paper); border-radius: 20px; padding: 32px; width: 100%; max-width: 640px; max-height: 85vh; overflow-y: auto; }
+    .roster-modal h2 { font-family: 'Anton', sans-serif; font-weight: 400; text-transform: uppercase; color: var(--forest); margin: 0 0 4px; }
+    .roster-sub { color: var(--sub); font-size: 0.85rem; margin-bottom: 18px; }
+    .roster-row { display: flex; justify-content: space-between; align-items: center; gap: 14px; padding: 12px 0; border-top: 1px solid var(--line); }
+    .roster-row:first-of-type { border-top: none; }
+    .roster-name { font-weight: 700; font-size: 0.92rem; }
+    .roster-detail { color: var(--sub); font-size: 0.8rem; margin-top: 2px; }
+    .roster-paid-label { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 600; white-space: nowrap; flex-shrink: 0; }
+    .roster-close { text-align: center; color: var(--sub); cursor: pointer; font-weight: 600; font-size: 0.88rem; margin-top: 16px; }
+
     @media (max-width: 560px) {
         .form-row { grid-template-columns: 1fr; }
         .trip-row { flex-direction: column; align-items: stretch; }
         .trip-actions { justify-content: flex-end; }
+        .roster-row { flex-direction: column; align-items: flex-start; }
     }
 </style>
 </head>
@@ -163,8 +177,18 @@
     </div>
 </div>
 
+<div id="roster-overlay">
+    <div class="roster-modal">
+        <h2 id="rosterTitle">Registrants</h2>
+        <div class="roster-sub" id="rosterSub"></div>
+        <div id="rosterBody"></div>
+        <div class="roster-close" onclick="closeRoster()">Close</div>
+    </div>
+</div>
+
 <script>
 let trips = [];
+let registrations = [];
 
 // The admin auth session occasionally needs a moment to settle (e.g. right
 // after logging in, or between actions), causing an intermittent 401/403
@@ -196,6 +220,15 @@ async function loadWhoAmI() {
     }
 }
 
+async function loadRegistrations() {
+    try {
+        const res = await fetchWithAuthRetry('/api/manageRegistrationsList');
+        registrations = res.ok ? await res.json() : [];
+    } catch (e) {
+        registrations = [];
+    }
+}
+
 async function loadTrips() {
     const listEl = document.getElementById('tripList');
     listEl.className = 'loading-state';
@@ -224,18 +257,24 @@ function renderTrips() {
         return;
     }
     listEl.className = 'trip-list';
-    listEl.innerHTML = trips.map(t => `
+    listEl.innerHTML = trips.map(t => {
+        const regsForTrip = registrations.filter(r => r.tripId === t.id);
+        const paidCount = regsForTrip.filter(r => r.paid).length;
+        return `
         <div class="trip-row ${t.hidden ? 'hidden-trip' : ''}">
             <div class="trip-info">
                 <h3>${t.title}${t.hidden ? '<span class="hidden-badge">Hidden</span>' : ''}</h3>
                 <div class="trip-meta">${t.location} · ${t.date} · ${t.spotsRemaining} of ${t.capacity} spots left</div>
+                <div class="trip-count">${regsForTrip.length} registered${regsForTrip.length ? ` · ${paidCount} paid` : ''}</div>
             </div>
             <div class="trip-actions">
+                <button class="btn-outline" onclick="openRoster('${t.id}')">Registrants (${regsForTrip.length})</button>
                 <button class="btn-outline" onclick="editTrip('${t.id}')">Edit</button>
                 <button class="btn-danger" onclick="removeTrip('${t.id}')">Delete</button>
             </div>
         </div>
-    `).join('');
+    `;
+    }).join('');
 }
 
 function openForm() {
@@ -391,8 +430,73 @@ async function removeTrip(id) {
     }
 }
 
+function formatRegisteredDate(iso) {
+    try {
+        return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    } catch (e) {
+        return iso || '';
+    }
+}
+
+function openRoster(tripId) {
+    const t = trips.find(t => t.id === tripId);
+    const regs = registrations
+        .filter(r => r.tripId === tripId)
+        .sort((a, b) => (b.dateRegistered || '').localeCompare(a.dateRegistered || ''));
+
+    document.getElementById('rosterTitle').textContent = t ? t.title : 'Registrants';
+
+    const totalAdults = regs.reduce((sum, r) => sum + (r.adults || 0), 0);
+    const totalChildren = regs.reduce((sum, r) => sum + (r.children || 0), 0);
+    document.getElementById('rosterSub').textContent = regs.length === 0
+        ? 'No one has registered yet.'
+        : `${regs.length} registration${regs.length === 1 ? '' : 's'} · ${totalAdults} adults, ${totalChildren} children`;
+
+    document.getElementById('rosterBody').innerHTML = regs.map(r => `
+        <div class="roster-row">
+            <div>
+                <div class="roster-name">${r.parentName}</div>
+                <div class="roster-detail">${r.email} · ${r.adults} adults, ${r.children} children · $${(r.total || 0).toFixed(2)}</div>
+                <div class="roster-detail">Registered ${formatRegisteredDate(r.dateRegistered)}</div>
+            </div>
+            <label class="roster-paid-label">
+                <input type="checkbox" ${r.paid ? 'checked' : ''} onchange="setPaid('${r.tripId}', '${r.id}', this)">
+                Paid
+            </label>
+        </div>
+    `).join('');
+
+    document.getElementById('roster-overlay').style.display = 'flex';
+}
+
+function closeRoster() {
+    document.getElementById('roster-overlay').style.display = 'none';
+}
+
+async function setPaid(tripId, id, checkbox) {
+    const desired = checkbox.checked;
+    try {
+        const res = await fetchWithAuthRetry('/api/manageRegistrationsSetPaid', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tripId, id, paid: desired })
+        });
+        if (!res.ok) {
+            checkbox.checked = !desired;
+            alert('Could not update paid status: ' + await res.text());
+            return;
+        }
+        const reg = registrations.find(r => r.tripId === tripId && r.id === id);
+        if (reg) reg.paid = desired;
+        renderTrips();
+    } catch (e) {
+        checkbox.checked = !desired;
+        alert('Connection error. Please try again.');
+    }
+}
+
 loadWhoAmI();
-loadTrips();
+loadRegistrations().then(loadTrips);
 </script>
 
 </body>

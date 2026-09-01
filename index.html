@@ -493,7 +493,8 @@ async function submitRegistration() {
         });
 
         if (response.ok) {
-            showStatus(`Success! Registration for ${selectedTrip.title} has been sent.`, false);
+            const message = await response.text();
+            showStatus(message || `Success! Registration for ${selectedTrip.title} has been sent.`, false);
             setTimeout(closeModal, 3000);
         } else {
             const errorText = await response.text();

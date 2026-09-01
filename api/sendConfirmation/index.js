@@ -1,5 +1,6 @@
 const { EmailClient } = require("@azure/communication-email");
 const { getTripsTable, PARTITION_KEY } = require("../shared/tripsTable");
+const { getRegistrationsTable } = require("../shared/registrationsTable");
 
 const connectionString = process.env.AZURE_COMMUNICATION_CONNECTION_STRING;
 const client = new EmailClient(connectionString);
@@ -43,6 +44,28 @@ module.exports = async function (context, req) {
 
     const total = (adultCount * trip.adultPrice) + (childCount * trip.childPrice);
 
+    // Record the registration first -- this is the part that actually
+    // matters for the roster. The confirmation email is best-effort on top.
+    try {
+        const registrationsTable = getRegistrationsTable();
+        const registrationId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+        await registrationsTable.createEntity({
+            partitionKey: trip.rowKey,
+            rowKey: registrationId,
+            parentName,
+            email: emailToCheck,
+            adults: adultCount,
+            children: childCount,
+            total,
+            paid: false,
+            dateRegistered: new Date().toISOString()
+        });
+    } catch (e) {
+        context.log.error("Failed to save registration:", e);
+        context.res = { status: 500, body: "Error: " + (e.message || e.code || JSON.stringify(e)) };
+        return;
+    }
+
     const emailMessage = {
         senderAddress: "DoNotReply@3baad923-9af9-429b-9620-064e01fac201.azurecomm.net",
         content: {
@@ -75,10 +98,11 @@ module.exports = async function (context, req) {
     try {
         const poller = await client.beginSend(emailMessage);
         await poller.pollUntilDone();
-        context.res = { status: 200, body: "Success" };
+        context.res = { status: 200, body: `Success! Registration for ${trip.title} has been sent.` };
     } catch (e) {
         context.log.error("Email send failed:", e);
-        // Keep the detailed error for now just in case deployment gets tricky again
-        context.res = { status: 500, body: "Error: " + e.message };
+        // The registration itself is already saved -- let the parent know
+        // it went through even though the confirmation email didn't.
+        context.res = { status: 200, body: "Your registration was recorded, but the confirmation email couldn't be sent." };
     }
 };

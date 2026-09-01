@@ -5,7 +5,9 @@
     { "route": "/api/manageTripsList", "allowedRoles": ["administrator"] },
     { "route": "/api/manageTripsSave", "allowedRoles": ["administrator"] },
     { "route": "/api/manageTripsDelete", "allowedRoles": ["administrator"] },
-    { "route": "/api/uploadTripImage", "allowedRoles": ["administrator"] }
+    { "route": "/api/uploadTripImage", "allowedRoles": ["administrator"] },
+    { "route": "/api/manageRegistrationsList", "allowedRoles": ["administrator"] },
+    { "route": "/api/manageRegistrationsSetPaid", "allowedRoles": ["administrator"] }
   ],
   "responseOverrides": {
     "401": {
