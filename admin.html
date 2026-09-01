@@ -64,6 +64,7 @@
 
     #roster-overlay { display: none; position: fixed; inset: 0; background: rgba(34,30,25,0.55); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
     .roster-modal { background: var(--paper); border-radius: 20px; padding: 32px; width: 100%; max-width: 640px; max-height: 85vh; overflow-y: auto; }
+    .roster-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
     .roster-modal h2 { font-family: 'Anton', sans-serif; font-weight: 400; text-transform: uppercase; color: var(--forest); margin: 0 0 4px; }
     .roster-sub { color: var(--sub); font-size: 0.85rem; margin-bottom: 18px; }
     .roster-row { display: flex; justify-content: space-between; align-items: center; gap: 14px; padding: 12px 0; border-top: 1px solid var(--line); }
@@ -179,7 +180,10 @@
 
 <div id="roster-overlay">
     <div class="roster-modal">
-        <h2 id="rosterTitle">Registrants</h2>
+        <div class="roster-header">
+            <h2 id="rosterTitle">Registrants</h2>
+            <button class="btn-outline" id="rosterExportBtn" onclick="exportRosterCsv()">Export CSV</button>
+        </div>
         <div class="roster-sub" id="rosterSub"></div>
         <div id="rosterBody"></div>
         <div class="roster-close" onclick="closeRoster()">Close</div>
@@ -438,13 +442,17 @@ function formatRegisteredDate(iso) {
     }
 }
 
+let currentRosterTripId = null;
+
 function openRoster(tripId) {
+    currentRosterTripId = tripId;
     const t = trips.find(t => t.id === tripId);
     const regs = registrations
         .filter(r => r.tripId === tripId)
         .sort((a, b) => (b.dateRegistered || '').localeCompare(a.dateRegistered || ''));
 
     document.getElementById('rosterTitle').textContent = t ? t.title : 'Registrants';
+    document.getElementById('rosterExportBtn').style.display = regs.length === 0 ? 'none' : '';
 
     const totalAdults = regs.reduce((sum, r) => sum + (r.adults || 0), 0);
     const totalChildren = regs.reduce((sum, r) => sum + (r.children || 0), 0);
@@ -471,6 +479,42 @@ function openRoster(tripId) {
 
 function closeRoster() {
     document.getElementById('roster-overlay').style.display = 'none';
+}
+
+function csvCell(value) {
+    const s = String(value == null ? '' : value);
+    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}
+
+function exportRosterCsv() {
+    const t = trips.find(t => t.id === currentRosterTripId);
+    const regs = registrations
+        .filter(r => r.tripId === currentRosterTripId)
+        .sort((a, b) => (a.dateRegistered || '').localeCompare(b.dateRegistered || ''));
+    if (regs.length === 0) return;
+
+    const header = ['Parent Name', 'Email', 'Adults', 'Children', 'Total', 'Paid', 'Date Registered'];
+    const rows = regs.map(r => [
+        r.parentName,
+        r.email,
+        r.adults,
+        r.children,
+        (r.total || 0).toFixed(2),
+        r.paid ? 'Yes' : 'No',
+        formatRegisteredDate(r.dateRegistered)
+    ]);
+    const csv = [header, ...rows].map(row => row.map(csvCell).join(',')).join('\r\n');
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    const safeName = (t ? t.title : 'trip').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    link.download = `${safeName || 'trip'}-registrants.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
 }
 
 async function setPaid(tripId, id, checkbox) {
