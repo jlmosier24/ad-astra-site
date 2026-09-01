@@ -184,10 +184,7 @@
 <div class="why">
     <div class="why-left">
         <h2>WHY FAMILIES JOIN OUR TRIPS</h2>
-        <div class="collage">
-            <div class="c-frame c1"><img src="jamestown-illustration.jpg" alt="Colonial ships at Jamestown settlement"></div>
-            <div class="c-frame c2"><img src="telescope-illustration.jpg" alt="Telescope under a starry night sky"></div>
-        </div>
+        <div class="collage" id="collage"></div>
     </div>
     <div class="why-list">
         <div class="why-item">
@@ -387,6 +384,19 @@ function renderTripCards() {
     `).join('');
 }
 
+function renderCollage() {
+    const collageEl = document.getElementById('collage');
+    const picks = trips.slice(0, 2);
+    if (picks.length === 0) {
+        collageEl.style.display = 'none';
+        return;
+    }
+    collageEl.style.display = '';
+    collageEl.innerHTML = picks.map((t, i) => `
+        <div class="c-frame c${i + 1}"><img src="${t.image}" alt="${t.title}"></div>
+    `).join('');
+}
+
 function openModal(tripId) {
     selectedTrip = trips.find(t => t.id === tripId);
     if (!selectedTrip) return;
@@ -503,6 +513,7 @@ async function init() {
     }
 
     renderTripCards();
+    renderCollage();
     const heroEl = document.querySelector('.hero');
     if (trips.length === 0) {
         heroEl.style.display = 'none';
