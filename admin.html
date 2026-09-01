@@ -44,7 +44,8 @@
 
     .empty-state, .loading-state { text-align: center; color: var(--sub); padding: 60px 0; }
 
-    #modal-overlay { display: none; position: fixed; inset: 0; background: rgba(34,30,25,0.55); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
+    #modal-overlay, #email-overlay { display: none; position: fixed; inset: 0; background: rgba(34,30,25,0.55); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
+    #email-overlay { z-index: 1100; }
     .modal { background: var(--paper); border-radius: 20px; padding: 32px; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; }
     .modal h2 { font-family: 'Anton', sans-serif; font-weight: 400; text-transform: uppercase; color: var(--forest); margin: 0 0 20px; }
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -56,9 +57,9 @@
     .checkbox-row { display: flex; align-items: center; gap: 8px; margin-bottom: 18px; }
     .checkbox-row input { width: auto; }
     .modal-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
-    #status-message { display: none; padding: 10px 12px; border-radius: 8px; margin-bottom: 14px; font-size: 0.85rem; font-weight: 600; }
-    #status-message.error { background: #FBE4DF; color: var(--accent); }
-    #status-message.success { background: #E4EBE6; color: var(--forest); }
+    #status-message, #email-status-message { display: none; padding: 10px 12px; border-radius: 8px; margin-bottom: 14px; font-size: 0.85rem; font-weight: 600; }
+    #status-message.error, #email-status-message.error { background: #FBE4DF; color: var(--accent); }
+    #status-message.success, #email-status-message.success { background: #E4EBE6; color: var(--forest); }
 
     .trip-count { font-size: 0.78rem; color: var(--sub); margin-top: 4px; }
 
@@ -182,11 +183,34 @@
     <div class="roster-modal">
         <div class="roster-header">
             <h2 id="rosterTitle">Registrants</h2>
-            <button class="btn-outline" id="rosterExportBtn" onclick="exportRosterCsv()">Export CSV</button>
+            <div style="display: flex; gap: 8px;">
+                <button class="btn-outline" id="rosterEmailBtn" onclick="openEmailCompose()">Message Group</button>
+                <button class="btn-outline" id="rosterExportBtn" onclick="exportRosterCsv()">Export CSV</button>
+            </div>
         </div>
         <div class="roster-sub" id="rosterSub"></div>
         <div id="rosterBody"></div>
         <div class="roster-close" onclick="closeRoster()">Close</div>
+    </div>
+</div>
+
+<div id="email-overlay">
+    <div class="modal">
+        <h2>Message Group</h2>
+        <div class="hint" style="margin-bottom: 16px;">Sends to every registered email for <strong id="emailTripName"></strong>, one at a time via BCC — families won't see each other's addresses.</div>
+        <div id="email-status-message"></div>
+        <div class="form-group">
+            <label>Subject</label>
+            <input type="text" id="emailSubject" placeholder="Meeting time change">
+        </div>
+        <div class="form-group">
+            <label>Message</label>
+            <textarea id="emailBody" placeholder="Let families know what's changed…" style="min-height: 120px;"></textarea>
+        </div>
+        <div class="modal-actions">
+            <span class="modal-cancel" style="color: var(--sub); cursor: pointer; font-weight: 600; font-size: 0.88rem;" onclick="closeEmailCompose()">Cancel</span>
+            <button class="btn" id="emailSendBtn" onclick="sendGroupEmail()">Send</button>
+        </div>
     </div>
 </div>
 
@@ -453,6 +477,7 @@ function openRoster(tripId) {
 
     document.getElementById('rosterTitle').textContent = t ? t.title : 'Registrants';
     document.getElementById('rosterExportBtn').style.display = regs.length === 0 ? 'none' : '';
+    document.getElementById('rosterEmailBtn').style.display = regs.length === 0 ? 'none' : '';
 
     const totalAdults = regs.reduce((sum, r) => sum + (r.adults || 0), 0);
     const totalChildren = regs.reduce((sum, r) => sum + (r.children || 0), 0);
@@ -493,12 +518,13 @@ function exportRosterCsv() {
         .sort((a, b) => (a.dateRegistered || '').localeCompare(b.dateRegistered || ''));
     if (regs.length === 0) return;
 
-    const header = ['Parent Name', 'Email', 'Adults', 'Children', 'Total', 'Paid', 'Date Registered'];
+    const header = ['Parent Name', 'Email', 'Adults', 'Children', 'Attendees', 'Total ($)', 'Paid', 'Date Registered'];
     const rows = regs.map(r => [
         r.parentName,
         r.email,
         r.adults,
         r.children,
+        (r.adults || 0) + (r.children || 0),
         (r.total || 0).toFixed(2),
         r.paid ? 'Yes' : 'No',
         formatRegisteredDate(r.dateRegistered)
@@ -536,6 +562,58 @@ async function setPaid(tripId, id, checkbox) {
     } catch (e) {
         checkbox.checked = !desired;
         alert('Connection error. Please try again.');
+    }
+}
+
+function openEmailCompose() {
+    const t = trips.find(t => t.id === currentRosterTripId);
+    document.getElementById('emailTripName').textContent = t ? t.title : 'this trip';
+    document.getElementById('emailSubject').value = '';
+    document.getElementById('emailBody').value = '';
+    document.getElementById('email-status-message').style.display = 'none';
+    document.getElementById('email-overlay').style.display = 'flex';
+}
+
+function closeEmailCompose() {
+    document.getElementById('email-overlay').style.display = 'none';
+}
+
+function showEmailStatus(message, isError = true) {
+    const el = document.getElementById('email-status-message');
+    el.textContent = message;
+    el.style.display = 'block';
+    el.className = isError ? 'error' : 'success';
+}
+
+async function sendGroupEmail() {
+    const subject = document.getElementById('emailSubject').value.trim();
+    const body = document.getElementById('emailBody').value.trim();
+    if (!subject || !body) {
+        showEmailStatus('Subject and message are both required.');
+        return;
+    }
+
+    const sendBtn = document.getElementById('emailSendBtn');
+    sendBtn.disabled = true;
+    showEmailStatus('Sending…', false);
+
+    try {
+        const res = await fetchWithAuthRetry('/api/emailTripGroup', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tripId: currentRosterTripId, subject, body })
+        });
+        const text = await res.text();
+        if (!res.ok) {
+            showEmailStatus(`Error (HTTP ${res.status}): ${text || 'no details returned by the server'}`);
+            return;
+        }
+        showEmailStatus(text, false);
+        setTimeout(closeEmailCompose, 2000);
+    } catch (e) {
+        showEmailStatus('Connection error. Please try again.');
+    } finally {
+        sendBtn.disabled = false;
     }
 }
 
