@@ -12,7 +12,9 @@ function toTripDto(entity) {
     return {
         id: entity.rowKey,
         title: entity.title,
-        location: entity.location,
+        address: entity.address,
+        lat: entity.lat,
+        lon: entity.lon,
         date: entity.date,
         heroHeadline: entity.heroHeadline || entity.title,
         heroAccent: entity.heroAccent || "",

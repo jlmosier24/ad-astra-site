@@ -52,6 +52,13 @@
     .form-group { margin-bottom: 14px; }
     .form-group label { display: block; font-weight: 700; font-size: 0.82rem; margin-bottom: 5px; }
     .form-group .hint { font-weight: 500; color: var(--sub); font-size: 0.76rem; margin-top: 4px; }
+    .address-suggestions {
+        display: none; position: absolute; top: 100%; left: 0; right: 0; z-index: 10;
+        background: var(--paper); border: 1px solid var(--line); border-radius: 8px; margin-top: 4px;
+        max-height: 200px; overflow-y: auto; box-shadow: 0 8px 20px rgba(34,30,25,0.12);
+    }
+    .address-suggestion { padding: 8px 12px; font-size: 0.86rem; cursor: pointer; }
+    .address-suggestion:hover { background: var(--cream); }
     .form-group input, .form-group textarea { width: 100%; padding: 9px 11px; border: 1px solid var(--line); border-radius: 8px; font-size: 0.92rem; font-family: inherit; }
     .form-group textarea { resize: vertical; min-height: 60px; }
     .checkbox-row { display: flex; align-items: center; gap: 8px; margin-bottom: 18px; }
@@ -117,9 +124,13 @@
                 <label>Title</label>
                 <input type="text" id="title" placeholder="Historic Jamestown">
             </div>
-            <div class="form-group">
-                <label>Location</label>
-                <input type="text" id="location" placeholder="Jamestown, Virginia">
+            <div class="form-group" style="position: relative;">
+                <label>Address</label>
+                <input type="text" id="address" placeholder="Start typing an address…" autocomplete="off" oninput="onAddressInput()" onblur="onAddressBlur()">
+                <div id="addressSuggestions" class="address-suggestions"></div>
+                <input type="hidden" id="addressLat">
+                <input type="hidden" id="addressLon">
+                <div class="hint">Pick a suggestion for maps/directions later, or just type a location — no need to pick one.</div>
             </div>
         </div>
 
@@ -298,7 +309,7 @@ function tripRowHtml(t) {
         <div class="trip-row ${t.hidden ? 'hidden-trip' : ''}">
             <div class="trip-info">
                 <h3>${t.title}${t.hidden ? '<span class="hidden-badge">Hidden</span>' : ''}</h3>
-                <div class="trip-meta">${t.location} · ${t.date} · ${t.spotsRemaining} of ${t.capacity} spots left</div>
+                <div class="trip-meta">${t.address} · ${t.date} · ${t.spotsRemaining} of ${t.capacity} spots left</div>
                 <div class="trip-count">${regsForTrip.length} registered${regsForTrip.length ? ` · ${paidCount} paid` : ''}</div>
             </div>
             <div class="trip-actions">
@@ -338,11 +349,65 @@ function renderTrips() {
     pastListEl.innerHTML = past.map(tripRowHtml).join('');
 }
 
+function escapeHtml(s) {
+    const div = document.createElement('div');
+    div.textContent = s;
+    return div.innerHTML;
+}
+
+let addressDebounceTimer = null;
+let lastAddressSuggestions = [];
+
+function onAddressInput() {
+    document.getElementById('addressLat').value = '';
+    document.getElementById('addressLon').value = '';
+    clearTimeout(addressDebounceTimer);
+    addressDebounceTimer = setTimeout(fetchAddressSuggestions, 300);
+}
+
+function onAddressBlur() {
+    // Delay so a click on a suggestion (mousedown fires first) still registers.
+    setTimeout(() => { document.getElementById('addressSuggestions').style.display = 'none'; }, 150);
+}
+
+async function fetchAddressSuggestions() {
+    const box = document.getElementById('addressSuggestions');
+    const query = document.getElementById('address').value.trim();
+    if (query.length < 3) {
+        box.style.display = 'none';
+        return;
+    }
+    try {
+        const res = await fetchWithAuthRetry('/api/geocodeAddress?q=' + encodeURIComponent(query));
+        lastAddressSuggestions = res.ok ? await res.json() : [];
+        if (lastAddressSuggestions.length === 0) {
+            box.style.display = 'none';
+            return;
+        }
+        box.innerHTML = lastAddressSuggestions
+            .map((s, i) => `<div class="address-suggestion" onmousedown="selectAddressSuggestion(${i})">${escapeHtml(s.address)}</div>`)
+            .join('');
+        box.style.display = 'block';
+    } catch (e) {
+        box.style.display = 'none';
+    }
+}
+
+function selectAddressSuggestion(i) {
+    const s = lastAddressSuggestions[i];
+    if (!s) return;
+    document.getElementById('address').value = s.address;
+    document.getElementById('addressLat').value = s.lat;
+    document.getElementById('addressLon').value = s.lon;
+    document.getElementById('addressSuggestions').style.display = 'none';
+}
+
 function openForm() {
     document.getElementById('formTitle').textContent = 'Add Field Trip';
     document.getElementById('tripId').value = '';
-    ['title', 'location', 'date', 'description', 'heroHeadline', 'heroAccent', 'image'].forEach(id => document.getElementById(id).value = '');
-    ['adultPrice', 'childPrice', 'capacity', 'spotsRemaining'].forEach(id => document.getElementById(id).value = '');
+    ['title', 'address', 'date', 'description', 'heroHeadline', 'heroAccent', 'image'].forEach(id => document.getElementById(id).value = '');
+    ['adultPrice', 'childPrice', 'capacity', 'spotsRemaining', 'addressLat', 'addressLon'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('addressSuggestions').style.display = 'none';
     document.getElementById('hidden').checked = false;
     document.getElementById('imageFile').value = '';
     document.getElementById('imagePreview').style.display = 'none';
@@ -357,7 +422,10 @@ function editTrip(id) {
     document.getElementById('formTitle').textContent = 'Edit Field Trip';
     document.getElementById('tripId').value = t.id;
     document.getElementById('title').value = t.title;
-    document.getElementById('location').value = t.location;
+    document.getElementById('address').value = t.address;
+    document.getElementById('addressLat').value = t.lat != null ? t.lat : '';
+    document.getElementById('addressLon').value = t.lon != null ? t.lon : '';
+    document.getElementById('addressSuggestions').style.display = 'none';
     document.getElementById('date').value = t.date;
     document.getElementById('description').value = t.description;
     document.getElementById('heroHeadline').value = t.heroHeadline === t.title ? '' : t.heroHeadline;
@@ -439,7 +507,9 @@ async function saveTrip() {
     const payload = {
         id: document.getElementById('tripId').value || undefined,
         title: document.getElementById('title').value.trim(),
-        location: document.getElementById('location').value.trim(),
+        address: document.getElementById('address').value.trim(),
+        lat: document.getElementById('addressLat').value,
+        lon: document.getElementById('addressLon').value,
         date: document.getElementById('date').value,
         description: document.getElementById('description').value.trim(),
         heroHeadline: document.getElementById('heroHeadline').value.trim(),
@@ -452,8 +522,8 @@ async function saveTrip() {
         hidden: document.getElementById('hidden').checked
     };
 
-    if (!payload.title || !payload.location || !payload.date || !payload.description) {
-        showFormStatus('Title, location, date, and description are required.');
+    if (!payload.title || !payload.address || !payload.date || !payload.description) {
+        showFormStatus('Title, address, date, and description are required.');
         return;
     }
 

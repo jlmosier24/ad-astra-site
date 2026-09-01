@@ -26,10 +26,10 @@ async function generateUniqueId(table, title) {
 // otherwise updates the existing one in place.
 module.exports = async function (context, req) {
     const body = req.body || {};
-    const { id, title, location, date, heroHeadline, heroAccent, description, adultPrice, childPrice, capacity, spotsRemaining, image, hidden } = body;
+    const { id, title, address, lat, lon, date, heroHeadline, heroAccent, description, adultPrice, childPrice, capacity, spotsRemaining, image, hidden } = body;
 
-    if (!title || !location || !date || !description) {
-        context.res = { status: 400, body: "Missing required fields (title, location, date, description)." };
+    if (!title || !address || !date || !description) {
+        context.res = { status: 400, body: "Missing required fields (title, address, date, description)." };
         return;
     }
 
@@ -41,7 +41,7 @@ module.exports = async function (context, req) {
             partitionKey: PARTITION_KEY,
             rowKey,
             title,
-            location,
+            address,
             date,
             heroHeadline: heroHeadline || "",
             heroAccent: heroAccent || "",
@@ -53,6 +53,8 @@ module.exports = async function (context, req) {
             image: image || "",
             hidden: !!hidden
         };
+        if (lat != null && lat !== "") entity.lat = Number(lat);
+        if (lon != null && lon !== "") entity.lon = Number(lon);
 
         await table.upsertEntity(entity, "Replace");
         context.res = { status: 200, body: toTripDto(entity) };
