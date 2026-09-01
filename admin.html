@@ -165,6 +165,19 @@
 <script>
 let trips = [];
 
+// The admin auth session occasionally needs a moment to settle (e.g. right
+// after logging in, or between actions), causing an intermittent 401/403
+// even for a properly-authenticated administrator. Retry once before
+// treating it as a real failure.
+async function fetchWithAuthRetry(url, opts, isRetry) {
+    const res = await fetch(url, opts);
+    if (!res.ok && (res.status === 401 || res.status === 403) && !isRetry) {
+        await new Promise(r => setTimeout(r, 1200));
+        return fetchWithAuthRetry(url, opts, true);
+    }
+    return res;
+}
+
 async function loadWhoAmI() {
     const el = document.getElementById('whoami');
     try {
@@ -182,19 +195,13 @@ async function loadWhoAmI() {
     }
 }
 
-async function loadTrips(isRetry) {
+async function loadTrips() {
     const listEl = document.getElementById('tripList');
     listEl.className = 'loading-state';
     listEl.textContent = 'Loading trips…';
     try {
-        const res = await fetch('/api/manageTripsList');
+        const res = await fetchWithAuthRetry('/api/manageTripsList');
         if (!res.ok) {
-            // The auth session occasionally needs a moment to settle right
-            // after a save/delete — retry once before treating it as real.
-            if (!isRetry) {
-                await new Promise(r => setTimeout(r, 1200));
-                return loadTrips(true);
-            }
             const text = await res.text();
             listEl.className = 'empty-state';
             listEl.textContent = `Could not load trips (HTTP ${res.status}): ${text || 'no details returned by the server'}`;
@@ -303,14 +310,17 @@ async function uploadImage() {
 
     try {
         const dataBase64 = await readFileAsBase64(file);
-        const res = await fetch('/api/uploadTripImage', {
+        const res = await fetchWithAuthRetry('/api/uploadTripImage', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ filename: file.name, contentType: file.type, dataBase64 })
         });
         if (!res.ok) {
             const text = await res.text();
-            statusEl.textContent = `Upload failed (HTTP ${res.status}): ${text || 'no details returned by the server'}`;
+            const hint = (res.status === 401 || res.status === 403)
+                ? ' — try logging out and back in if this keeps happening.'
+                : '';
+            statusEl.textContent = `Upload failed (HTTP ${res.status}): ${text || 'no details returned by the server'}${hint}`;
             return;
         }
         const { url } = await res.json();
@@ -347,7 +357,7 @@ async function saveTrip() {
     }
 
     try {
-        const res = await fetch('/api/manageTripsSave', {
+        const res = await fetchWithAuthRetry('/api/manageTripsSave', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -368,7 +378,7 @@ async function removeTrip(id) {
     const t = trips.find(t => t.id === id);
     if (!confirm(`Delete "${t ? t.title : id}"? This cannot be undone.`)) return;
     try {
-        const res = await fetch(`/api/manageTripsDelete?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
+        const res = await fetchWithAuthRetry(`/api/manageTripsDelete?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
         if (!res.ok) {
             const text = await res.text();
             alert(`Could not delete trip (HTTP ${res.status}): ${text || 'no details returned by the server'}`);
