@@ -300,6 +300,13 @@ function formatFullDate(isoDate) {
     return new Date(y, m - 1, d).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
 }
 
+function formatCardPrice(t) {
+    if (t.adultPrice === 0 && t.childPrice === 0) return 'Free';
+    const adultText = t.adultPrice === 0 ? 'Free' : `$${t.adultPrice.toFixed(2)}`;
+    const childText = t.childPrice === 0 ? 'Free' : `$${t.childPrice.toFixed(2)}`;
+    return `${adultText} <span>ages 12+ · ${childText} ages 2–11</span>`;
+}
+
 let heroIndex = 0;
 let heroTimer = null;
 let selectedTrip = null;
@@ -372,7 +379,7 @@ function renderTripCards() {
                 <div class="card-flag">${t.location}</div>
                 <div class="card-desc">${t.description}</div>
                 <div class="card-footer">
-                    <div class="price">$${t.adultPrice.toFixed(2)} <span>ages 12+ · $${t.childPrice.toFixed(2)} ages 2–11</span></div>
+                    <div class="price">${formatCardPrice(t)}</div>
                     <button class="btn" onclick="openModal('${t.id}')">Register</button>
                 </div>
             </div>
