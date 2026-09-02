@@ -5,6 +5,85 @@ const { getRegistrationsTable, getRegisteredCountsByTrip } = require("../shared/
 const connectionString = process.env.AZURE_COMMUNICATION_CONNECTION_STRING;
 const client = new EmailClient(connectionString);
 
+function escapeHtml(str) {
+    return String(str || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+// Mirrors formatFullDate() in index.html so the email reads the same way
+// the site does. The date components are fixed inputs, not "now", so this
+// isn't subject to the server-vs-local timezone issue that affects
+// same-day comparisons elsewhere.
+function formatFullDate(isoDate) {
+    const [y, m, d] = isoDate.split('-').map(Number);
+    return new Date(y, m - 1, d).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+}
+
+// Mirrors directionsUrl() in index.html.
+function directionsUrl(trip) {
+    const query = trip.placeName ? `${trip.placeName}, ${trip.address}` : trip.address;
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+}
+
+function buildConfirmationHtml({ trip, parentName, adultCount, childCount, total }) {
+    const dateLabel = trip.date ? formatFullDate(trip.date) : "";
+    const locationLabel = trip.placeName ? `${trip.placeName} — ${trip.address}` : trip.address;
+    const attendeeParts = [];
+    if (adultCount > 0) attendeeParts.push(`${adultCount} adult${adultCount === 1 ? '' : 's'}`);
+    if (childCount > 0) attendeeParts.push(`${childCount} child${childCount === 1 ? '' : 'ren'}`);
+    const attendeeLabel = attendeeParts.join(" & ");
+
+    const photoHtml = trip.image
+        ? `<img src="${escapeHtml(trip.image)}" alt="${escapeHtml(trip.title)}" width="600" style="width: 100%; max-width: 600px; height: 220px; object-fit: cover; display: block;">`
+        : "";
+
+    const descriptionHtml = trip.description
+        ? `<p style="margin: 20px 0 0;">${escapeHtml(trip.description)}</p>`
+        : "";
+
+    return `
+        <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
+            <div style="background-color: #38a169; color: white; padding: 20px; text-align: center;">
+                <h1 style="margin: 0; font-size: 24px;">Ad Astra Active</h1>
+            </div>
+            ${photoHtml}
+            <div style="padding: 30px; color: #2d3748; line-height: 1.6;">
+                <h2 style="color: #2f855a; margin-top: 0;">Registration Confirmed!</h2>
+                <p>Hi <strong>${escapeHtml(parentName)}</strong>, you're all set for:</p>
+                <h3 style="margin: 0 0 16px; font-size: 20px; color: #1a202c;">${escapeHtml(trip.title)}</h3>
+                <table role="presentation" style="width: 100%; border-collapse: collapse; margin-bottom: 16px;">
+                    <tr>
+                        <td style="padding: 8px 0; border-top: 1px solid #edf2f7; color: #718096; width: 110px; vertical-align: top;">Date</td>
+                        <td style="padding: 8px 0; border-top: 1px solid #edf2f7;">${escapeHtml(dateLabel)}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px 0; border-top: 1px solid #edf2f7; color: #718096; vertical-align: top;">Location</td>
+                        <td style="padding: 8px 0; border-top: 1px solid #edf2f7;">
+                            ${escapeHtml(locationLabel)}<br>
+                            <a href="${directionsUrl(trip)}" style="display: inline-block; margin-top: 6px; padding: 6px 14px; background-color: #38a169; color: white; text-decoration: none; border-radius: 999px; font-size: 0.85em;">Get Directions</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px 0; border-top: 1px solid #edf2f7; color: #718096; vertical-align: top;">Attendees</td>
+                        <td style="padding: 8px 0; border-top: 1px solid #edf2f7;">${escapeHtml(attendeeLabel)}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px 0; border-top: 1px solid #edf2f7; color: #718096; vertical-align: top;">Total Due</td>
+                        <td style="padding: 8px 0; border-top: 1px solid #edf2f7; font-weight: 700;">$${total.toFixed(2)}</td>
+                    </tr>
+                </table>
+                ${descriptionHtml}
+                <p style="margin-top: 20px;">We are excited to have you join us! More details on meeting time and what to bring will follow as we get closer to the date.</p>
+                <p style="font-size: 0.9em; color: #718096;">Need to change your headcount or cancel? Click Register on this trip on the site again and enter this same email address to update or cancel your registration.</p>
+                <hr style="border: 0; border-top: 1px solid #edf2f7; margin: 20px 0;">
+                <p style="font-size: 0.9em; color: #718096; margin-bottom: 0;">This is an automated confirmation. No reply is necessary.</p>
+            </div>
+            <div style="background-color: #f7fafc; padding: 15px; text-align: center; font-size: 0.8em; color: #a0aec0;">
+                © 2026 Ad Astra Homeschool • Fredericksburg, VA
+            </div>
+        </div>
+    `;
+}
+
 module.exports = async function (context, req) {
     const body = req.body || {};
     const { parentName, adults, children, email, tripId, tripTitle } = body;
@@ -91,25 +170,7 @@ module.exports = async function (context, req) {
         senderAddress: "DoNotReply@3baad923-9af9-429b-9620-064e01fac201.azurecomm.net",
         content: {
             subject: `Registration Confirmed: ${trip.title}`,
-            html: `
-                <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
-                    <div style="background-color: #38a169; color: white; padding: 20px; text-align: center;">
-                        <h1 style="margin: 0; font-size: 24px;">Ad Astra Active</h1>
-                    </div>
-                    <div style="padding: 30px; color: #2d3748; line-height: 1.6;">
-                        <h2 style="color: #2f855a;">Registration Confirmed!</h2>
-                        <p>Hi <strong>${parentName}</strong>,</p>
-                        <p>Thank you for registering <strong>${adultCount}</strong> adults and <strong>${childCount}</strong> children for our upcoming field trip: <strong>${trip.title}</strong>.</p>
-                        <p>Total due: <strong>$${total.toFixed(2)}</strong></p>
-                        <p>We are excited to have you join us! You will receive more details regarding the meeting location and schedule as we get closer to the date.</p>
-                        <hr style="border: 0; border-top: 1px solid #edf2f7; margin: 20px 0;">
-                        <p style="font-size: 0.9em; color: #718096;">This is an automated confirmation. No reply is necessary.</p>
-                    </div>
-                    <div style="background-color: #f7fafc; padding: 15px; text-align: center; font-size: 0.8em; color: #a0aec0;">
-                        © 2026 Ad Astra Homeschool • Fredericksburg, VA
-                    </div>
-                </div>
-            `,
+            html: buildConfirmationHtml({ trip, parentName, adultCount, childCount, total }),
         },
         recipients: {
             to: [{ address: email }],
