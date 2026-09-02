@@ -135,6 +135,12 @@
         </div>
 
         <div class="form-group">
+            <label>Venue name (optional)</label>
+            <input type="text" id="placeName" placeholder="e.g. National Museum of the Marine Corps">
+            <div class="hint">Added to the "Get Directions" link so Maps opens to the actual place, not just the address.</div>
+        </div>
+
+        <div class="form-group">
             <label>Date</label>
             <input type="date" id="date">
         </div>
@@ -398,7 +404,7 @@ function selectAddressSuggestion(i) {
 function openForm() {
     document.getElementById('formTitle').textContent = 'Add Field Trip';
     document.getElementById('tripId').value = '';
-    ['title', 'address', 'date', 'description', 'heroHeadline', 'heroAccent', 'image'].forEach(id => document.getElementById(id).value = '');
+    ['title', 'address', 'placeName', 'date', 'description', 'heroHeadline', 'heroAccent', 'image'].forEach(id => document.getElementById(id).value = '');
     ['adultPrice', 'childPrice', 'capacity', 'addressLat', 'addressLon'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('addressSuggestions').style.display = 'none';
     document.getElementById('hidden').checked = false;
@@ -416,6 +422,7 @@ function editTrip(id) {
     document.getElementById('tripId').value = t.id;
     document.getElementById('title').value = t.title;
     document.getElementById('address').value = t.address;
+    document.getElementById('placeName').value = t.placeName || '';
     document.getElementById('addressLat').value = t.lat != null ? t.lat : '';
     document.getElementById('addressLon').value = t.lon != null ? t.lon : '';
     document.getElementById('addressSuggestions').style.display = 'none';
@@ -500,6 +507,7 @@ async function saveTrip() {
         id: document.getElementById('tripId').value || undefined,
         title: document.getElementById('title').value.trim(),
         address: document.getElementById('address').value.trim(),
+        placeName: document.getElementById('placeName').value.trim(),
         lat: document.getElementById('addressLat').value,
         lon: document.getElementById('addressLon').value,
         date: document.getElementById('date').value,
