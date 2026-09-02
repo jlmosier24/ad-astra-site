@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ad Astra Active — About</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Public+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --cream: #F3EEE4;
+        --paper: #FFFFFF;
+        --ink: #221E19;
+        --sub: #6E6659;
+        --accent: #C1442E;
+        --forest: #2F4A3B;
+        --gold: #D99A3D;
+        --line: rgba(34,30,25,0.12);
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--cream); font-family: 'Public Sans', sans-serif; color: var(--ink); }
+
+    nav { display: flex; align-items: center; justify-content: space-between; max-width: 1080px; margin: 0 auto; padding: 22px 24px; }
+    .brand { display: flex; align-items: center; gap: 9px; }
+    .brand-mark { width: 22px; height: 22px; }
+    .brand-name { font-weight: 800; font-size: 1rem; letter-spacing: -0.01em; }
+    .nav-links { display: flex; gap: 28px; font-size: 0.88rem; font-weight: 600; }
+    .nav-links a { color: var(--ink); text-decoration: none; }
+    .nav-links a:hover, .nav-links a.current { color: var(--accent); }
+
+    .page-head { max-width: 720px; margin: 0 auto; padding: 30px 24px 10px; }
+    .page-head h1 { font-family: 'Anton', sans-serif; font-weight: 400; text-transform: uppercase; font-size: clamp(2.2rem, 6vw, 3.2rem); margin: 0 0 16px; letter-spacing: 0.01em; }
+    .page-head p { font-size: 1rem; line-height: 1.65; color: var(--sub); max-width: 560px; margin: 0 0 6px; }
+
+    .section { max-width: 720px; margin: 0 auto; padding: 40px 24px; }
+    .section-title { font-family: 'Anton', sans-serif; font-weight: 400; text-transform: uppercase; font-size: 1.4rem; letter-spacing: 0.01em; margin: 0 0 22px; color: var(--forest); }
+
+    /* Who runs it */
+    .coordinators-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    .coordinator-card {
+        background: var(--paper); border-radius: 16px; padding: 26px 20px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 4px;
+        box-shadow: 0 8px 22px rgba(34,30,25,0.06);
+    }
+    .coordinator-avatar { width: 76px; height: 76px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: var(--forest); margin-bottom: 10px; }
+    .coordinator-avatar svg { width: 100%; height: 100%; display: block; }
+    .coordinator-name { font-weight: 800; font-size: 1rem; margin-bottom: 2px; }
+    .coordinator-role { font-size: 0.76rem; color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 10px; }
+    .coordinator-bio { font-size: 0.85rem; line-height: 1.5; color: var(--sub); }
+
+    /* How to register */
+    .steps { display: flex; flex-direction: column; }
+    .step-item { display: grid; grid-template-columns: 44px 1fr; gap: 16px; padding: 20px 0; border-top: 1px solid var(--line); }
+    .step-item:last-child { border-bottom: 1px solid var(--line); }
+    .step-num {
+        width: 32px; height: 32px; border-radius: 50%; background: var(--forest); color: #fff;
+        font-family: 'Anton', sans-serif; font-size: 0.95rem; display: flex; align-items: center; justify-content: center;
+    }
+    .step-title { font-weight: 800; font-size: 1rem; margin-bottom: 4px; letter-spacing: -0.005em; }
+    .step-desc { font-size: 0.9rem; color: var(--sub); line-height: 1.55; }
+
+    /* Membership callout */
+    .callout {
+        background: rgba(193,68,46,0.08);
+        border: 1px solid rgba(193,68,46,0.25);
+        border-radius: 14px;
+        padding: 22px 24px;
+        font-size: 0.92rem;
+        line-height: 1.6;
+    }
+    .callout strong { color: var(--accent); }
+    .callout a { color: var(--forest); font-weight: 700; text-decoration: none; }
+    .callout a:hover { text-decoration: underline; }
+
+    footer { text-align: center; padding: 30px 24px 50px; font-size: 0.8rem; color: var(--sub); border-top: 1px solid var(--line); margin-top: 20px; }
+
+    @media (max-width: 640px) {
+        .coordinators-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 560px) {
+        nav { flex-direction: column; gap: 14px; align-items: flex-start; }
+    }
+    @media (max-width: 460px) {
+        .coordinators-grid { grid-template-columns: 1fr; }
+    }
+</style>
+</head>
+<body>
+
+<nav>
+    <div class="brand">
+        <svg class="brand-mark" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+            <path d="M24 8 L27.2 19.6 L39 22 L27.2 24.4 L24 36 L20.8 24.4 L9 22 L20.8 19.6 Z" fill="#C1442E"/>
+        </svg>
+        <span class="brand-name">Ad Astra Active</span>
+    </div>
+    <div class="nav-links">
+        <a href="index.html#trips">Trips</a>
+        <a href="about.html" class="current">About</a>
+        <a href="#">Contact</a>
+    </div>
+</nav>
+
+<div class="page-head">
+    <h1>About Ad Astra Active</h1>
+    <p>Ad Astra Active organizes field trips for our homeschool co-op's member families — hands-on history, science, and nature outings a few times each season.</p>
+    <p>Trips are open to member families. If you're not yet part of the co-op, reach out through the Contact page to learn more about joining.</p>
+</div>
+
+<div class="section">
+    <div class="section-title">Who Runs It</div>
+    <div class="coordinators-grid">
+        <div class="coordinator-card">
+            <div class="coordinator-avatar">
+                <svg viewBox="0 0 92 92" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="92" height="92" fill="#2F4A3B"/>
+                    <circle cx="46" cy="36" r="17" fill="#F3EEE4"/>
+                    <path d="M12 92 C12 66 26 56 46 56 C66 56 80 66 80 92 Z" fill="#F3EEE4"/>
+                </svg>
+            </div>
+            <div class="coordinator-name">[Coordinator 1 Name]</div>
+            <div class="coordinator-role">Field Trip Coordinator</div>
+            <div class="coordinator-bio">Plans and organizes trips, from finding destinations to handling registrations.</div>
+        </div>
+        <div class="coordinator-card">
+            <div class="coordinator-avatar">
+                <svg viewBox="0 0 92 92" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="92" height="92" fill="#2F4A3B"/>
+                    <circle cx="46" cy="36" r="17" fill="#F3EEE4"/>
+                    <path d="M12 92 C12 66 26 56 46 56 C66 56 80 66 80 92 Z" fill="#F3EEE4"/>
+                </svg>
+            </div>
+            <div class="coordinator-name">[Coordinator 2 Name]</div>
+            <div class="coordinator-role">Field Trip Coordinator</div>
+            <div class="coordinator-bio">Plans and organizes trips, from finding destinations to handling registrations.</div>
+        </div>
+        <div class="coordinator-card">
+            <div class="coordinator-avatar">
+                <svg viewBox="0 0 92 92" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="92" height="92" fill="#2F4A3B"/>
+                    <circle cx="46" cy="36" r="17" fill="#F3EEE4"/>
+                    <path d="M12 92 C12 66 26 56 46 56 C66 56 80 66 80 92 Z" fill="#F3EEE4"/>
+                </svg>
+            </div>
+            <div class="coordinator-name">[Coordinator 3 Name]</div>
+            <div class="coordinator-role">Field Trip Coordinator</div>
+            <div class="coordinator-bio">Plans and organizes trips, from finding destinations to handling registrations.</div>
+        </div>
+    </div>
+</div>
+
+<div class="section">
+    <div class="section-title">How to Register</div>
+    <div class="steps">
+        <div class="step-item">
+            <div class="step-num">1</div>
+            <div>
+                <div class="step-title">Browse upcoming trips</div>
+                <div class="step-desc">Scroll the trip list on the homepage to see what's coming up, including dates and pricing.</div>
+            </div>
+        </div>
+        <div class="step-item">
+            <div class="step-num">2</div>
+            <div>
+                <div class="step-title">Pick a trip and hit Register</div>
+                <div class="step-desc">Select the trip you'd like to join and click Register to open the sign-up form.</div>
+            </div>
+        </div>
+        <div class="step-item">
+            <div class="step-num">3</div>
+            <div>
+                <div class="step-title">Enter your member email</div>
+                <div class="step-desc">We check your email against our member list — no account or password needed.</div>
+            </div>
+        </div>
+        <div class="step-item">
+            <div class="step-num">4</div>
+            <div>
+                <div class="step-title">Fill in your details and confirm</div>
+                <div class="step-desc">Add how many adults and kids are coming, then submit — you're registered.</div>
+            </div>
+        </div>
+        <div class="step-item">
+            <div class="step-num">5</div>
+            <div>
+                <div class="step-title">Check your inbox</div>
+                <div class="step-desc">A confirmation email lands right away with your registration details.</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="section">
+    <div class="callout">
+        <strong>Not a member yet?</strong> Ad Astra Active trips are for co-op member families. If you'd like to learn more about joining, <a href="#">get in touch through our Contact page</a>.
+    </div>
+</div>
+
+<footer>Ad Astra Active · Fredericksburg, VA · <a href="admin.html" style="color: inherit;">Admin</a></footer>
+
+</body>
+</html>
