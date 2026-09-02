@@ -1,3 +1,5 @@
+const { todayIsoDate } = require("../shared/tripsTable");
+
 // National Weather Service forecasts are US-only, need no API key, but do
 // ask API consumers to identify themselves via User-Agent.
 const NWS_USER_AGENT = "(ad-astra-active.azurestaticapps.net, jlmosier24@gmail.com)";
@@ -61,11 +63,16 @@ module.exports = async function (context, req) {
         return;
     }
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    // Compare calendar-date strings directly (both anchored the same way)
+    // rather than building local Date objects -- the trip date is a local
+    // (Eastern-time) calendar date, and todayIsoDate() already resolves
+    // "today" in that same time zone, so a naive UTC diff of the two
+    // strings' components lines up correctly without re-introducing a
+    // server-timezone dependency.
+    const todayStr = todayIsoDate();
+    const [ty, tm, td] = todayStr.split('-').map(Number);
     const [y, m, d] = dateStr.split('-').map(Number);
-    const tripDate = new Date(y, m - 1, d);
-    const daysOut = Math.round((tripDate - today) / (1000 * 60 * 60 * 24));
+    const daysOut = Math.round((Date.UTC(y, m - 1, d) - Date.UTC(ty, tm - 1, td)) / (1000 * 60 * 60 * 24));
 
     if (daysOut < 0 || daysOut > MAX_FORECAST_DAYS) {
         context.res = { status: 200, body: { available: false, reason: "too-far-out" } };

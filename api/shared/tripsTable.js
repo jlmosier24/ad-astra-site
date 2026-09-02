@@ -45,8 +45,19 @@ function sortByDate(trips) {
 }
 
 // Today's date as "YYYY-MM-DD", for comparing against trip.date strings.
+// Trip dates are local-calendar dates for this Virginia-based co-op, but
+// Azure Functions run in UTC -- using UTC "now" here would flip to
+// tomorrow's date several hours before midnight actually arrives locally,
+// so this anchors "today" to US Eastern time instead.
+const LOCAL_TIME_ZONE = "America/New_York";
+const isoDateFormatter = new Intl.DateTimeFormat("en-CA", {
+    timeZone: LOCAL_TIME_ZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+});
 function todayIsoDate() {
-    return new Date().toISOString().slice(0, 10);
+    return isoDateFormatter.format(new Date());
 }
 
 function isPastTrip(trip) {
