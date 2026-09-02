@@ -501,7 +501,7 @@ function renderTripCards() {
             <div class="art-frame">
                 <img src="${t.image}" alt="${t.title}">
                 <div class="art-fade"></div>
-                ${t.capacity > 0 ? `<div class="spots-tag">${t.spotsRemaining} of ${t.capacity} left</div>` : ''}
+                ${t.capacity > 0 ? `<div class="spots-tag">Limited capacity</div>` : ''}
                 <div class="date-tag">${formatDateLabel(t.date)}</div>
             </div>
             <div class="card-body">

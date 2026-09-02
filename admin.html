@@ -61,8 +61,6 @@
     .address-suggestion:hover { background: var(--cream); }
     .form-group input, .form-group textarea { width: 100%; padding: 9px 11px; border: 1px solid var(--line); border-radius: 8px; font-size: 0.92rem; font-family: inherit; }
     .form-group textarea { resize: vertical; min-height: 60px; }
-    .checkbox-row { display: flex; align-items: center; gap: 8px; margin-bottom: 18px; }
-    .checkbox-row input { width: auto; }
     .modal-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
     #status-message, #email-status-message { display: none; padding: 10px 12px; border-radius: 8px; margin-bottom: 14px; font-size: 0.85rem; font-weight: 600; }
     #status-message.error, #email-status-message.error { background: #FBE4DF; color: var(--accent); }
@@ -193,11 +191,6 @@
             <input type="hidden" id="image">
         </div>
 
-        <div class="checkbox-row">
-            <input type="checkbox" id="hidden">
-            <label for="hidden" style="font-weight: 600; font-size: 0.88rem;">Hide from the public site</label>
-        </div>
-
         <div class="modal-actions">
             <span class="modal-cancel" style="color: var(--sub); cursor: pointer; font-weight: 600; font-size: 0.88rem;" onclick="closeForm()">Cancel</span>
             <button class="btn" onclick="saveTrip()">Save Trip</button>
@@ -243,6 +236,7 @@
 <script>
 let trips = [];
 let registrations = [];
+let editingTripHidden = false;
 
 // The admin auth session occasionally needs a moment to settle (e.g. right
 // after logging in, or between actions), causing an intermittent 401/403
@@ -329,6 +323,7 @@ function tripRowHtml(t) {
             <div class="trip-actions">
                 <button class="btn-outline" onclick="openRoster('${t.id}')">Registrants (${regsForTrip.length})</button>
                 <button class="btn-outline" onclick="editTrip('${t.id}')">Edit</button>
+                <button class="btn-outline" onclick="toggleHidden('${t.id}')">${t.hidden ? 'Unhide' : 'Hide'}</button>
                 <button class="btn-danger" onclick="removeTrip('${t.id}')">Delete</button>
             </div>
         </div>
@@ -422,7 +417,7 @@ function openForm() {
     ['title', 'address', 'placeName', 'date', 'time', 'description', 'heroHeadline', 'heroAccent', 'image'].forEach(id => document.getElementById(id).value = '');
     ['adultPrice', 'childPrice', 'capacity', 'addressLat', 'addressLon'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('addressSuggestions').style.display = 'none';
-    document.getElementById('hidden').checked = false;
+    editingTripHidden = false;
     document.getElementById('imageFile').value = '';
     document.getElementById('imagePreview').style.display = 'none';
     document.getElementById('uploadStatus').textContent = 'Choose a photo to upload, or leave blank to keep the current one.';
@@ -450,7 +445,7 @@ function editTrip(id) {
     document.getElementById('childPrice').value = t.childPrice;
     document.getElementById('capacity').value = t.capacity;
     document.getElementById('image').value = t.image;
-    document.getElementById('hidden').checked = t.hidden;
+    editingTripHidden = t.hidden;
     document.getElementById('imageFile').value = '';
     const preview = document.getElementById('imagePreview');
     if (t.image) {
@@ -535,7 +530,7 @@ async function saveTrip() {
         childPrice: parseFloat(document.getElementById('childPrice').value) || 0,
         capacity: parseInt(document.getElementById('capacity').value, 10) || 0,
         image: document.getElementById('image').value.trim(),
-        hidden: document.getElementById('hidden').checked
+        hidden: editingTripHidden
     };
 
     if (!payload.title || !payload.address || !payload.date || !payload.description) {
@@ -558,6 +553,44 @@ async function saveTrip() {
         loadTrips();
     } catch (e) {
         showFormStatus('Connection error. Please try again.');
+    }
+}
+
+async function toggleHidden(id) {
+    const t = trips.find(t => t.id === id);
+    if (!t) return;
+    const payload = {
+        id: t.id,
+        title: t.title,
+        address: t.address,
+        placeName: t.placeName || '',
+        lat: t.lat,
+        lon: t.lon,
+        date: t.date,
+        time: t.time || '',
+        description: t.description,
+        heroHeadline: t.heroHeadline === t.title ? '' : t.heroHeadline,
+        heroAccent: t.heroAccent || '',
+        adultPrice: t.adultPrice,
+        childPrice: t.childPrice,
+        capacity: t.capacity,
+        image: t.image || '',
+        hidden: !t.hidden
+    };
+    try {
+        const res = await fetchWithAuthRetry('/api/manageTripsSave', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        if (!res.ok) {
+            const text = await res.text();
+            alert(`Could not update trip (HTTP ${res.status}): ${text || 'no details returned by the server'}`);
+            return;
+        }
+        loadTrips();
+    } catch (e) {
+        alert('Connection error. Please try again.');
     }
 }
 
