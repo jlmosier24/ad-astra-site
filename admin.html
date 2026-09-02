@@ -140,9 +140,15 @@
             <div class="hint">Added to the "Get Directions" link so Maps opens to the actual place, not just the address.</div>
         </div>
 
-        <div class="form-group">
-            <label>Date</label>
-            <input type="date" id="date">
+        <div class="form-row">
+            <div class="form-group">
+                <label>Date</label>
+                <input type="date" id="date">
+            </div>
+            <div class="form-group">
+                <label>Time (optional)</label>
+                <input type="time" id="time">
+            </div>
         </div>
 
         <div class="form-group">
@@ -301,14 +307,23 @@ function getTodayIso() {
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 }
 
+function formatTimeLabel(time) {
+    if (!time) return '';
+    const [h, m] = time.split(':').map(Number);
+    const period = h >= 12 ? 'PM' : 'AM';
+    const hour12 = h % 12 || 12;
+    return `${hour12}:${String(m).padStart(2, '0')} ${period}`;
+}
+
 function tripRowHtml(t) {
     const regsForTrip = registrations.filter(r => r.tripId === t.id);
     const paidCount = regsForTrip.filter(r => r.paid).length;
+    const whenLabel = t.time ? `${t.date} · ${formatTimeLabel(t.time)}` : t.date;
     return `
         <div class="trip-row ${t.hidden ? 'hidden-trip' : ''}">
             <div class="trip-info">
                 <h3>${t.title}${t.hidden ? '<span class="hidden-badge">Hidden</span>' : ''}</h3>
-                <div class="trip-meta">${t.address} · ${t.date} · ${t.spotsRemaining} of ${t.capacity} spots left</div>
+                <div class="trip-meta">${t.address} · ${whenLabel} · ${t.spotsRemaining} of ${t.capacity} spots left</div>
                 <div class="trip-count">${regsForTrip.length} registered${regsForTrip.length ? ` · ${paidCount} paid` : ''}</div>
             </div>
             <div class="trip-actions">
@@ -404,7 +419,7 @@ function selectAddressSuggestion(i) {
 function openForm() {
     document.getElementById('formTitle').textContent = 'Add Field Trip';
     document.getElementById('tripId').value = '';
-    ['title', 'address', 'placeName', 'date', 'description', 'heroHeadline', 'heroAccent', 'image'].forEach(id => document.getElementById(id).value = '');
+    ['title', 'address', 'placeName', 'date', 'time', 'description', 'heroHeadline', 'heroAccent', 'image'].forEach(id => document.getElementById(id).value = '');
     ['adultPrice', 'childPrice', 'capacity', 'addressLat', 'addressLon'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('addressSuggestions').style.display = 'none';
     document.getElementById('hidden').checked = false;
@@ -427,6 +442,7 @@ function editTrip(id) {
     document.getElementById('addressLon').value = t.lon != null ? t.lon : '';
     document.getElementById('addressSuggestions').style.display = 'none';
     document.getElementById('date').value = t.date;
+    document.getElementById('time').value = t.time || '';
     document.getElementById('description').value = t.description;
     document.getElementById('heroHeadline').value = t.heroHeadline === t.title ? '' : t.heroHeadline;
     document.getElementById('heroAccent').value = t.heroAccent;
@@ -511,6 +527,7 @@ async function saveTrip() {
         lat: document.getElementById('addressLat').value,
         lon: document.getElementById('addressLon').value,
         date: document.getElementById('date').value,
+        time: document.getElementById('time').value,
         description: document.getElementById('description').value.trim(),
         heroHeadline: document.getElementById('heroHeadline').value.trim(),
         heroAccent: document.getElementById('heroAccent').value.trim(),
@@ -562,7 +579,15 @@ async function removeTrip(id) {
 
 function formatRegisteredDate(iso) {
     try {
-        return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        const d = new Date(iso);
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        const yyyy = d.getFullYear();
+        let hours = d.getHours();
+        const minutes = String(d.getMinutes()).padStart(2, '0');
+        const ampm = hours >= 12 ? 'pm' : 'am';
+        hours = hours % 12 || 12;
+        return `${mm}/${dd}/${yyyy} ${hours}:${minutes}${ampm}`;
     } catch (e) {
         return iso || '';
     }
@@ -594,10 +619,13 @@ function openRoster(tripId) {
                 <div class="roster-detail">${r.email} · ${r.adults} adults, ${r.children} children · $${(r.total || 0).toFixed(2)}</div>
                 <div class="roster-detail">Registered ${formatRegisteredDate(r.dateRegistered)}</div>
             </div>
-            <label class="roster-paid-label">
-                <input type="checkbox" ${r.paid ? 'checked' : ''} onchange="setPaid('${r.tripId}', '${r.id}', this)">
-                Paid
-            </label>
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <label class="roster-paid-label">
+                    <input type="checkbox" ${r.paid ? 'checked' : ''} onchange="setPaid('${r.tripId}', '${r.id}', this)">
+                    Paid
+                </label>
+                <button class="btn-danger" onclick="deleteRegistration('${r.tripId}', '${r.id}')">Delete</button>
+            </div>
         </div>
     `).join('');
 
@@ -663,6 +691,23 @@ async function setPaid(tripId, id, checkbox) {
         renderTrips();
     } catch (e) {
         checkbox.checked = !desired;
+        alert('Connection error. Please try again.');
+    }
+}
+
+async function deleteRegistration(tripId, id) {
+    const reg = registrations.find(r => r.tripId === tripId && r.id === id);
+    if (!confirm(`Remove ${reg ? reg.parentName : 'this registrant'} from the trip? This frees their spot and cannot be undone.`)) return;
+    try {
+        const res = await fetchWithAuthRetry(`/api/manageRegistrationsDelete?tripId=${encodeURIComponent(tripId)}&id=${encodeURIComponent(id)}`, { method: 'DELETE' });
+        if (!res.ok) {
+            alert(`Could not delete registration (HTTP ${res.status}): ${await res.text() || 'no details returned by the server'}`);
+            return;
+        }
+        registrations = registrations.filter(r => !(r.tripId === tripId && r.id === id));
+        openRoster(tripId);
+        await loadTrips();
+    } catch (e) {
         alert('Connection error. Please try again.');
     }
 }

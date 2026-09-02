@@ -17,6 +17,7 @@ function toTripDto(entity) {
         lat: entity.lat,
         lon: entity.lon,
         date: entity.date,
+        time: entity.time || "",
         heroHeadline: entity.heroHeadline || entity.title,
         heroAccent: entity.heroAccent || "",
         description: entity.description,

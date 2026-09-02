@@ -9,13 +9,23 @@ function escapeHtml(str) {
     return String(str || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 }
 
-// Mirrors formatFullDate() in index.html so the email reads the same way
-// the site does. The date components are fixed inputs, not "now", so this
-// isn't subject to the server-vs-local timezone issue that affects
-// same-day comparisons elsewhere.
-function formatFullDate(isoDate) {
+// Mirrors formatTimeLabel()/formatFullDate() in index.html so the email
+// reads the same way the site does. The date components are fixed inputs,
+// not "now", so this isn't subject to the server-vs-local timezone issue
+// that affects same-day comparisons elsewhere.
+function formatTimeLabel(time) {
+    if (!time) return "";
+    const [h, m] = time.split(':').map(Number);
+    const period = h >= 12 ? 'PM' : 'AM';
+    const hour12 = h % 12 || 12;
+    return `${hour12}:${String(m).padStart(2, '0')} ${period}`;
+}
+
+function formatFullDate(isoDate, time) {
     const [y, m, d] = isoDate.split('-').map(Number);
-    return new Date(y, m - 1, d).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+    const dateLabel = new Date(y, m - 1, d).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+    const timeLabel = formatTimeLabel(time);
+    return timeLabel ? `${dateLabel} at ${timeLabel}` : dateLabel;
 }
 
 // Mirrors directionsUrl() in index.html.
@@ -25,7 +35,7 @@ function directionsUrl(trip) {
 }
 
 function buildConfirmationHtml({ trip, parentName, adultCount, childCount, total }) {
-    const dateLabel = trip.date ? formatFullDate(trip.date) : "";
+    const dateLabel = trip.date ? formatFullDate(trip.date, trip.time) : "";
     const locationLabel = trip.placeName ? `${trip.placeName} — ${trip.address}` : trip.address;
     const attendeeParts = [];
     if (adultCount > 0) attendeeParts.push(`${adultCount} adult${adultCount === 1 ? '' : 's'}`);
