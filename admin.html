@@ -97,7 +97,7 @@
 <body>
 
 <div class="topbar">
-    <h1>Field Trip Administration</h1>
+    <h1>Ad Astra Active Administration</h1>
     <div class="whoami" id="whoami">Loading…</div>
 </div>
 
@@ -252,8 +252,7 @@ async function loadWhoAmI() {
         const data = await res.json();
         const principal = data.clientPrincipal;
         if (principal) {
-            const roles = (principal.userRoles || []).join(', ') || 'none';
-            el.innerHTML = `${principal.userDetails} (roles: ${roles}) &nbsp;·&nbsp; <a href="/.auth/logout">Log out</a>`;
+            el.innerHTML = `${principal.userDetails} &nbsp;·&nbsp; <a href="/.auth/logout">Log out</a>`;
         } else {
             el.innerHTML = `<a href="/.auth/login/aad">Log in</a>`;
         }
