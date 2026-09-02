@@ -22,9 +22,18 @@ function toTripDto(entity) {
         adultPrice: entity.adultPrice,
         childPrice: entity.childPrice,
         capacity: entity.capacity,
-        spotsRemaining: entity.spotsRemaining,
         image: entity.image,
         hidden: !!entity.hidden
+    };
+}
+
+// Attaches a live-computed spotsRemaining, based on actual registration
+// counts rather than a manually-typed number. registeredCount is the total
+// adults+children already signed up for this trip.
+function withLiveSpotsRemaining(trip, registeredCount) {
+    return {
+        ...trip,
+        spotsRemaining: trip.capacity > 0 ? Math.max(0, trip.capacity - (registeredCount || 0)) : 0
     };
 }
 
@@ -51,4 +60,4 @@ function slugify(title) {
         .replace(/(^-|-$)/g, "") || "trip";
 }
 
-module.exports = { getTripsTable, toTripDto, sortByDate, todayIsoDate, isPastTrip, slugify, PARTITION_KEY };
+module.exports = { getTripsTable, toTripDto, withLiveSpotsRemaining, sortByDate, todayIsoDate, isPastTrip, slugify, PARTITION_KEY };

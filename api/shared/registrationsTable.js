@@ -20,4 +20,17 @@ function toRegistrationDto(entity) {
     };
 }
 
-module.exports = { getRegistrationsTable, toRegistrationDto };
+// Scans every registration once and sums attendees per trip, so callers
+// don't need a separate query per trip. Returns a Map<tripId, number>.
+async function getRegisteredCountsByTrip() {
+    const table = getRegistrationsTable();
+    const counts = new Map();
+    for await (const entity of table.listEntities()) {
+        const tripId = entity.partitionKey;
+        const attendees = (entity.adults || 0) + (entity.children || 0);
+        counts.set(tripId, (counts.get(tripId) || 0) + attendees);
+    }
+    return counts;
+}
+
+module.exports = { getRegistrationsTable, toRegistrationDto, getRegisteredCountsByTrip };

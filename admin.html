@@ -167,16 +167,10 @@
             </div>
         </div>
 
-        <div class="form-row">
-            <div class="form-group">
-                <label>Total capacity</label>
-                <input type="number" id="capacity" min="0">
-                <div class="hint">Leave blank or 0 for no maximum — hides the spots-left badge.</div>
-            </div>
-            <div class="form-group">
-                <label>Spots remaining</label>
-                <input type="number" id="spotsRemaining" min="0">
-            </div>
+        <div class="form-group">
+            <label>Total capacity</label>
+            <input type="number" id="capacity" min="0">
+            <div class="hint">Leave blank or 0 for no maximum. Spots remaining is now calculated automatically from actual registrations — no need to track it by hand.</div>
         </div>
 
         <div class="form-group">
@@ -406,7 +400,7 @@ function openForm() {
     document.getElementById('formTitle').textContent = 'Add Field Trip';
     document.getElementById('tripId').value = '';
     ['title', 'address', 'date', 'description', 'heroHeadline', 'heroAccent', 'image'].forEach(id => document.getElementById(id).value = '');
-    ['adultPrice', 'childPrice', 'capacity', 'spotsRemaining', 'addressLat', 'addressLon'].forEach(id => document.getElementById(id).value = '');
+    ['adultPrice', 'childPrice', 'capacity', 'addressLat', 'addressLon'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('addressSuggestions').style.display = 'none';
     document.getElementById('hidden').checked = false;
     document.getElementById('imageFile').value = '';
@@ -433,7 +427,6 @@ function editTrip(id) {
     document.getElementById('adultPrice').value = t.adultPrice;
     document.getElementById('childPrice').value = t.childPrice;
     document.getElementById('capacity').value = t.capacity;
-    document.getElementById('spotsRemaining').value = t.spotsRemaining;
     document.getElementById('image').value = t.image;
     document.getElementById('hidden').checked = t.hidden;
     document.getElementById('imageFile').value = '';
@@ -517,7 +510,6 @@ async function saveTrip() {
         adultPrice: parseFloat(document.getElementById('adultPrice').value) || 0,
         childPrice: parseFloat(document.getElementById('childPrice').value) || 0,
         capacity: parseInt(document.getElementById('capacity').value, 10) || 0,
-        spotsRemaining: parseInt(document.getElementById('spotsRemaining').value, 10) || 0,
         image: document.getElementById('image').value.trim(),
         hidden: document.getElementById('hidden').checked
     };

@@ -26,7 +26,7 @@ async function generateUniqueId(table, title) {
 // otherwise updates the existing one in place.
 module.exports = async function (context, req) {
     const body = req.body || {};
-    const { id, title, address, lat, lon, date, heroHeadline, heroAccent, description, adultPrice, childPrice, capacity, spotsRemaining, image, hidden } = body;
+    const { id, title, address, lat, lon, date, heroHeadline, heroAccent, description, adultPrice, childPrice, capacity, image, hidden } = body;
 
     if (!title || !address || !date || !description) {
         context.res = { status: 400, body: "Missing required fields (title, address, date, description)." };
@@ -49,7 +49,6 @@ module.exports = async function (context, req) {
             adultPrice: Number(adultPrice) || 0,
             childPrice: Number(childPrice) || 0,
             capacity: Number(capacity) || 0,
-            spotsRemaining: Number(spotsRemaining) || 0,
             image: image || "",
             hidden: !!hidden
         };
