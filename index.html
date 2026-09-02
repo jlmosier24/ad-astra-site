@@ -134,8 +134,13 @@
     .form-group label { display: block; font-weight: 700; font-size: 0.85rem; margin-bottom: 6px; }
     .form-group input { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; font-size: 0.95rem; font-family: inherit; }
     .price-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; }
-    .price-row select { padding: 6px 8px; border-radius: 6px; border: 1px solid var(--line); font-family: inherit; }
     .price-total-display { min-width: 60px; text-align: right; font-weight: 700; }
+    .stepper { display: flex; align-items: center; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+    .stepper-btn { background: var(--cream); border: none; width: 30px; height: 30px; font-size: 1.1rem; font-weight: 700; color: var(--ink); cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; padding: 0; }
+    .stepper-btn:hover:not(:disabled) { background: var(--accent); color: #fff; }
+    .stepper-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .stepper-value { min-width: 28px; text-align: center; font-weight: 700; font-size: 0.95rem; }
+    .capacity-note { font-size: 0.78rem; color: var(--sub); margin: -6px 0 14px; }
     .grand-total-row { display: flex; justify-content: space-between; font-size: 1.1rem; font-weight: 800; border-top: 2px dashed var(--line); padding-top: 14px; margin: 6px 0 20px; color: var(--forest); }
     .btn-submit { background: var(--accent); color: #fff; border: none; padding: 13px; border-radius: 999px; font-size: 1rem; font-weight: 700; cursor: pointer; width: 100%; }
     .btn-submit:hover { background: var(--ink); }
@@ -257,32 +262,31 @@
 
             <div class="price-row">
                 <div id="adultLabel" style="font-weight: 700;">Adult</div>
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <select id="adultCount" onchange="updateTotals()">
-                        <option value="0">0</option>
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="4">4</option>
-                    </select>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div class="stepper">
+                        <button type="button" class="stepper-btn" id="adultMinus" onclick="adjustCount('adultCount', -1)" aria-label="Decrease adults">−</button>
+                        <span class="stepper-value" id="adultCountDisplay">0</span>
+                        <button type="button" class="stepper-btn" id="adultPlus" onclick="adjustCount('adultCount', 1)" aria-label="Increase adults">+</button>
+                    </div>
+                    <input type="hidden" id="adultCount" value="0">
                     <span id="adultSubtotal" class="price-total-display">$0.00</span>
                 </div>
             </div>
 
             <div class="price-row">
                 <div id="childLabel" style="font-weight: 700;">Child</div>
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <select id="childCount" onchange="updateTotals()">
-                        <option value="0">0</option>
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="4">4</option>
-                        <option value="5">5</option>
-                    </select>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div class="stepper">
+                        <button type="button" class="stepper-btn" id="childMinus" onclick="adjustCount('childCount', -1)" aria-label="Decrease children">−</button>
+                        <span class="stepper-value" id="childCountDisplay">0</span>
+                        <button type="button" class="stepper-btn" id="childPlus" onclick="adjustCount('childCount', 1)" aria-label="Increase children">+</button>
+                    </div>
+                    <input type="hidden" id="childCount" value="0">
                     <span id="childSubtotal" class="price-total-display">$0.00</span>
                 </div>
             </div>
+
+            <div id="capacityNote" class="capacity-note" style="display: none;"></div>
 
             <div class="grand-total-row">
                 <span>TOTAL DUE:</span>
@@ -436,7 +440,10 @@ function openModal(tripId) {
     document.getElementById('modal-overlay').style.display = 'flex';
     document.getElementById('adultCount').value = "0";
     document.getElementById('childCount').value = "0";
+    document.getElementById('adultCountDisplay').textContent = "0";
+    document.getElementById('childCountDisplay').textContent = "0";
     updateTotals();
+    refreshStepperState();
 }
 
 function updateTotals() {
@@ -451,6 +458,53 @@ function updateTotals() {
     document.getElementById('adultSubtotal').textContent = `$${adultTotal.toFixed(2)}`;
     document.getElementById('childSubtotal').textContent = `$${childTotal.toFixed(2)}`;
     document.getElementById('grandTotal').textContent = `$${grandTotal.toFixed(2)}`;
+}
+
+// Trips with a capacity behave as one shared pool of spots for adults and
+// children combined. Trips with no maximum (capacity 0) still get a sane
+// ceiling so the stepper can't be tapped into an absurd number.
+function getAttendeeCap(trip) {
+    return trip.capacity > 0 ? trip.spotsRemaining : 20;
+}
+
+function adjustCount(fieldId, delta) {
+    if (!selectedTrip) return;
+    const input = document.getElementById(fieldId);
+    const otherId = fieldId === 'adultCount' ? 'childCount' : 'adultCount';
+    const current = parseInt(input.value, 10) || 0;
+    const other = parseInt(document.getElementById(otherId).value, 10) || 0;
+    const cap = getAttendeeCap(selectedTrip);
+
+    const next = Math.max(0, Math.min(current + delta, cap - other));
+    input.value = next;
+    document.getElementById(fieldId === 'adultCount' ? 'adultCountDisplay' : 'childCountDisplay').textContent = next;
+
+    updateTotals();
+    refreshStepperState();
+}
+
+function refreshStepperState() {
+    if (!selectedTrip) return;
+    const adults = parseInt(document.getElementById('adultCount').value, 10) || 0;
+    const children = parseInt(document.getElementById('childCount').value, 10) || 0;
+    const cap = getAttendeeCap(selectedTrip);
+    const total = adults + children;
+    const atCap = total >= cap;
+
+    document.getElementById('adultMinus').disabled = adults <= 0;
+    document.getElementById('childMinus').disabled = children <= 0;
+    document.getElementById('adultPlus').disabled = atCap;
+    document.getElementById('childPlus').disabled = atCap;
+
+    const noteEl = document.getElementById('capacityNote');
+    if (selectedTrip.capacity > 0) {
+        noteEl.style.display = 'block';
+        noteEl.textContent = atCap
+            ? `That's all ${cap} spot${cap === 1 ? '' : 's'} available for this trip.`
+            : `${cap - total} of ${cap} spot${cap === 1 ? '' : 's'} left for this trip.`;
+    } else {
+        noteEl.style.display = 'none';
+    }
 }
 
 function showStatus(message, isError = true) {

@@ -1,6 +1,6 @@
 const { EmailClient } = require("@azure/communication-email");
 const { getTripsTable, isPastTrip, PARTITION_KEY } = require("../shared/tripsTable");
-const { getRegistrationsTable } = require("../shared/registrationsTable");
+const { getRegistrationsTable, getRegisteredCountsByTrip } = require("../shared/registrationsTable");
 
 const connectionString = process.env.AZURE_COMMUNICATION_CONNECTION_STRING;
 const client = new EmailClient(connectionString);
@@ -44,6 +44,23 @@ module.exports = async function (context, req) {
     if (!parentName || (adultCount <= 0 && childCount <= 0)) {
         context.res = { status: 400, body: "Please provide a parent name and at least one attendee." };
         return;
+    }
+
+    if (trip.capacity > 0) {
+        let alreadyRegistered = 0;
+        try {
+            const counts = await getRegisteredCountsByTrip();
+            alreadyRegistered = counts.get(trip.rowKey) || 0;
+        } catch (e) {
+            context.log.error("Failed to check capacity:", e);
+            context.res = { status: 500, body: "Error: " + (e.message || e.code || JSON.stringify(e)) };
+            return;
+        }
+        const spotsLeft = Math.max(0, trip.capacity - alreadyRegistered);
+        if (adultCount + childCount > spotsLeft) {
+            context.res = { status: 400, body: `Only ${spotsLeft} spot${spotsLeft === 1 ? '' : 's'} left for this trip.` };
+            return;
+        }
     }
 
     const total = (adultCount * trip.adultPrice) + (childCount * trip.childPrice);
