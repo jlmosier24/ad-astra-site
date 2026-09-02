@@ -1,14 +1,11 @@
 const { getRegistrationsTable, toRegistrationDto } = require("../shared/registrationsTable");
+const { isApprovedEmail } = require("../shared/approvedEmailsTable");
 
 module.exports = async function (context, req) {
     const emailToVerify = (req.query.email || (req.body && req.body.email))?.toLowerCase().trim();
     const tripId = req.query.tripId || (req.body && req.body.tripId);
 
-    // Pull the list from your Azure App Settings
-    const approvedListString = process.env.APPROVED_EMAILS || "";
-    const approvedEmails = approvedListString.split(',').map(e => e.trim().toLowerCase());
-
-    const isApproved = approvedEmails.includes(emailToVerify);
+    const isApproved = await isApprovedEmail(emailToVerify);
 
     let existingRegistration = null;
     if (isApproved && tripId) {

@@ -1,6 +1,7 @@
 const { EmailClient } = require("@azure/communication-email");
 const { getTripsTable, PARTITION_KEY } = require("../shared/tripsTable");
 const { getRegistrationsTable } = require("../shared/registrationsTable");
+const { listApprovedEmails } = require("../shared/approvedEmailsTable");
 
 const connectionString = process.env.AZURE_COMMUNICATION_CONNECTION_STRING;
 const client = new EmailClient(connectionString);
@@ -54,8 +55,16 @@ module.exports = async function (context, req) {
         return;
     }
 
-    const approvedEmails = (process.env.APPROVED_EMAILS || "").split(',').map(e => e.trim()).filter(Boolean);
-    const fromDisplayAddress = approvedEmails[0] || recipientEmails[0];
+    // The "To" address is shown to every BCC'd recipient, so it should be
+    // one of the coordinator's own approved addresses rather than exposing
+    // a registrant's email to the whole group.
+    let fromDisplayAddress = recipientEmails[0];
+    try {
+        const approved = await listApprovedEmails();
+        if (approved.length > 0) fromDisplayAddress = approved[0].email;
+    } catch (e) {
+        // Fall back to a registrant address if this lookup fails.
+    }
 
     const emailMessage = {
         senderAddress: "DoNotReply@3baad923-9af9-429b-9620-064e01fac201.azurecomm.net",

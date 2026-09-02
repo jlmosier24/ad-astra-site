@@ -10,7 +10,10 @@
     { "route": "/api/manageRegistrationsSetPaid", "allowedRoles": ["administrator"] },
     { "route": "/api/manageRegistrationsDelete", "allowedRoles": ["administrator"] },
     { "route": "/api/emailTripGroup", "allowedRoles": ["administrator"] },
-    { "route": "/api/geocodeAddress", "allowedRoles": ["administrator"] }
+    { "route": "/api/geocodeAddress", "allowedRoles": ["administrator"] },
+    { "route": "/api/manageApprovedEmailsList", "allowedRoles": ["administrator"] },
+    { "route": "/api/manageApprovedEmailsSave", "allowedRoles": ["administrator"] },
+    { "route": "/api/manageApprovedEmailsDelete", "allowedRoles": ["administrator"] }
   ],
   "responseOverrides": {
     "401": {

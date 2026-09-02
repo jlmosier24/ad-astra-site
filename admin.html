@@ -71,6 +71,13 @@
 
     .section-heading { font-family: 'Anton', sans-serif; font-weight: 400; text-transform: uppercase; font-size: 1.1rem; letter-spacing: 0.01em; color: var(--sub); margin: 36px 0 14px; }
 
+    .approved-add-row { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+    .approved-add-row input { flex: 1; min-width: 160px; padding: 9px 11px; border: 1px solid var(--line); border-radius: 8px; font-size: 0.9rem; font-family: inherit; }
+    .approved-list { display: flex; flex-direction: column; gap: 8px; }
+    .approved-row { background: var(--paper); border-radius: 12px; padding: 12px 18px; display: flex; align-items: center; justify-content: space-between; gap: 12px; box-shadow: 0 2px 8px rgba(34,30,25,0.04); }
+    .approved-email { font-weight: 700; font-size: 0.9rem; }
+    .approved-label { color: var(--sub); font-size: 0.78rem; margin-top: 2px; }
+
     #roster-overlay { display: none; position: fixed; inset: 0; background: rgba(34,30,25,0.55); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
     .roster-modal { background: var(--paper); border-radius: 20px; padding: 32px; width: 100%; max-width: 640px; max-height: 85vh; overflow-y: auto; }
     .roster-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
@@ -110,6 +117,15 @@
         <h2 class="section-heading">Previous Field Trips</h2>
         <div id="pastTripList" class="trip-list"></div>
     </div>
+
+    <h2 class="section-heading">Approved Registrant Emails</h2>
+    <div class="hint" style="margin-bottom: 14px;">Only these addresses can register for a trip or manage an existing registration on the public site.</div>
+    <div class="approved-add-row">
+        <input type="email" id="newApprovedEmail" placeholder="parent@example.com">
+        <input type="text" id="newApprovedLabel" placeholder="Name (optional)">
+        <button class="btn" onclick="addApprovedEmail()">Add</button>
+    </div>
+    <div id="approvedEmailsList" class="loading-state">Loading…</div>
 </div>
 
 <div id="modal-overlay">
@@ -799,8 +815,88 @@ async function sendGroupEmail() {
     }
 }
 
+let approvedEmails = [];
+
+async function loadApprovedEmails() {
+    const listEl = document.getElementById('approvedEmailsList');
+    listEl.className = 'loading-state';
+    listEl.textContent = 'Loading…';
+    try {
+        const res = await fetchWithAuthRetry('/api/manageApprovedEmailsList');
+        if (!res.ok) {
+            const text = await res.text();
+            listEl.className = 'empty-state';
+            listEl.textContent = `Could not load approved emails (HTTP ${res.status}): ${text || 'no details returned by the server'}`;
+            return;
+        }
+        approvedEmails = await res.json();
+        renderApprovedEmails();
+    } catch (e) {
+        listEl.className = 'empty-state';
+        listEl.textContent = 'Could not load approved emails: ' + e.message;
+    }
+}
+
+function renderApprovedEmails() {
+    const listEl = document.getElementById('approvedEmailsList');
+    if (approvedEmails.length === 0) {
+        listEl.className = 'empty-state';
+        listEl.textContent = 'No approved emails yet.';
+        return;
+    }
+    listEl.className = 'approved-list';
+    listEl.innerHTML = approvedEmails.map(a => `
+        <div class="approved-row">
+            <div>
+                <div class="approved-email">${escapeHtml(a.email)}</div>
+                ${a.label ? `<div class="approved-label">${escapeHtml(a.label)}</div>` : ''}
+            </div>
+            <button class="btn-danger" onclick="removeApprovedEmail('${a.email}')">Remove</button>
+        </div>
+    `).join('');
+}
+
+async function addApprovedEmail() {
+    const emailInput = document.getElementById('newApprovedEmail');
+    const labelInput = document.getElementById('newApprovedLabel');
+    const email = emailInput.value.trim();
+    const label = labelInput.value.trim();
+    if (!email) return;
+    try {
+        const res = await fetchWithAuthRetry('/api/manageApprovedEmailsSave', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, label })
+        });
+        if (!res.ok) {
+            alert(`Could not add email (HTTP ${res.status}): ${await res.text() || 'no details returned by the server'}`);
+            return;
+        }
+        emailInput.value = '';
+        labelInput.value = '';
+        loadApprovedEmails();
+    } catch (e) {
+        alert('Connection error. Please try again.');
+    }
+}
+
+async function removeApprovedEmail(email) {
+    if (!confirm(`Remove ${email} from the approved list? They won't be able to register or manage a registration until re-added.`)) return;
+    try {
+        const res = await fetchWithAuthRetry(`/api/manageApprovedEmailsDelete?email=${encodeURIComponent(email)}`, { method: 'DELETE' });
+        if (!res.ok) {
+            alert(`Could not remove email (HTTP ${res.status}): ${await res.text() || 'no details returned by the server'}`);
+            return;
+        }
+        loadApprovedEmails();
+    } catch (e) {
+        alert('Connection error. Please try again.');
+    }
+}
+
 loadWhoAmI();
 loadRegistrations().then(loadTrips);
+loadApprovedEmails();
 </script>
 
 </body>

@@ -1,5 +1,6 @@
 const { getTripsTable, PARTITION_KEY } = require("../shared/tripsTable");
 const { getRegistrationsTable } = require("../shared/registrationsTable");
+const { isApprovedEmail } = require("../shared/approvedEmailsTable");
 
 // Public endpoint (no role gate) -- a parent can cancel their own
 // registration by re-entering the same approved email. Same authorization
@@ -15,8 +16,7 @@ module.exports = async function (context, req) {
     }
 
     const emailToCheck = (email || "").toLowerCase().trim();
-    const approvedEmails = (process.env.APPROVED_EMAILS || "").split(',').map(e => e.trim().toLowerCase());
-    if (!emailToCheck || !approvedEmails.includes(emailToCheck)) {
+    if (!emailToCheck || !(await isApprovedEmail(emailToCheck))) {
         context.res = { status: 403, body: "This email is not on the authorized list." };
         return;
     }

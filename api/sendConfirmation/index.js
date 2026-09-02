@@ -1,6 +1,7 @@
 const { EmailClient } = require("@azure/communication-email");
 const { getTripsTable, isPastTrip, PARTITION_KEY } = require("../shared/tripsTable");
 const { getRegistrationsTable, getRegisteredCountsByTrip } = require("../shared/registrationsTable");
+const { isApprovedEmail } = require("../shared/approvedEmailsTable");
 
 const connectionString = process.env.AZURE_COMMUNICATION_CONNECTION_STRING;
 const client = new EmailClient(connectionString);
@@ -96,8 +97,7 @@ module.exports = async function (context, req) {
     const { parentName, adults, children, email, tripId, tripTitle } = body;
 
     const emailToCheck = (email || "").toLowerCase().trim();
-    const approvedEmails = (process.env.APPROVED_EMAILS || "").split(',').map(e => e.trim().toLowerCase());
-    if (!emailToCheck || !approvedEmails.includes(emailToCheck)) {
+    if (!emailToCheck || !(await isApprovedEmail(emailToCheck))) {
         context.res = { status: 403, body: "This email is not on the authorized list." };
         return;
     }
