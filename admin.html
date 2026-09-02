@@ -39,6 +39,7 @@
     .trip-row.hidden-trip { opacity: 0.55; }
     .trip-info h3 { margin: 0 0 4px; font-size: 1.05rem; }
     .trip-meta { font-size: 0.82rem; color: var(--sub); }
+    .trip-meta + .trip-meta { margin-top: 2px; }
     .hidden-badge { display: inline-block; background: var(--line); color: var(--sub); border-radius: 999px; padding: 2px 10px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; margin-left: 8px; }
     .trip-actions { display: flex; gap: 8px; flex-shrink: 0; }
 
@@ -317,7 +318,8 @@ function tripRowHtml(t) {
         <div class="trip-row ${t.hidden ? 'hidden-trip' : ''}">
             <div class="trip-info">
                 <h3>${t.title}${t.hidden ? '<span class="hidden-badge">Hidden</span>' : ''}</h3>
-                <div class="trip-meta">${t.address} · ${whenLabel} · ${t.spotsRemaining} of ${t.capacity} spots left</div>
+                <div class="trip-meta">${t.address}</div>
+                <div class="trip-meta">${whenLabel} · ${t.spotsRemaining} of ${t.capacity} spots left</div>
                 <div class="trip-count">${regsForTrip.length} registered${regsForTrip.length ? ` · ${paidCount} paid` : ''}</div>
             </div>
             <div class="trip-actions">
