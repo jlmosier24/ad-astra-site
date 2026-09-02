@@ -141,6 +141,8 @@
     .stepper-btn:disabled { opacity: 0.35; cursor: not-allowed; }
     .stepper-value { min-width: 28px; text-align: center; font-weight: 700; font-size: 0.95rem; }
     .capacity-note { font-size: 0.78rem; color: var(--sub); margin: -6px 0 14px; }
+    .existing-reg-notice { background: #E4EBE6; color: var(--forest); font-size: 0.85rem; line-height: 1.5; padding: 12px 14px; border-radius: 10px; margin-bottom: 18px; }
+    .cancel-reg-link { text-align: center; color: var(--accent); cursor: pointer; margin-top: 10px; font-weight: 600; font-size: 0.85rem; }
     .grand-total-row { display: flex; justify-content: space-between; font-size: 1.1rem; font-weight: 800; border-top: 2px dashed var(--line); padding-top: 14px; margin: 6px 0 20px; color: var(--forest); }
     .btn-submit { background: var(--accent); color: #fff; border: none; padding: 13px; border-radius: 999px; font-size: 1rem; font-weight: 700; cursor: pointer; width: 100%; }
     .btn-submit:hover { background: var(--ink); }
@@ -255,6 +257,7 @@
         </div>
 
         <div id="reg-form">
+            <div id="existingRegNotice" class="existing-reg-notice" style="display: none;">You're already registered for this trip. Update your counts below, or cancel your registration.</div>
             <div class="form-group">
                 <label>Parent Name</label>
                 <input type="text" id="parentName">
@@ -293,7 +296,8 @@
                 <span id="grandTotal">$0.00</span>
             </div>
 
-            <button class="btn-submit" onclick="submitRegistration()">Complete Registration</button>
+            <button class="btn-submit" id="submitBtn" onclick="submitRegistration()">Complete Registration</button>
+            <p class="cancel-reg-link" id="cancelRegLink" onclick="cancelRegistration()" style="display: none;">Cancel My Registration</p>
         </div>
 
         <p class="modal-cancel" onclick="closeModal()">Cancel</p>
@@ -326,6 +330,7 @@ function formatCardPrice(t) {
 let heroIndex = 0;
 let heroTimer = null;
 let selectedTrip = null;
+let existingRegistration = null;
 
 function renderHeroLayer() {
     const layer = document.getElementById('heroBgLayer');
@@ -429,6 +434,7 @@ function renderCollage() {
 function openModal(tripId) {
     selectedTrip = trips.find(t => t.id === tripId);
     if (!selectedTrip) return;
+    existingRegistration = null;
 
     const modalImage = document.getElementById('modalImage');
     modalImage.src = selectedTrip.image;
@@ -439,12 +445,7 @@ function openModal(tripId) {
     document.getElementById('childLabel').textContent = `Child (2-11) ($${selectedTrip.childPrice.toFixed(2)})`;
 
     document.getElementById('modal-overlay').style.display = 'flex';
-    document.getElementById('adultCount').value = "0";
-    document.getElementById('childCount').value = "0";
-    document.getElementById('adultCountDisplay').textContent = "0";
-    document.getElementById('childCountDisplay').textContent = "0";
-    updateTotals();
-    refreshStepperState();
+    populateRegForm();
 }
 
 function updateTotals() {
@@ -463,9 +464,46 @@ function updateTotals() {
 
 // Trips with a capacity behave as one shared pool of spots for adults and
 // children combined. Trips with no maximum (capacity 0) still get a sane
-// ceiling so the stepper can't be tapped into an absurd number.
+// ceiling so the stepper can't be tapped into an absurd number. When
+// editing an existing registration, its own current attendees are added
+// back in -- they aren't competing against themselves for the remaining
+// spots.
 function getAttendeeCap(trip) {
-    return trip.capacity > 0 ? trip.spotsRemaining : 20;
+    const base = trip.capacity > 0 ? trip.spotsRemaining : 20;
+    const ownExisting = existingRegistration ? (existingRegistration.adults + existingRegistration.children) : 0;
+    return base + ownExisting;
+}
+
+// Resets (or fills, if editing) the registration form based on whether
+// existingRegistration is set. Called after a successful email verify, and
+// when the modal first opens (with existingRegistration still null).
+function populateRegForm() {
+    const notice = document.getElementById('existingRegNotice');
+    const submitBtn = document.getElementById('submitBtn');
+    const cancelLink = document.getElementById('cancelRegLink');
+
+    if (existingRegistration) {
+        notice.style.display = 'block';
+        submitBtn.textContent = 'Save Changes';
+        cancelLink.style.display = 'block';
+        document.getElementById('parentName').value = existingRegistration.parentName;
+        document.getElementById('adultCount').value = existingRegistration.adults;
+        document.getElementById('childCount').value = existingRegistration.children;
+        document.getElementById('adultCountDisplay').textContent = existingRegistration.adults;
+        document.getElementById('childCountDisplay').textContent = existingRegistration.children;
+    } else {
+        notice.style.display = 'none';
+        submitBtn.textContent = 'Complete Registration';
+        cancelLink.style.display = 'none';
+        document.getElementById('parentName').value = '';
+        document.getElementById('adultCount').value = '0';
+        document.getElementById('childCount').value = '0';
+        document.getElementById('adultCountDisplay').textContent = '0';
+        document.getElementById('childCountDisplay').textContent = '0';
+    }
+
+    updateTotals();
+    refreshStepperState();
 }
 
 function adjustCount(fieldId, delta) {
@@ -523,22 +561,26 @@ function closeModal() {
     document.getElementById('emailInput').value = '';
     document.getElementById('parentName').value = '';
     selectedTrip = null;
+    existingRegistration = null;
 }
 
 async function verifyEmail() {
     const email = document.getElementById('emailInput').value.toLowerCase().trim();
     if (!email) { showStatus("Please enter an email address."); return; }
+    if (!selectedTrip) return;
 
     try {
-        const response = await fetch(`/api/verifyEmail?email=${encodeURIComponent(email)}`);
+        const response = await fetch(`/api/verifyEmail?email=${encodeURIComponent(email)}&tripId=${encodeURIComponent(selectedTrip.id)}`);
         const data = await response.json();
-        if (data.isApproved) {
-            document.getElementById('status-message').style.display = 'none';
-            document.getElementById('email-section').style.display = 'none';
-            document.getElementById('reg-form').style.display = 'block';
-        } else {
+        if (!data.isApproved) {
             showStatus("This email is not on the authorized list.");
+            return;
         }
+        existingRegistration = data.existingRegistration || null;
+        document.getElementById('status-message').style.display = 'none';
+        document.getElementById('email-section').style.display = 'none';
+        document.getElementById('reg-form').style.display = 'block';
+        populateRegForm();
     } catch (error) {
         showStatus("Connection error. Please try again.");
     }
@@ -546,6 +588,8 @@ async function verifyEmail() {
 
 async function submitRegistration() {
     if (!selectedTrip) return;
+    if (existingRegistration) return updateExistingRegistration();
+
     const parentName = document.getElementById('parentName').value;
     const adults = document.getElementById('adultCount').value;
     const children = document.getElementById('childCount').value;
@@ -581,6 +625,75 @@ async function submitRegistration() {
         } else {
             const errorText = await response.text();
             showStatus("Error: " + errorText);
+        }
+    } catch (error) {
+        showStatus("Connection error. Please try again.");
+    }
+}
+
+async function updateExistingRegistration() {
+    if (!selectedTrip || !existingRegistration) return;
+    const parentName = document.getElementById('parentName').value;
+    const adults = document.getElementById('adultCount').value;
+    const children = document.getElementById('childCount').value;
+    const email = document.getElementById('emailInput').value;
+
+    if (!parentName || (adults == 0 && children == 0)) {
+        showStatus("Please enter your name and select at least one attendee, or use Cancel My Registration below.");
+        return;
+    }
+
+    showStatus("Saving your changes...", false);
+
+    try {
+        const response = await fetch('/api/updateRegistration', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                tripId: selectedTrip.id,
+                registrationId: existingRegistration.id,
+                parentName,
+                adults,
+                children,
+                email
+            })
+        });
+        const message = await response.text();
+        if (response.ok) {
+            showStatus(message || 'Your registration has been updated.', false);
+            setTimeout(closeModal, 2500);
+        } else {
+            showStatus("Error: " + message);
+        }
+    } catch (error) {
+        showStatus("Connection error. Please try again.");
+    }
+}
+
+async function cancelRegistration() {
+    if (!selectedTrip || !existingRegistration) return;
+    if (!confirm(`Cancel your registration for ${selectedTrip.title}? This can't be undone.`)) return;
+
+    const email = document.getElementById('emailInput').value;
+    showStatus("Cancelling your registration...", false);
+
+    try {
+        const response = await fetch('/api/cancelRegistration', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                tripId: selectedTrip.id,
+                registrationId: existingRegistration.id,
+                email
+            })
+        });
+        const message = await response.text();
+        if (response.ok) {
+            showStatus(message || 'Your registration has been cancelled.', false);
+            existingRegistration = null;
+            setTimeout(closeModal, 2000);
+        } else {
+            showStatus("Error: " + message);
         }
     } catch (error) {
         showStatus("Connection error. Please try again.");
