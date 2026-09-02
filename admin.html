@@ -145,15 +145,11 @@
                 <div id="addressSuggestions" class="address-suggestions"></div>
                 <input type="hidden" id="addressLat">
                 <input type="hidden" id="addressLon">
-                <div class="hint">Pick a suggestion for maps/directions later, or just type a location — no need to pick one.</div>
+                <div class="hint">Pick a suggestion to capture directions and, if it's a named place, its venue name automatically — or just type a location, no need to pick one.</div>
             </div>
         </div>
 
-        <div class="form-group">
-            <label>Venue name (optional)</label>
-            <input type="text" id="placeName" placeholder="e.g. National Museum of the Marine Corps">
-            <div class="hint">Added to the "Get Directions" link so Maps opens to the actual place, not just the address.</div>
-        </div>
+        <input type="hidden" id="placeName">
 
         <div class="form-row">
             <div class="form-group">
@@ -169,18 +165,6 @@
         <div class="form-group">
             <label>Description</label>
             <textarea id="description" placeholder="Shown on the trip card and homepage banner."></textarea>
-        </div>
-
-        <div class="form-row">
-            <div class="form-group">
-                <label>Banner headline</label>
-                <input type="text" id="heroHeadline" placeholder="Defaults to the title">
-            </div>
-            <div class="form-group">
-                <label>Highlighted phrase</label>
-                <input type="text" id="heroAccent" placeholder="e.g. & Discovery">
-                <div class="hint">Optional accent shown in red on the homepage banner.</div>
-            </div>
         </div>
 
         <div class="form-row">
@@ -388,6 +372,7 @@ let lastAddressSuggestions = [];
 function onAddressInput() {
     document.getElementById('addressLat').value = '';
     document.getElementById('addressLon').value = '';
+    document.getElementById('placeName').value = '';
     clearTimeout(addressDebounceTimer);
     addressDebounceTimer = setTimeout(fetchAddressSuggestions, 300);
 }
@@ -412,7 +397,7 @@ async function fetchAddressSuggestions() {
             return;
         }
         box.innerHTML = lastAddressSuggestions
-            .map((s, i) => `<div class="address-suggestion" onmousedown="selectAddressSuggestion(${i})">${escapeHtml(s.address)}</div>`)
+            .map((s, i) => `<div class="address-suggestion" onmousedown="selectAddressSuggestion(${i})">${s.placeName ? `<strong>${escapeHtml(s.placeName)}</strong> — ` : ''}${escapeHtml(s.address)}</div>`)
             .join('');
         box.style.display = 'block';
     } catch (e) {
@@ -426,13 +411,14 @@ function selectAddressSuggestion(i) {
     document.getElementById('address').value = s.address;
     document.getElementById('addressLat').value = s.lat;
     document.getElementById('addressLon').value = s.lon;
+    document.getElementById('placeName').value = s.placeName || '';
     document.getElementById('addressSuggestions').style.display = 'none';
 }
 
 function openForm() {
     document.getElementById('formTitle').textContent = 'Add Field Trip';
     document.getElementById('tripId').value = '';
-    ['title', 'address', 'placeName', 'date', 'time', 'description', 'heroHeadline', 'heroAccent', 'image'].forEach(id => document.getElementById(id).value = '');
+    ['title', 'address', 'placeName', 'date', 'time', 'description', 'image'].forEach(id => document.getElementById(id).value = '');
     ['adultPrice', 'childPrice', 'capacity', 'addressLat', 'addressLon'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('addressSuggestions').style.display = 'none';
     editingTripHidden = false;
@@ -457,8 +443,6 @@ function editTrip(id) {
     document.getElementById('date').value = t.date;
     document.getElementById('time').value = t.time || '';
     document.getElementById('description').value = t.description;
-    document.getElementById('heroHeadline').value = t.heroHeadline === t.title ? '' : t.heroHeadline;
-    document.getElementById('heroAccent').value = t.heroAccent;
     document.getElementById('adultPrice').value = t.adultPrice;
     document.getElementById('childPrice').value = t.childPrice;
     document.getElementById('capacity').value = t.capacity;
@@ -542,8 +526,6 @@ async function saveTrip() {
         date: document.getElementById('date').value,
         time: document.getElementById('time').value,
         description: document.getElementById('description').value.trim(),
-        heroHeadline: document.getElementById('heroHeadline').value.trim(),
-        heroAccent: document.getElementById('heroAccent').value.trim(),
         adultPrice: parseFloat(document.getElementById('adultPrice').value) || 0,
         childPrice: parseFloat(document.getElementById('childPrice').value) || 0,
         capacity: parseInt(document.getElementById('capacity').value, 10) || 0,
@@ -587,8 +569,6 @@ async function toggleHidden(id) {
         date: t.date,
         time: t.time || '',
         description: t.description,
-        heroHeadline: t.heroHeadline === t.title ? '' : t.heroHeadline,
-        heroAccent: t.heroAccent || '',
         adultPrice: t.adultPrice,
         childPrice: t.childPrice,
         capacity: t.capacity,

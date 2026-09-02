@@ -1,7 +1,10 @@
 // Reachable at /api/geocodeAddress. Protected by an explicit route rule in
 // staticwebapp.config.json (requires the "administrator" role). Proxies to
 // Azure Maps' fuzzy search so the subscription key stays server-side and
-// never reaches the browser.
+// never reaches the browser. Fuzzy search (rather than plain address
+// search) also matches points of interest, so a landmark's name comes back
+// as poi.name when the query resolves to one -- letting the admin form
+// auto-fill a venue name instead of requiring it to be typed separately.
 module.exports = async function (context, req) {
     const query = (req.query.q || "").trim();
     if (!query) {
@@ -10,7 +13,7 @@ module.exports = async function (context, req) {
     }
 
     const key = process.env.AZURE_MAPS_KEY;
-    const url = `https://atlas.microsoft.com/search/address/json?api-version=1.0&subscription-key=${encodeURIComponent(key)}&query=${encodeURIComponent(query)}&typeahead=true&limit=5`;
+    const url = `https://atlas.microsoft.com/search/fuzzy/json?api-version=1.0&subscription-key=${encodeURIComponent(key)}&query=${encodeURIComponent(query)}&typeahead=true&limit=5`;
 
     try {
         const response = await fetch(url);
@@ -24,7 +27,8 @@ module.exports = async function (context, req) {
             .map(r => ({
                 address: r.address.freeformAddress,
                 lat: r.position.lat,
-                lon: r.position.lon
+                lon: r.position.lon,
+                placeName: (r.poi && r.poi.name) || ""
             }));
         context.res = { status: 200, body: suggestions };
     } catch (e) {

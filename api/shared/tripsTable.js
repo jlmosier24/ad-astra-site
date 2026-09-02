@@ -18,8 +18,6 @@ function toTripDto(entity) {
         lon: entity.lon,
         date: entity.date,
         time: entity.time || "",
-        heroHeadline: entity.heroHeadline || entity.title,
-        heroAccent: entity.heroAccent || "",
         description: entity.description,
         adultPrice: entity.adultPrice,
         childPrice: entity.childPrice,

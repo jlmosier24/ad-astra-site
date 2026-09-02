@@ -47,7 +47,6 @@
         line-height: 0.95; color: #fff; text-transform: uppercase;
         transition: opacity 0.3s ease;
     }
-    .hero-headline .accent-word { color: var(--accent); }
     .hero-dots { position: absolute; left: 24px; bottom: 78px; z-index: 2; display: flex; gap: 8px; }
     .hero-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.4); border: none; cursor: pointer; padding: 0; }
     .hero-dot.active { background: #fff; }
@@ -356,9 +355,7 @@ function applyHeroSlide(idx) {
     document.querySelectorAll('.hero-slide-bg').forEach(el => {
         el.classList.toggle('active', el.dataset.scene === t.id);
     });
-    document.getElementById('heroHeadline').innerHTML = t.heroAccent
-        ? `${t.heroHeadline} <span class="accent-word">${t.heroAccent}</span>`
-        : t.heroHeadline;
+    document.getElementById('heroHeadline').textContent = t.title;
     document.getElementById('heroDateTag').textContent = formatDateLabel(t.date);
     document.querySelectorAll('.hero-dot').forEach((d, i) => d.classList.toggle('active', i === idx));
 }
