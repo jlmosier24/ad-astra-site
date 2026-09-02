@@ -48,7 +48,6 @@
         transition: opacity 0.3s ease;
     }
     .hero-headline .accent-word { color: var(--accent); }
-    .hero-caption { position: absolute; left: 24px; bottom: 24px; z-index: 2; color: #fff; font-size: 0.85rem; line-height: 1.4; max-width: 260px; opacity: 0.9; transition: opacity 0.3s ease; }
     .hero-dots { position: absolute; left: 24px; bottom: 78px; z-index: 2; display: flex; gap: 8px; }
     .hero-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.4); border: none; cursor: pointer; padding: 0; }
     .hero-dot.active { background: #fff; }
@@ -148,7 +147,6 @@
         .hero-frame { height: 380px; }
         .hero-cta { width: 68px; height: 68px; font-size: 0.62rem; }
         .hero-dots { bottom: 70px; }
-        .hero-caption { max-width: 150px; }
         .grid { grid-template-columns: 1fr; }
         .card-footer { flex-direction: column; align-items: stretch; gap: 12px; }
         .btn { width: 100%; padding: 12px; }
@@ -177,7 +175,6 @@
         <div class="hero-scrim"></div>
         <div class="hero-date-tag" id="heroDateTag"></div>
         <div class="hero-headline" id="heroHeadline"></div>
-        <div class="hero-caption" id="heroCaption"></div>
         <div class="hero-dots" id="heroDots"></div>
         <div class="hero-cta" id="heroCta">
             <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
@@ -337,22 +334,18 @@ function applyHeroSlide(idx) {
     document.getElementById('heroHeadline').innerHTML = t.heroAccent
         ? `${t.heroHeadline} <span class="accent-word">${t.heroAccent}</span>`
         : t.heroHeadline;
-    document.getElementById('heroCaption').textContent = t.description;
     document.getElementById('heroDateTag').textContent = formatDateLabel(t.date);
     document.querySelectorAll('.hero-dot').forEach((d, i) => d.classList.toggle('active', i === idx));
 }
 
 function fadeToHeroSlide(idx) {
     const headline = document.getElementById('heroHeadline');
-    const caption = document.getElementById('heroCaption');
     const dateTag = document.getElementById('heroDateTag');
     headline.style.opacity = 0;
-    caption.style.opacity = 0;
     dateTag.style.opacity = 0;
     setTimeout(() => {
         applyHeroSlide(idx);
         headline.style.opacity = 1;
-        caption.style.opacity = 0.9;
         dateTag.style.opacity = 1;
     }, 300);
 }
