@@ -102,11 +102,6 @@
     }
     .directions-link svg { width: 15px; height: 15px; flex-shrink: 0; }
     .directions-link:hover { background: var(--forest); color: #fff; }
-    .weather-row { display: flex; align-items: center; gap: 8px; margin: 0 0 14px; padding: 8px 10px; background: var(--cream); border-radius: 10px; }
-    .weather-row svg.icon { width: 24px; height: 24px; flex-shrink: 0; }
-    .weather-temp { font-weight: 800; font-size: 0.9rem; }
-    .weather-cond { font-size: 0.74rem; color: var(--sub); }
-    .weather-row.unavailable { color: var(--sub); font-size: 0.78rem; font-style: italic; background: transparent; padding: 0 0 4px; }
     .card-desc { font-size: 0.89rem; line-height: 1.5; color: var(--sub); margin-bottom: 18px; flex-grow: 1; }
     .card-footer { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--line); padding-top: 14px; gap: 10px; }
     .price { font-weight: 800; font-size: 0.98rem; }
@@ -169,48 +164,6 @@
 </style>
 </head>
 <body>
-
-<svg style="position:absolute; width:0; height:0; overflow:hidden;" aria-hidden="true">
-<defs>
-    <symbol id="icon-sunny" viewBox="0 0 32 32">
-        <circle cx="16" cy="16" r="8" fill="#D99A3D"/>
-        <g stroke="#D99A3D" stroke-width="2.4" stroke-linecap="round">
-            <line x1="16" y1="2" x2="16" y2="6"/><line x1="16" y1="26" x2="16" y2="30"/>
-            <line x1="2" y1="16" x2="6" y2="16"/><line x1="26" y1="16" x2="30" y2="16"/>
-            <line x1="5.8" y1="5.8" x2="8.6" y2="8.6"/><line x1="23.4" y1="23.4" x2="26.2" y2="26.2"/>
-            <line x1="5.8" y1="26.2" x2="8.6" y2="23.4"/><line x1="23.4" y1="8.6" x2="26.2" y2="5.8"/>
-        </g>
-    </symbol>
-    <symbol id="icon-clear-night" viewBox="0 0 32 32">
-        <path d="M22 6 C15 6 10 11.5 10 18 C10 24.5 15.5 29 22 29 C17 29 12.5 25 12.5 18 C12.5 11 17 7 22 6 Z" fill="#4E5D8F"/>
-        <circle cx="24" cy="9" r="1.4" fill="#F3EEE4"/>
-        <circle cx="27" cy="14" r="1" fill="#F3EEE4"/>
-    </symbol>
-    <symbol id="icon-partly-cloudy" viewBox="0 0 32 32">
-        <circle cx="12" cy="12" r="6" fill="#D99A3D"/>
-        <path d="M9 26 h14 a5 5 0 0 0 0-10 a7 7 0 0 0-13.2-2.4A5.5 5.5 0 0 0 9 26Z" fill="#9AA5AD"/>
-    </symbol>
-    <symbol id="icon-cloudy" viewBox="0 0 32 32">
-        <path d="M7 24 h18 a5.5 5.5 0 0 0 0-11 a8 8 0 0 0-15-3A6 6 0 0 0 7 24Z" fill="#9AA5AD"/>
-    </symbol>
-    <symbol id="icon-rain" viewBox="0 0 32 32">
-        <path d="M7 18 h18 a5.5 5.5 0 0 0 0-11 a8 8 0 0 0-15-3A6 6 0 0 0 7 18Z" fill="#9AA5AD"/>
-        <g stroke="#5B8DBE" stroke-width="2" stroke-linecap="round">
-            <line x1="12" y1="22" x2="10" y2="28"/>
-            <line x1="18" y1="22" x2="16" y2="28"/>
-            <line x1="24" y1="22" x2="22" y2="28"/>
-        </g>
-    </symbol>
-    <symbol id="icon-snow" viewBox="0 0 32 32">
-        <path d="M7 18 h18 a5.5 5.5 0 0 0 0-11 a8 8 0 0 0-15-3A6 6 0 0 0 7 18Z" fill="#9AA5AD"/>
-        <g fill="#BFD3E0">
-            <circle cx="11" cy="25" r="1.6"/>
-            <circle cx="17" cy="27" r="1.6"/>
-            <circle cx="23" cy="25" r="1.6"/>
-        </g>
-    </symbol>
-</defs>
-</svg>
 
 <nav>
     <div class="brand">
@@ -443,57 +396,6 @@ function directionsUrl(t) {
     return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
 }
 
-function daysUntil(isoDate) {
-    const [y, m, d] = isoDate.split('-').map(Number);
-    const target = new Date(y, m - 1, d);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    target.setHours(0, 0, 0, 0);
-    return Math.round((target - today) / 86400000);
-}
-
-function showWeatherUnavailable(el) {
-    el.className = 'weather-row unavailable';
-    el.textContent = 'Forecast available closer to the date';
-    el.style.display = 'flex';
-}
-
-// Loaded separately from the trip cards themselves (not blocking the main
-// page render) since it depends on an external API call per trip. Trips
-// without coordinates (free-text address only) just never show a badge.
-function loadWeatherForTrips() {
-    trips.forEach(async (t) => {
-        if (t.lat == null || t.lon == null) return;
-        const el = document.getElementById(`weather-${t.id}`);
-        if (!el) return;
-
-        if (daysUntil(t.date) > 7 || daysUntil(t.date) < 0) {
-            showWeatherUnavailable(el);
-            return;
-        }
-
-        try {
-            const res = await fetch(`/api/getTripWeather?lat=${t.lat}&lon=${t.lon}&date=${t.date}`);
-            const data = await res.json();
-            if (!data.available) {
-                showWeatherUnavailable(el);
-                return;
-            }
-            el.className = 'weather-row';
-            el.innerHTML = `
-                <svg class="icon"><use href="#icon-${data.iconKey}"/></svg>
-                <div>
-                    <div class="weather-temp">${data.temperature}°${data.temperatureUnit}</div>
-                    <div class="weather-cond">${data.shortForecast}</div>
-                </div>
-            `;
-            el.style.display = 'flex';
-        } catch (e) {
-            // Weather is a nice-to-have -- fail quietly rather than showing an error.
-        }
-    });
-}
-
 function renderTripCards() {
     const grid = document.getElementById('tripsGrid');
     grid.innerHTML = trips.map(t => `
@@ -516,7 +418,6 @@ function renderTripCards() {
                         Directions
                     </a>
                 </div>
-                <div class="weather-row" id="weather-${t.id}" style="display: none;"></div>
                 <div class="card-desc">${t.description}</div>
                 <div class="card-footer">
                     <div class="price">${formatCardPrice(t)}</div>
@@ -819,7 +720,6 @@ async function init() {
 
     renderTripCards();
     renderCollage();
-    loadWeatherForTrips();
     const heroEl = document.querySelector('.hero');
     if (trips.length === 0) {
         heroEl.style.display = 'none';
