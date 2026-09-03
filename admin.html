@@ -103,14 +103,6 @@
     .stat-label { font-size: 0.78rem; color: var(--sub); font-weight: 600; }
 
     .chart-card { background: var(--paper); border-radius: 14px; padding: 22px 24px; box-shadow: 0 4px 14px rgba(34,30,25,0.05); margin-bottom: 14px; }
-    .chart-title { font-weight: 800; font-size: 0.95rem; margin-bottom: 4px; }
-    .chart-sub { font-size: 0.78rem; color: var(--sub); margin-bottom: 16px; }
-
-    .bar-chart { display: flex; align-items: flex-end; gap: 10px; height: 140px; }
-    .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; }
-    .bar-fill { width: 100%; max-width: 34px; background: var(--forest); border-radius: 5px 5px 0 0; min-height: 2px; }
-    .bar-count { font-size: 0.72rem; font-weight: 700; color: var(--forest); margin-bottom: 4px; }
-    .bar-label { font-size: 0.7rem; color: var(--sub); margin-top: 8px; }
 
     .cap-row { margin-bottom: 14px; }
     .cap-row:last-child { margin-bottom: 0; }
@@ -181,8 +173,6 @@
         .topbar { flex-direction: column; align-items: flex-start; gap: 8px; }
         .topbar h1 { font-size: 1.15rem; }
         .stat-grid { grid-template-columns: repeat(2, 1fr); }
-        .bar-chart { height: 110px; }
-        .bar-label { font-size: 0.62rem; }
     }
 </style>
 </head>
@@ -221,11 +211,9 @@
             </div>
         </div>
 
-        <div class="section-heading">Registrations Over Time</div>
-        <div class="chart-card">
-            <div class="chart-title">Sign-ups by month</div>
-            <div class="chart-sub">Last 6 months</div>
-            <div class="bar-chart" id="registrationsBarChart"></div>
+        <div class="section-heading">Most Popular Trips</div>
+        <div class="chart-card" id="popularTripsCard">
+            <div class="empty-state">No registrations yet.</div>
         </div>
 
         <div class="section-heading">Capacity by Trip</div>
@@ -235,11 +223,6 @@
 
         <div class="section-heading">Payment Status</div>
         <div class="chart-card" id="paymentStatusCard">
-            <div class="empty-state">No registrations yet.</div>
-        </div>
-
-        <div class="section-heading">Most Popular Trips</div>
-        <div class="chart-card" id="popularTripsCard">
             <div class="empty-state">No registrations yet.</div>
         </div>
     </div>
@@ -597,33 +580,9 @@ function renderDashboard() {
     document.getElementById('statUnpaid').textContent = `$${unpaid.toFixed(2)}`;
     document.getElementById('statFamilies').textContent = uniqueFamilies;
 
-    renderRegistrationsBarChart();
     renderCapacityByTrip();
     renderPaymentStatus(revenue, unpaid);
     renderPopularTrips();
-}
-
-function renderRegistrationsBarChart() {
-    const chart = document.getElementById('registrationsBarChart');
-    const now = new Date();
-    const months = [];
-    for (let i = 5; i >= 0; i--) {
-        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-        months.push({ year: d.getFullYear(), month: d.getMonth(), label: d.toLocaleDateString('en-US', { month: 'short' }) });
-    }
-    const counts = months.map(m => registrations.filter(r => {
-        if (!r.dateRegistered) return false;
-        const d = new Date(r.dateRegistered);
-        return d.getFullYear() === m.year && d.getMonth() === m.month;
-    }).length);
-    const max = Math.max(1, ...counts);
-    chart.innerHTML = months.map((m, i) => `
-        <div class="bar-col">
-            <div class="bar-count">${counts[i]}</div>
-            <div class="bar-fill" style="height: ${counts[i] === 0 ? 0 : Math.max(6, Math.round((counts[i] / max) * 100))}%;"></div>
-            <div class="bar-label">${m.label}</div>
-        </div>
-    `).join('');
 }
 
 function renderCapacityByTrip() {
