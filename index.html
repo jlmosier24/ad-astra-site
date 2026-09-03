@@ -139,6 +139,14 @@
     .btn-submit:hover { background: var(--ink); }
     .modal-cancel { text-align: center; color: var(--sub); cursor: pointer; margin-top: 14px; font-weight: 600; font-size: 0.88rem; }
 
+    .success-check-circle { stroke: var(--forest); stroke-width: 3; fill: none; stroke-dasharray: 151; stroke-dashoffset: 151; animation: successCircle 0.5s ease forwards; }
+    .success-check-mark { stroke: var(--forest); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 40; stroke-dashoffset: 40; animation: successMark 0.35s ease 0.45s forwards; }
+    @keyframes successCircle { to { stroke-dashoffset: 0; } }
+    @keyframes successMark { to { stroke-dashoffset: 0; } }
+    .success-heading { font-family: 'Anton', sans-serif; font-weight: 400; text-transform: uppercase; color: var(--forest); font-size: 1.5rem; margin: 16px 0 6px; opacity: 0; animation: successFadeUp 0.4s ease 0.7s forwards; }
+    .success-sub { color: var(--sub); font-size: 0.9rem; margin: 0; opacity: 0; animation: successFadeUp 0.4s ease 0.85s forwards; }
+    @keyframes successFadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
     @media (max-width: 560px) {
         nav { flex-wrap: wrap; }
         .nav-toggle { display: block; }
@@ -204,6 +212,15 @@
         <div class="modal-date" id="modal-details"></div>
 
         <div id="status-message"></div>
+
+        <div id="success-state" style="display: none; text-align: center; padding: 10px 0 6px;">
+            <svg viewBox="0 0 52 52" width="72" height="72" style="display: block; margin: 0 auto;">
+                <circle class="success-check-circle" cx="26" cy="26" r="24" fill="none"/>
+                <path class="success-check-mark" fill="none" d="M14 27l7 7 16-16"/>
+            </svg>
+            <h3 class="success-heading">You're all set!</h3>
+            <p class="success-sub" id="successSub"></p>
+        </div>
 
         <div id="email-section">
             <div class="form-group">
@@ -543,11 +560,36 @@ function showStatus(message, isError = true) {
     statusDiv.className = isError ? 'error' : 'success';
 }
 
+// Swaps the form out for an animated checkmark moment instead of a plain
+// success banner -- this is the one interaction every registering parent
+// sees, so it earns a little more polish than a static line of text.
+function showSuccessState(subMessage) {
+    document.getElementById('status-message').style.display = 'none';
+    document.getElementById('email-section').style.display = 'none';
+    document.getElementById('reg-form').style.display = 'none';
+    document.querySelector('.modal-cancel').style.display = 'none';
+
+    const state = document.getElementById('success-state');
+    document.getElementById('successSub').textContent = subMessage;
+    state.style.display = 'block';
+
+    // Restart the draw-in animations in case this modal was shown before.
+    const circle = state.querySelector('.success-check-circle');
+    const mark = state.querySelector('.success-check-mark');
+    const heading = state.querySelector('.success-heading');
+    const sub = state.querySelector('.success-sub');
+    [circle, mark, heading, sub].forEach(el => { el.style.animation = 'none'; });
+    void state.offsetWidth;
+    [circle, mark, heading, sub].forEach(el => { el.style.animation = ''; });
+}
+
 function closeModal() {
     closeOverlay('modal-overlay');
     document.getElementById('email-section').style.display = 'block';
     document.getElementById('reg-form').style.display = 'none';
     document.getElementById('status-message').style.display = 'none';
+    document.getElementById('success-state').style.display = 'none';
+    document.querySelector('.modal-cancel').style.display = '';
     document.getElementById('emailInput').value = '';
     document.getElementById('parentName').value = '';
     selectedTrip = null;
@@ -609,9 +651,8 @@ async function submitRegistration() {
         });
 
         if (response.ok) {
-            const message = await response.text();
-            showStatus(message || `Success! Registration for ${selectedTrip.title} has been sent.`, false);
-            setTimeout(closeModal, 3000);
+            showSuccessState(`You're registered for ${selectedTrip.title}. Check your inbox for a confirmation email.`);
+            setTimeout(closeModal, 2600);
         } else {
             const errorText = await response.text();
             showStatus("Error: " + errorText);
