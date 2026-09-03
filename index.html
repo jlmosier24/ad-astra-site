@@ -58,21 +58,6 @@
     }
     .hero-cta svg { width: 16px; height: 16px; }
 
-    .why { max-width: 1080px; margin: 0 auto; padding: 70px 24px 60px; display: grid; grid-template-columns: 1fr 1.15fr; gap: 50px; align-items: start; }
-    .why-left h2 { font-family: 'Anton', sans-serif; font-weight: 400; color: var(--accent); font-size: clamp(2rem, 4.5vw, 2.9rem); text-transform: uppercase; line-height: 0.98; margin: 0 0 28px; }
-    .collage { position: relative; height: 230px; }
-    .collage .c-frame { position: absolute; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 24px rgba(0,0,0,0.15); background: #B7D8E0; }
-    .collage .c-frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .collage .c1 { width: 62%; height: 62%; top: 0; right: 0; }
-    .collage .c2 { width: 58%; height: 62%; bottom: 0; left: 0; }
-
-    .why-list { display: flex; flex-direction: column; }
-    .why-item { display: grid; grid-template-columns: 56px 1fr; gap: 18px; padding: 22px 0; border-top: 1px solid var(--line); }
-    .why-item:last-child { border-bottom: 1px solid var(--line); }
-    .why-num { font-family: 'Anton', sans-serif; font-size: 1.6rem; color: var(--sub); opacity: 0.55; }
-    .why-title { font-weight: 800; font-size: 1.05rem; margin-bottom: 4px; letter-spacing: -0.01em; }
-    .why-desc { font-size: 0.87rem; color: var(--sub); line-height: 1.5; }
-
     .trips { max-width: 1080px; margin: 0 auto; padding: 40px 24px 80px; }
     .trips-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 26px; flex-wrap: wrap; gap: 8px; }
     .trips-head h2 { font-family: 'Anton', sans-serif; font-weight: 400; text-transform: uppercase; font-size: clamp(1.6rem, 3.5vw, 2.2rem); margin: 0; letter-spacing: 0.01em; }
@@ -147,10 +132,6 @@
     .btn-submit:hover { background: var(--ink); }
     .modal-cancel { text-align: center; color: var(--sub); cursor: pointer; margin-top: 14px; font-weight: 600; font-size: 0.88rem; }
 
-    @media (max-width: 720px) {
-        .why { grid-template-columns: 1fr; gap: 36px; }
-        .collage { display: none; }
-    }
     @media (max-width: 560px) {
         nav { flex-direction: column; gap: 14px; align-items: flex-start; }
         .hero { display: none; }
@@ -195,43 +176,6 @@
         <h2>Upcoming Trips</h2>
     </div>
     <div class="grid" id="tripsGrid"></div>
-</div>
-
-<div class="why">
-    <div class="why-left">
-        <h2>WHY FAMILIES JOIN OUR TRIPS</h2>
-        <div class="collage" id="collage"></div>
-    </div>
-    <div class="why-list">
-        <div class="why-item">
-            <div class="why-num">01</div>
-            <div>
-                <div class="why-title">Simple registration</div>
-                <div class="why-desc">Sign up in a couple minutes — no accounts, no paperwork to print.</div>
-            </div>
-        </div>
-        <div class="why-item">
-            <div class="why-num">02</div>
-            <div>
-                <div class="why-title">Trusted destinations</div>
-                <div class="why-desc">Every trip is vetted and planned by our own coordinator.</div>
-            </div>
-        </div>
-        <div class="why-item">
-            <div class="why-num">03</div>
-            <div>
-                <div class="why-title">Family pricing</div>
-                <div class="why-desc">Clear per-person rates for adults and kids, no surprises at checkout.</div>
-            </div>
-        </div>
-        <div class="why-item">
-            <div class="why-num">04</div>
-            <div>
-                <div class="why-title">Stay in the loop</div>
-                <div class="why-desc">Get a heads-up by email if plans change — delays, weather, updates.</div>
-            </div>
-        </div>
-    </div>
 </div>
 
 <footer>Ad Astra Active · Fredericksburg, VA · <a href="admin.html" style="color: inherit;">Admin</a></footer>
@@ -420,19 +364,6 @@ function renderTripCards() {
                 </div>
             </div>
         </div>
-    `).join('');
-}
-
-function renderCollage() {
-    const collageEl = document.getElementById('collage');
-    const picks = trips.slice(0, 2);
-    if (picks.length === 0) {
-        collageEl.style.display = 'none';
-        return;
-    }
-    collageEl.style.display = '';
-    collageEl.innerHTML = picks.map((t, i) => `
-        <div class="c-frame c${i + 1}"><img src="${t.image}" alt="${t.title}"></div>
     `).join('');
 }
 
@@ -714,7 +645,6 @@ async function init() {
     }
 
     renderTripCards();
-    renderCollage();
     const heroEl = document.querySelector('.hero');
     if (trips.length === 0) {
         heroEl.style.display = 'none';
