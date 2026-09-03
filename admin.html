@@ -402,10 +402,15 @@ function formatTimeLabel(time) {
     return `${hour12}:${String(m).padStart(2, '0')} ${period}`;
 }
 
+function formatDateShort(isoDate) {
+    const [y, m, d] = isoDate.split('-').map(Number);
+    return new Date(y, m - 1, d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
 function tripRowHtml(t) {
     const regsForTrip = registrations.filter(r => r.tripId === t.id);
     const paidCount = regsForTrip.filter(r => r.paid).length;
-    const whenLabel = t.time ? `${t.date} · ${formatTimeLabel(t.time)}` : t.date;
+    const whenLabel = t.time ? `${formatDateShort(t.date)} · ${formatTimeLabel(t.time)}` : formatDateShort(t.date);
     const spotsLabel = t.capacity > 0 ? ` · ${t.spotsRemaining} of ${t.capacity} spots left` : '';
     return `
         <div class="trip-row ${t.hidden ? 'hidden-trip' : ''}">
