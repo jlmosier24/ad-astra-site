@@ -17,7 +17,7 @@
         --line: rgba(34,30,25,0.12);
     }
     * { box-sizing: border-box; }
-    body { margin: 0; background: var(--cream); font-family: 'Public Sans', sans-serif; color: var(--ink); }
+    body { margin: 0; background: linear-gradient(180deg, #F8F3EA 0%, #F3EEE4 45%, #ECE3D3 100%); font-family: 'Public Sans', sans-serif; color: var(--ink); }
 
     nav {
         display: flex; align-items: center; justify-content: space-between;
@@ -29,6 +29,8 @@
     .nav-links { display: flex; gap: 28px; font-size: 0.88rem; font-weight: 600; }
     .nav-links a { color: var(--ink); text-decoration: none; }
     .nav-links a:hover { color: var(--accent); }
+    .nav-toggle { display: none; background: none; border: none; padding: 4px; color: var(--ink); cursor: pointer; }
+    .nav-toggle svg { width: 26px; height: 26px; }
 
     .hero { position: relative; max-width: 1080px; margin: 0 auto 20px; padding: 0 24px; }
     .hero-frame { position: relative; border-radius: 18px; overflow: hidden; height: 440px; background: #B7D8E0; }
@@ -133,7 +135,13 @@
     .modal-cancel { text-align: center; color: var(--sub); cursor: pointer; margin-top: 14px; font-weight: 600; font-size: 0.88rem; }
 
     @media (max-width: 560px) {
-        nav { flex-direction: column; gap: 14px; align-items: flex-start; }
+        nav { flex-wrap: wrap; }
+        .nav-toggle { display: block; }
+        .nav-links {
+            display: none; width: 100%; flex-direction: column; gap: 16px;
+            order: 3; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line);
+        }
+        .nav-links.open { display: flex; }
         .hero { display: none; }
         .grid { grid-template-columns: 1fr; }
         .card-footer { flex-direction: column; align-items: stretch; gap: 12px; }
@@ -150,7 +158,10 @@
         </svg>
         <span class="brand-name">Ad Astra Active</span>
     </div>
-    <div class="nav-links">
+    <button class="nav-toggle" id="navToggle" onclick="toggleNavMenu()" aria-label="Menu" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+    <div class="nav-links" id="navLinks">
         <a href="#trips">Trips</a>
         <a href="about.html">About</a>
         <a href="#">Contact</a>
@@ -278,6 +289,19 @@ function formatCardPrice(t) {
     return `${adultText} <span>ages 12+ · ${childText} ages 2–11</span>`;
 }
 
+function toggleNavMenu() {
+    const links = document.getElementById('navLinks');
+    const isOpen = links.classList.toggle('open');
+    document.getElementById('navToggle').setAttribute('aria-expanded', String(isOpen));
+}
+
+document.querySelectorAll('.nav-links a').forEach(a => {
+    a.addEventListener('click', () => {
+        document.getElementById('navLinks').classList.remove('open');
+        document.getElementById('navToggle').setAttribute('aria-expanded', 'false');
+    });
+});
+
 let heroIndex = 0;
 let heroTimer = null;
 let selectedTrip = null;
@@ -335,6 +359,17 @@ function directionsUrl(t) {
     return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
 }
 
+// Full street addresses were getting cut off on the card. City/state is
+// enough to place the trip at a glance -- the full address is still used
+// for Directions and everywhere else.
+function cityStateLabel(address) {
+    const parts = address.split(',').map(s => s.trim()).filter(Boolean);
+    if (parts.length < 2) return address;
+    const city = parts[parts.length - 2];
+    const state = parts[parts.length - 1].split(' ')[0];
+    return `${city}, ${state}`;
+}
+
 function renderTripCards() {
     const grid = document.getElementById('tripsGrid');
     grid.innerHTML = trips.map(t => `
@@ -350,7 +385,7 @@ function renderTripCards() {
                 <div class="card-location">
                     <div class="location-text">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-                        <span>${t.address}</span>
+                        <span>${cityStateLabel(t.address)}</span>
                     </div>
                     <a class="directions-link" href="${directionsUrl(t)}" target="_blank" rel="noopener">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
