@@ -45,8 +45,11 @@
 
     .empty-state, .loading-state { text-align: center; color: var(--sub); padding: 60px 0; }
 
-    #modal-overlay, #email-overlay { display: none; position: fixed; inset: 0; background: rgba(34,30,25,0.55); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
+    #modal-overlay, #email-overlay, #confirm-overlay { display: none; position: fixed; inset: 0; background: rgba(34,30,25,0.55); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
     #email-overlay { z-index: 1100; }
+    #confirm-overlay { z-index: 1200; }
+    .confirm-modal { background: var(--paper); border-radius: 20px; padding: 28px; width: 100%; max-width: 380px; }
+    .confirm-message { margin: 0 0 22px; font-size: 0.95rem; line-height: 1.5; }
     .modal { background: var(--paper); border-radius: 20px; padding: 32px; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; }
     .modal h2 { font-family: 'Anton', sans-serif; font-weight: 400; text-transform: uppercase; color: var(--forest); margin: 0 0 20px; }
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -60,7 +63,7 @@
     }
     .address-suggestion { padding: 8px 12px; font-size: 0.86rem; cursor: pointer; }
     .address-suggestion:hover { background: var(--cream); }
-    .form-group input, .form-group textarea { width: 100%; padding: 9px 11px; border: 1px solid var(--line); border-radius: 8px; font-size: 0.92rem; font-family: inherit; }
+    .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 9px 11px; border: 1px solid var(--line); border-radius: 8px; font-size: 0.92rem; font-family: inherit; background: #fff; }
     .form-group textarea { resize: vertical; min-height: 60px; }
     .modal-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
     #status-message, #email-status-message { display: none; padding: 10px 12px; border-radius: 8px; margin-bottom: 14px; font-size: 0.85rem; font-weight: 600; }
@@ -145,7 +148,6 @@
                 <div id="addressSuggestions" class="address-suggestions"></div>
                 <input type="hidden" id="addressLat">
                 <input type="hidden" id="addressLon">
-                <div class="hint">Pick a suggestion to capture directions and, if it's a named place, its venue name automatically — or just type a location, no need to pick one.</div>
             </div>
         </div>
 
@@ -160,6 +162,18 @@
                 <label>Time (optional)</label>
                 <input type="time" id="time">
             </div>
+        </div>
+
+        <div class="form-group">
+            <label>Point of Contact</label>
+            <select id="poc">
+                <option value="">— None selected —</option>
+                <option value="Alexis Conley">Alexis Conley</option>
+                <option value="Sam Levesque">Sam Levesque</option>
+                <option value="Kristina Palmer">Kristina Palmer</option>
+                <option value="Rachel Bueng">Rachel Bueng</option>
+                <option value="Linda Mosier">Linda Mosier</option>
+            </select>
         </div>
 
         <div class="form-group">
@@ -234,10 +248,36 @@
     </div>
 </div>
 
+<div id="confirm-overlay">
+    <div class="confirm-modal">
+        <p class="confirm-message" id="confirmMessage"></p>
+        <div class="modal-actions">
+            <span class="modal-cancel" style="color: var(--sub); cursor: pointer; font-weight: 600; font-size: 0.88rem;" onclick="resolveConfirm(false)">Cancel</span>
+            <button class="btn-danger" onclick="resolveConfirm(true)">Confirm</button>
+        </div>
+    </div>
+</div>
+
 <script>
 let trips = [];
 let registrations = [];
 let editingTripHidden = false;
+
+let confirmResolver = null;
+
+function showConfirm(message) {
+    document.getElementById('confirmMessage').textContent = message;
+    document.getElementById('confirm-overlay').style.display = 'flex';
+    return new Promise(resolve => { confirmResolver = resolve; });
+}
+
+function resolveConfirm(result) {
+    document.getElementById('confirm-overlay').style.display = 'none';
+    if (confirmResolver) {
+        confirmResolver(result);
+        confirmResolver = null;
+    }
+}
 
 // The admin auth session occasionally needs a moment to settle (e.g. right
 // after logging in, or between actions), causing an intermittent 401/403
@@ -319,7 +359,7 @@ function tripRowHtml(t) {
             <div class="trip-info">
                 <h3>${t.title}${t.hidden ? '<span class="hidden-badge">Hidden</span>' : ''}</h3>
                 <div class="trip-meta">${t.address}</div>
-                <div class="trip-meta">${whenLabel} · ${t.spotsRemaining} of ${t.capacity} spots left</div>
+                <div class="trip-meta">${whenLabel} · ${t.spotsRemaining} of ${t.capacity} spots left${t.poc ? ` · POC: ${t.poc}` : ''}</div>
                 <div class="trip-count">${regsForTrip.length} registered${regsForTrip.length ? ` · ${paidCount} paid` : ''}</div>
             </div>
             <div class="trip-actions">
@@ -418,7 +458,7 @@ function selectAddressSuggestion(i) {
 function openForm() {
     document.getElementById('formTitle').textContent = 'Add Field Trip';
     document.getElementById('tripId').value = '';
-    ['title', 'address', 'placeName', 'date', 'time', 'description', 'image'].forEach(id => document.getElementById(id).value = '');
+    ['title', 'address', 'placeName', 'date', 'time', 'poc', 'description', 'image'].forEach(id => document.getElementById(id).value = '');
     ['adultPrice', 'childPrice', 'capacity', 'addressLat', 'addressLon'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('addressSuggestions').style.display = 'none';
     editingTripHidden = false;
@@ -442,6 +482,7 @@ function editTrip(id) {
     document.getElementById('addressSuggestions').style.display = 'none';
     document.getElementById('date').value = t.date;
     document.getElementById('time').value = t.time || '';
+    document.getElementById('poc').value = t.poc || '';
     document.getElementById('description').value = t.description;
     document.getElementById('adultPrice').value = t.adultPrice;
     document.getElementById('childPrice').value = t.childPrice;
@@ -525,6 +566,7 @@ async function saveTrip() {
         lon: document.getElementById('addressLon').value,
         date: document.getElementById('date').value,
         time: document.getElementById('time').value,
+        poc: document.getElementById('poc').value,
         description: document.getElementById('description').value.trim(),
         adultPrice: parseFloat(document.getElementById('adultPrice').value) || 0,
         childPrice: parseFloat(document.getElementById('childPrice').value) || 0,
@@ -568,6 +610,7 @@ async function toggleHidden(id) {
         lon: t.lon,
         date: t.date,
         time: t.time || '',
+        poc: t.poc || '',
         description: t.description,
         adultPrice: t.adultPrice,
         childPrice: t.childPrice,
@@ -594,7 +637,7 @@ async function toggleHidden(id) {
 
 async function removeTrip(id) {
     const t = trips.find(t => t.id === id);
-    if (!confirm(`Delete "${t ? t.title : id}"? This cannot be undone.`)) return;
+    if (!(await showConfirm(`Delete "${t ? t.title : id}"? This cannot be undone.`))) return;
     try {
         const res = await fetchWithAuthRetry(`/api/manageTripsDelete?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
         if (!res.ok) {
@@ -728,7 +771,7 @@ async function setPaid(tripId, id, checkbox) {
 
 async function deleteRegistration(tripId, id) {
     const reg = registrations.find(r => r.tripId === tripId && r.id === id);
-    if (!confirm(`Remove ${reg ? reg.parentName : 'this registrant'} from the trip? This frees their spot and cannot be undone.`)) return;
+    if (!(await showConfirm(`Remove ${reg ? reg.parentName : 'this registrant'} from the trip? This frees their spot and cannot be undone.`))) return;
     try {
         const res = await fetchWithAuthRetry(`/api/manageRegistrationsDelete?tripId=${encodeURIComponent(tripId)}&id=${encodeURIComponent(id)}`, { method: 'DELETE' });
         if (!res.ok) {
@@ -861,7 +904,7 @@ async function addApprovedEmail() {
 }
 
 async function removeApprovedEmail(email) {
-    if (!confirm(`Remove ${email} from the approved list? They won't be able to register or manage a registration until re-added.`)) return;
+    if (!(await showConfirm(`Remove ${email} from the approved list? They won't be able to register or manage a registration until re-added.`))) return;
     try {
         const res = await fetchWithAuthRetry(`/api/manageApprovedEmailsDelete?email=${encodeURIComponent(email)}`, { method: 'DELETE' });
         if (!res.ok) {

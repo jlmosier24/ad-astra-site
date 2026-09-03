@@ -18,6 +18,7 @@ function toTripDto(entity) {
         lon: entity.lon,
         date: entity.date,
         time: entity.time || "",
+        poc: entity.poc || "",
         description: entity.description,
         adultPrice: entity.adultPrice,
         childPrice: entity.childPrice,
