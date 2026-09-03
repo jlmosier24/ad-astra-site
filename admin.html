@@ -714,7 +714,7 @@ function openUnpaidModal() {
                     <div class="roster-detail">${trip ? trip.title : 'Unknown trip'} · ${r.adults} adults, ${r.children} children · $${(r.total || 0).toFixed(2)}</div>
                     <div class="roster-detail">${escapeHtml(r.email)}</div>
                 </div>
-                <button class="paid-pill" onclick="markPaidFromUnpaid('${r.tripId}', '${r.id}', this)">Mark Paid</button>
+                <button class="paid-pill" onclick="markPaidFromUnpaid('${r.tripId}', '${r.id}', this)">Paid</button>
             </div>
         `;
     }).join('');
