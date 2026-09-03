@@ -90,7 +90,8 @@
     .roster-row:first-of-type { border-top: none; }
     .roster-name { font-weight: 700; font-size: 0.92rem; }
     .roster-detail { color: var(--sub); font-size: 0.8rem; margin-top: 2px; }
-    .roster-paid-label { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 600; white-space: nowrap; flex-shrink: 0; }
+    .paid-pill { flex-shrink: 0; padding: 6px 16px; border-radius: 999px; font-weight: 700; font-size: 0.8rem; cursor: pointer; background: none; color: var(--sub); border: 1px solid var(--line); transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease; }
+    .paid-pill.active { background: #2F7A3D; color: #fff; border-color: #2F7A3D; }
     .roster-close { text-align: center; color: var(--sub); cursor: pointer; font-weight: 600; font-size: 0.88rem; margin-top: 16px; }
 
     @media (max-width: 560px) {
@@ -218,7 +219,6 @@
         <div class="roster-header">
             <h2 id="rosterTitle">Registrants</h2>
             <div style="display: flex; gap: 8px;">
-                <button class="btn-outline" id="rosterEmailBtn" onclick="openEmailCompose()">Message Group</button>
                 <button class="btn-outline" id="rosterExportBtn" onclick="exportRosterCsv()">Export CSV</button>
             </div>
         </div>
@@ -364,6 +364,7 @@ function tripRowHtml(t) {
             </div>
             <div class="trip-actions">
                 <button class="btn-outline" onclick="openRoster('${t.id}')">Registrants (${regsForTrip.length})</button>
+                ${regsForTrip.length > 0 ? `<button class="btn-outline" onclick="openEmailCompose('${t.id}')">Message</button>` : ''}
                 <button class="btn-outline" onclick="editTrip('${t.id}')">Edit</button>
                 <button class="btn-outline" onclick="toggleHidden('${t.id}')">${t.hidden ? 'Unhide' : 'Hide'}</button>
                 <button class="btn-danger" onclick="removeTrip('${t.id}')">Delete</button>
@@ -668,6 +669,7 @@ function formatRegisteredDate(iso) {
 }
 
 let currentRosterTripId = null;
+let currentEmailTripId = null;
 
 function openRoster(tripId) {
     currentRosterTripId = tripId;
@@ -678,7 +680,6 @@ function openRoster(tripId) {
 
     document.getElementById('rosterTitle').textContent = t ? t.title : 'Registrants';
     document.getElementById('rosterExportBtn').style.display = regs.length === 0 ? 'none' : '';
-    document.getElementById('rosterEmailBtn').style.display = regs.length === 0 ? 'none' : '';
 
     const totalAdults = regs.reduce((sum, r) => sum + (r.adults || 0), 0);
     const totalChildren = regs.reduce((sum, r) => sum + (r.children || 0), 0);
@@ -694,10 +695,7 @@ function openRoster(tripId) {
                 <div class="roster-detail">Registered ${formatRegisteredDate(r.dateRegistered)}</div>
             </div>
             <div style="display: flex; align-items: center; gap: 14px;">
-                <label class="roster-paid-label">
-                    <input type="checkbox" ${r.paid ? 'checked' : ''} onchange="setPaid('${r.tripId}', '${r.id}', this)">
-                    Paid
-                </label>
+                <button class="paid-pill ${r.paid ? 'active' : ''}" onclick="togglePaid('${r.tripId}', '${r.id}', this)">Paid</button>
                 <button class="btn-danger" onclick="deleteRegistration('${r.tripId}', '${r.id}')">Delete</button>
             </div>
         </div>
@@ -747,8 +745,9 @@ function exportRosterCsv() {
     URL.revokeObjectURL(url);
 }
 
-async function setPaid(tripId, id, checkbox) {
-    const desired = checkbox.checked;
+async function togglePaid(tripId, id, btn) {
+    const desired = !btn.classList.contains('active');
+    btn.classList.toggle('active', desired);
     try {
         const res = await fetchWithAuthRetry('/api/manageRegistrationsSetPaid', {
             method: 'POST',
@@ -756,7 +755,7 @@ async function setPaid(tripId, id, checkbox) {
             body: JSON.stringify({ tripId, id, paid: desired })
         });
         if (!res.ok) {
-            checkbox.checked = !desired;
+            btn.classList.toggle('active', !desired);
             alert('Could not update paid status: ' + await res.text());
             return;
         }
@@ -764,7 +763,7 @@ async function setPaid(tripId, id, checkbox) {
         if (reg) reg.paid = desired;
         renderTrips();
     } catch (e) {
-        checkbox.checked = !desired;
+        btn.classList.toggle('active', !desired);
         alert('Connection error. Please try again.');
     }
 }
@@ -786,8 +785,9 @@ async function deleteRegistration(tripId, id) {
     }
 }
 
-function openEmailCompose() {
-    const t = trips.find(t => t.id === currentRosterTripId);
+function openEmailCompose(tripId) {
+    currentEmailTripId = tripId;
+    const t = trips.find(t => t.id === tripId);
     document.getElementById('emailTripName').textContent = t ? t.title : 'this trip';
     document.getElementById('emailSubject').value = '';
     document.getElementById('emailBody').value = '';
@@ -822,7 +822,7 @@ async function sendGroupEmail() {
         const res = await fetchWithAuthRetry('/api/emailTripGroup', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ tripId: currentRosterTripId, subject, body })
+            body: JSON.stringify({ tripId: currentEmailTripId, subject, body })
         });
         const text = await res.text();
         if (!res.ok) {
