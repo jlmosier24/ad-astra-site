@@ -416,7 +416,7 @@ function tripRowHtml(t) {
                 <div class="trip-count">${regsForTrip.length} registered${regsForTrip.length ? ` · ${paidCount} paid` : ''}</div>
             </div>
             <div class="trip-actions">
-                <button class="btn-outline" onclick="openRoster('${t.id}')">Registrants (${regsForTrip.length})</button>
+                <button class="btn-outline" onclick="openRoster('${t.id}')">Roster (${regsForTrip.length})</button>
                 <button class="btn-outline" onclick="editTrip('${t.id}')">Edit</button>
                 <div class="overflow-wrap">
                     <button class="btn-outline overflow-toggle" onclick="toggleOverflowMenu(event, '${t.id}')">⋯</button>
