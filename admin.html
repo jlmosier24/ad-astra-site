@@ -16,6 +16,7 @@
         --line: rgba(34,30,25,0.12);
     }
     * { box-sizing: border-box; }
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     body { margin: 0; background: linear-gradient(180deg, #F8F3EA 0%, #F3EEE4 45%, #ECE3D3 100%); font-family: 'Public Sans', sans-serif; color: var(--ink); }
 
     .topbar { display: flex; align-items: center; justify-content: space-between; max-width: 960px; margin: 0 auto; padding: 22px 24px; }
@@ -59,12 +60,15 @@
 
     .empty-state, .loading-state { text-align: center; color: var(--sub); padding: 60px 0; }
 
-    #modal-overlay, #email-overlay, #confirm-overlay { display: none; position: fixed; inset: 0; background: rgba(34,30,25,0.55); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
+    #modal-overlay, #email-overlay, #confirm-overlay { display: none; position: fixed; inset: 0; background: rgba(34,30,25,0.55); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center; padding: 20px; opacity: 0; transition: opacity 0.2s ease; }
+    #modal-overlay.visible, #email-overlay.visible, #confirm-overlay.visible { opacity: 1; }
     #email-overlay { z-index: 1100; }
     #confirm-overlay { z-index: 1200; }
-    .confirm-modal { background: var(--paper); border-radius: 20px; padding: 28px; width: 100%; max-width: 380px; }
+    .confirm-modal { background: var(--paper); border-radius: 20px; padding: 28px; width: 100%; max-width: 380px; transform: scale(0.96) translateY(8px); transition: transform 0.2s ease; }
+    #confirm-overlay.visible .confirm-modal { transform: scale(1) translateY(0); }
     .confirm-message { margin: 0 0 22px; font-size: 0.95rem; line-height: 1.5; }
-    .modal { background: var(--paper); border-radius: 20px; padding: 32px; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; }
+    .modal { background: var(--paper); border-radius: 20px; padding: 32px; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; transform: scale(0.96) translateY(8px); transition: transform 0.2s ease; }
+    #modal-overlay.visible .modal, #email-overlay.visible .modal { transform: scale(1) translateY(0); }
     .modal h2 { font-family: 'Anton', sans-serif; font-weight: 400; text-transform: uppercase; color: var(--forest); margin: 0 0 20px; }
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .form-group { margin-bottom: 14px; }
@@ -107,8 +111,10 @@
     .approved-email { font-weight: 700; font-size: 0.9rem; }
     .approved-label { color: var(--sub); font-size: 0.78rem; margin-top: 2px; }
 
-    #roster-overlay { display: none; position: fixed; inset: 0; background: rgba(34,30,25,0.55); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
-    .roster-modal { background: var(--paper); border-radius: 20px; padding: 32px; width: 100%; max-width: 640px; max-height: 85vh; overflow-y: auto; }
+    #roster-overlay { display: none; position: fixed; inset: 0; background: rgba(34,30,25,0.55); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center; padding: 20px; opacity: 0; transition: opacity 0.2s ease; }
+    #roster-overlay.visible { opacity: 1; }
+    .roster-modal { background: var(--paper); border-radius: 20px; padding: 32px; width: 100%; max-width: 640px; max-height: 85vh; overflow-y: auto; transform: scale(0.96) translateY(8px); transition: transform 0.2s ease; }
+    #roster-overlay.visible .roster-modal { transform: scale(1) translateY(0); }
     .roster-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
     .roster-modal h2 { font-family: 'Anton', sans-serif; font-weight: 400; text-transform: uppercase; color: var(--forest); margin: 0 0 4px; }
     .roster-sub { color: var(--sub); font-size: 0.85rem; margin-bottom: 18px; }
@@ -290,6 +296,20 @@
 </div>
 
 <script>
+// Fades an overlay in/out rather than snapping display on/off. display
+// still gates layout/interactivity; the class just drives the transition.
+function openOverlay(id) {
+    const el = document.getElementById(id);
+    el.style.display = 'flex';
+    void el.offsetHeight; // force a reflow so the display change is applied before .visible triggers the transition
+    el.classList.add('visible');
+}
+function closeOverlay(id) {
+    const el = document.getElementById(id);
+    el.classList.remove('visible');
+    setTimeout(() => { el.style.display = 'none'; }, 200);
+}
+
 let trips = [];
 let registrations = [];
 function switchTab(tab) {
@@ -319,12 +339,12 @@ let confirmResolver = null;
 
 function showConfirm(message) {
     document.getElementById('confirmMessage').textContent = message;
-    document.getElementById('confirm-overlay').style.display = 'flex';
+    openOverlay('confirm-overlay');
     return new Promise(resolve => { confirmResolver = resolve; });
 }
 
 function resolveConfirm(result) {
-    document.getElementById('confirm-overlay').style.display = 'none';
+    closeOverlay('confirm-overlay');
     if (confirmResolver) {
         confirmResolver(result);
         confirmResolver = null;
@@ -531,7 +551,7 @@ function openForm() {
     document.getElementById('imagePreview').style.display = 'none';
     document.getElementById('uploadStatus').textContent = 'Choose a photo to upload, or leave blank to keep the current one.';
     document.getElementById('status-message').style.display = 'none';
-    document.getElementById('modal-overlay').style.display = 'flex';
+    openOverlay('modal-overlay');
 }
 
 function editTrip(id) {
@@ -564,11 +584,11 @@ function editTrip(id) {
     }
     document.getElementById('uploadStatus').textContent = 'Choose a photo to replace the current one, or leave blank to keep it.';
     document.getElementById('status-message').style.display = 'none';
-    document.getElementById('modal-overlay').style.display = 'flex';
+    openOverlay('modal-overlay');
 }
 
 function closeForm() {
-    document.getElementById('modal-overlay').style.display = 'none';
+    closeOverlay('modal-overlay');
 }
 
 function showFormStatus(message, isError = true) {
@@ -764,11 +784,11 @@ function openRoster(tripId) {
         </div>
     `).join('');
 
-    document.getElementById('roster-overlay').style.display = 'flex';
+    openOverlay('roster-overlay');
 }
 
 function closeRoster() {
-    document.getElementById('roster-overlay').style.display = 'none';
+    closeOverlay('roster-overlay');
 }
 
 function csvCell(value) {
@@ -855,11 +875,11 @@ function openEmailCompose(tripId) {
     document.getElementById('emailSubject').value = '';
     document.getElementById('emailBody').value = '';
     document.getElementById('email-status-message').style.display = 'none';
-    document.getElementById('email-overlay').style.display = 'flex';
+    openOverlay('email-overlay');
 }
 
 function closeEmailCompose() {
-    document.getElementById('email-overlay').style.display = 'none';
+    closeOverlay('email-overlay');
 }
 
 function showEmailStatus(message, isError = true) {
