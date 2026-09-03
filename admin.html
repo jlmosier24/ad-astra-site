@@ -74,6 +74,18 @@
 
     .section-heading { font-family: 'Anton', sans-serif; font-weight: 400; text-transform: uppercase; font-size: 1.1rem; letter-spacing: 0.01em; color: var(--sub); margin: 36px 0 14px; }
 
+    .tab-bar { display: flex; gap: 28px; margin-bottom: 26px; border-bottom: 1px solid var(--line); }
+    .tab-btn {
+        background: none; border: none; padding: 4px 2px 12px; margin-bottom: -1px;
+        font-family: 'Anton', sans-serif; font-weight: 400; text-transform: uppercase;
+        font-size: 0.95rem; letter-spacing: 0.01em; color: var(--sub);
+        cursor: pointer; border-bottom: 2px solid transparent;
+    }
+    .tab-btn:hover { color: var(--ink); }
+    .tab-btn.active { color: var(--ink); border-bottom-color: var(--accent); }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
     .approved-add-row { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
     .approved-add-row input { flex: 1; min-width: 160px; padding: 9px 11px; border: 1px solid var(--line); border-radius: 8px; font-size: 0.9rem; font-family: inherit; }
     .approved-list { display: flex; flex-direction: column; gap: 8px; }
@@ -112,24 +124,32 @@
 </div>
 
 <div class="wrap">
-    <div class="toolbar">
-        <button class="btn" onclick="openForm()">+ Add Field Trip</button>
-    </div>
-    <div id="tripList" class="loading-state">Loading trips…</div>
-
-    <div id="pastTripsSection" style="display: none;">
-        <h2 class="section-heading">Previous Field Trips</h2>
-        <div id="pastTripList" class="trip-list"></div>
+    <div class="tab-bar">
+        <button class="tab-btn active" id="tabBtn-trips" onclick="switchTab('trips')">Field Trips</button>
+        <button class="tab-btn" id="tabBtn-approved" onclick="switchTab('approved')">Approved Users</button>
     </div>
 
-    <h2 class="section-heading">Approved Registrant Emails</h2>
-    <div class="hint" style="margin-bottom: 14px;">Only these addresses can register for a trip or manage an existing registration on the public site.</div>
-    <div class="approved-add-row">
-        <input type="email" id="newApprovedEmail" placeholder="parent@example.com">
-        <input type="text" id="newApprovedLabel" placeholder="Name (optional)">
-        <button class="btn" onclick="addApprovedEmail()">Add</button>
+    <div id="tabPanel-trips" class="tab-panel active">
+        <div class="toolbar">
+            <button class="btn" onclick="openForm()">+ Add Field Trip</button>
+        </div>
+        <div id="tripList" class="loading-state">Loading trips…</div>
+
+        <div id="pastTripsSection" style="display: none;">
+            <h2 class="section-heading">Previous Field Trips</h2>
+            <div id="pastTripList" class="trip-list"></div>
+        </div>
     </div>
-    <div id="approvedEmailsList" class="loading-state">Loading…</div>
+
+    <div id="tabPanel-approved" class="tab-panel">
+        <div class="hint" style="margin-bottom: 14px;">Only these addresses can register for a trip or manage an existing registration on the public site.</div>
+        <div class="approved-add-row">
+            <input type="email" id="newApprovedEmail" placeholder="parent@example.com">
+            <input type="text" id="newApprovedLabel" placeholder="Name (optional)">
+            <button class="btn" onclick="addApprovedEmail()">Add</button>
+        </div>
+        <div id="approvedEmailsList" class="loading-state">Loading…</div>
+    </div>
 </div>
 
 <div id="modal-overlay">
@@ -261,6 +281,13 @@
 <script>
 let trips = [];
 let registrations = [];
+function switchTab(tab) {
+    document.getElementById('tabPanel-trips').classList.toggle('active', tab === 'trips');
+    document.getElementById('tabPanel-approved').classList.toggle('active', tab === 'approved');
+    document.getElementById('tabBtn-trips').classList.toggle('active', tab === 'trips');
+    document.getElementById('tabBtn-approved').classList.toggle('active', tab === 'approved');
+}
+
 let editingTripHidden = false;
 
 let confirmResolver = null;
