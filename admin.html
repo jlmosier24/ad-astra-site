@@ -406,12 +406,13 @@ function tripRowHtml(t) {
     const regsForTrip = registrations.filter(r => r.tripId === t.id);
     const paidCount = regsForTrip.filter(r => r.paid).length;
     const whenLabel = t.time ? `${t.date} · ${formatTimeLabel(t.time)}` : t.date;
+    const spotsLabel = t.capacity > 0 ? ` · ${t.spotsRemaining} of ${t.capacity} spots left` : '';
     return `
         <div class="trip-row ${t.hidden ? 'hidden-trip' : ''}">
             <div class="trip-info">
                 <h3>${t.title}${t.hidden ? '<span class="hidden-badge">Hidden</span>' : ''}</h3>
                 <div class="trip-meta">${t.address}</div>
-                <div class="trip-meta">${whenLabel} · ${t.spotsRemaining} of ${t.capacity} spots left${t.poc ? ` · POC: ${t.poc}` : ''}</div>
+                <div class="trip-meta">${whenLabel}${spotsLabel}${t.poc ? ` · POC: ${t.poc}` : ''}</div>
                 <div class="trip-count">${regsForTrip.length} registered${regsForTrip.length ? ` · ${paidCount} paid` : ''}</div>
             </div>
             <div class="trip-actions">
