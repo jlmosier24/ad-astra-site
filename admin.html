@@ -91,6 +91,53 @@
     .trip-count { font-size: 0.78rem; color: var(--sub); margin-top: 4px; }
 
     .section-heading { font-family: 'Anton', sans-serif; font-weight: 400; text-transform: uppercase; font-size: 1.1rem; letter-spacing: 0.01em; color: var(--sub); margin: 36px 0 14px; }
+    .section-heading:first-child { margin-top: 0; }
+
+    .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .stat-card { background: var(--paper); border-radius: 14px; padding: 18px 20px; box-shadow: 0 4px 14px rgba(34,30,25,0.05); }
+    .stat-card.clickable { cursor: pointer; transition: box-shadow 0.15s ease, transform 0.15s ease; }
+    .stat-card.clickable:hover { box-shadow: 0 8px 22px rgba(34,30,25,0.1); transform: translateY(-2px); }
+    .stat-card.clickable .stat-label { text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 3px; }
+    .stat-value { font-family: 'Anton', sans-serif; font-size: 1.7rem; color: var(--forest); line-height: 1; margin-bottom: 6px; }
+    .stat-value.accent { color: var(--accent); }
+    .stat-label { font-size: 0.78rem; color: var(--sub); font-weight: 600; }
+
+    .chart-card { background: var(--paper); border-radius: 14px; padding: 22px 24px; box-shadow: 0 4px 14px rgba(34,30,25,0.05); margin-bottom: 14px; }
+    .chart-title { font-weight: 800; font-size: 0.95rem; margin-bottom: 4px; }
+    .chart-sub { font-size: 0.78rem; color: var(--sub); margin-bottom: 16px; }
+
+    .bar-chart { display: flex; align-items: flex-end; gap: 10px; height: 140px; }
+    .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; }
+    .bar-fill { width: 100%; max-width: 34px; background: var(--forest); border-radius: 5px 5px 0 0; min-height: 2px; }
+    .bar-count { font-size: 0.72rem; font-weight: 700; color: var(--forest); margin-bottom: 4px; }
+    .bar-label { font-size: 0.7rem; color: var(--sub); margin-top: 8px; }
+
+    .cap-row { margin-bottom: 14px; }
+    .cap-row:last-child { margin-bottom: 0; }
+    .cap-row.clickable { cursor: pointer; padding: 8px; margin: -8px -8px 6px; border-radius: 10px; transition: background 0.15s ease; }
+    .cap-row.clickable:hover { background: var(--cream); }
+    .cap-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 5px; }
+    .cap-name { font-weight: 700; font-size: 0.88rem; }
+    .cap-count { font-size: 0.78rem; color: var(--sub); }
+    .cap-track { height: 9px; background: var(--cream); border-radius: 999px; overflow: hidden; }
+    .cap-fill { height: 100%; border-radius: 999px; background: var(--forest); }
+    .cap-fill.full { background: var(--accent); }
+
+    .paid-bar-wrap { display: flex; height: 34px; border-radius: 8px; overflow: hidden; margin-bottom: 12px; }
+    .paid-seg { display: flex; align-items: center; justify-content: center; font-size: 0.78rem; font-weight: 700; color: #fff; }
+    .paid-seg.paid { background: var(--forest); }
+    .paid-seg.unpaid { background: var(--gold, #D99A3D); }
+    .paid-legend { display: flex; gap: 20px; font-size: 0.8rem; color: var(--sub); }
+    .paid-legend span { display: inline-flex; align-items: center; gap: 6px; }
+    .legend-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+
+    .popular-list { display: flex; flex-direction: column; }
+    .popular-row { display: flex; align-items: center; gap: 14px; padding: 11px 8px; border-top: 1px solid var(--line); cursor: pointer; border-radius: 8px; transition: background 0.15s ease; }
+    .popular-row:hover { background: var(--cream); }
+    .popular-row:first-child { border-top: none; }
+    .popular-rank { font-family: 'Anton', sans-serif; font-size: 1.1rem; color: var(--sub); width: 22px; flex-shrink: 0; }
+    .popular-name { font-weight: 700; font-size: 0.9rem; flex-grow: 1; }
+    .popular-count { font-size: 0.82rem; color: var(--forest); font-weight: 700; white-space: nowrap; }
 
     .tab-bar { display: flex; gap: 28px; margin-bottom: 26px; border-bottom: 1px solid var(--line); }
     .tab-btn {
@@ -133,6 +180,9 @@
         .roster-row { flex-direction: column; align-items: flex-start; }
         .topbar { flex-direction: column; align-items: flex-start; gap: 8px; }
         .topbar h1 { font-size: 1.15rem; }
+        .stat-grid { grid-template-columns: repeat(2, 1fr); }
+        .bar-chart { height: 110px; }
+        .bar-label { font-size: 0.62rem; }
     }
 </style>
 </head>
@@ -145,11 +195,56 @@
 
 <div class="wrap">
     <div class="tab-bar">
-        <button class="tab-btn active" id="tabBtn-trips" onclick="switchTab('trips')">Field Trips</button>
+        <button class="tab-btn active" id="tabBtn-dashboard" onclick="switchTab('dashboard')">Dashboard</button>
+        <button class="tab-btn" id="tabBtn-trips" onclick="switchTab('trips')">Field Trips</button>
         <button class="tab-btn" id="tabBtn-approved" onclick="switchTab('approved')">Approved Users</button>
     </div>
 
-    <div id="tabPanel-trips" class="tab-panel active">
+    <div id="tabPanel-dashboard" class="tab-panel active">
+        <div class="section-heading">Overview</div>
+        <div class="stat-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="statTotalRegistrations">0</div>
+                <div class="stat-label">Total Registrations</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statRevenue">$0</div>
+                <div class="stat-label">Revenue Collected</div>
+            </div>
+            <div class="stat-card clickable" onclick="openUnpaidModal()">
+                <div class="stat-value accent" id="statUnpaid">$0</div>
+                <div class="stat-label">Outstanding (Unpaid)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statFamilies">0</div>
+                <div class="stat-label">Unique Families</div>
+            </div>
+        </div>
+
+        <div class="section-heading">Registrations Over Time</div>
+        <div class="chart-card">
+            <div class="chart-title">Sign-ups by month</div>
+            <div class="chart-sub">Last 6 months</div>
+            <div class="bar-chart" id="registrationsBarChart"></div>
+        </div>
+
+        <div class="section-heading">Capacity by Trip</div>
+        <div class="chart-card" id="capacityByTripCard">
+            <div class="empty-state">No trips with a capacity limit yet.</div>
+        </div>
+
+        <div class="section-heading">Payment Status</div>
+        <div class="chart-card" id="paymentStatusCard">
+            <div class="empty-state">No registrations yet.</div>
+        </div>
+
+        <div class="section-heading">Most Popular Trips</div>
+        <div class="chart-card" id="popularTripsCard">
+            <div class="empty-state">No registrations yet.</div>
+        </div>
+    </div>
+
+    <div id="tabPanel-trips" class="tab-panel">
         <div class="toolbar">
             <button class="btn" onclick="openForm()">+ Add Field Trip</button>
         </div>
@@ -313,8 +408,10 @@ function closeOverlay(id) {
 let trips = [];
 let registrations = [];
 function switchTab(tab) {
+    document.getElementById('tabPanel-dashboard').classList.toggle('active', tab === 'dashboard');
     document.getElementById('tabPanel-trips').classList.toggle('active', tab === 'trips');
     document.getElementById('tabPanel-approved').classList.toggle('active', tab === 'approved');
+    document.getElementById('tabBtn-dashboard').classList.toggle('active', tab === 'dashboard');
     document.getElementById('tabBtn-trips').classList.toggle('active', tab === 'trips');
     document.getElementById('tabBtn-approved').classList.toggle('active', tab === 'approved');
 }
@@ -458,6 +555,8 @@ function tripRowHtml(t) {
 }
 
 function renderTrips() {
+    renderDashboard();
+
     const listEl = document.getElementById('tripList');
     const pastSectionEl = document.getElementById('pastTripsSection');
     const pastListEl = document.getElementById('pastTripList');
@@ -483,6 +582,149 @@ function renderTrips() {
 
     pastSectionEl.style.display = past.length === 0 ? 'none' : '';
     pastListEl.innerHTML = past.map(tripRowHtml).join('');
+}
+
+// Everything below computes the Dashboard tab from the same trips/
+// registrations already loaded for the Field Trips tab -- no separate
+// fetch, just a different view of the same data.
+function renderDashboard() {
+    const revenue = registrations.reduce((sum, r) => sum + (r.paid ? (r.total || 0) : 0), 0);
+    const unpaid = registrations.reduce((sum, r) => sum + (!r.paid ? (r.total || 0) : 0), 0);
+    const uniqueFamilies = new Set(registrations.map(r => (r.email || '').toLowerCase())).size;
+
+    document.getElementById('statTotalRegistrations').textContent = registrations.length;
+    document.getElementById('statRevenue').textContent = `$${revenue.toFixed(2)}`;
+    document.getElementById('statUnpaid').textContent = `$${unpaid.toFixed(2)}`;
+    document.getElementById('statFamilies').textContent = uniqueFamilies;
+
+    renderRegistrationsBarChart();
+    renderCapacityByTrip();
+    renderPaymentStatus(revenue, unpaid);
+    renderPopularTrips();
+}
+
+function renderRegistrationsBarChart() {
+    const chart = document.getElementById('registrationsBarChart');
+    const now = new Date();
+    const months = [];
+    for (let i = 5; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        months.push({ year: d.getFullYear(), month: d.getMonth(), label: d.toLocaleDateString('en-US', { month: 'short' }) });
+    }
+    const counts = months.map(m => registrations.filter(r => {
+        if (!r.dateRegistered) return false;
+        const d = new Date(r.dateRegistered);
+        return d.getFullYear() === m.year && d.getMonth() === m.month;
+    }).length);
+    const max = Math.max(1, ...counts);
+    chart.innerHTML = months.map((m, i) => `
+        <div class="bar-col">
+            <div class="bar-count">${counts[i]}</div>
+            <div class="bar-fill" style="height: ${counts[i] === 0 ? 0 : Math.max(6, Math.round((counts[i] / max) * 100))}%;"></div>
+            <div class="bar-label">${m.label}</div>
+        </div>
+    `).join('');
+}
+
+function renderCapacityByTrip() {
+    const card = document.getElementById('capacityByTripCard');
+    const capTrips = trips.filter(t => t.capacity > 0).sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+    if (capTrips.length === 0) {
+        card.innerHTML = '<div class="empty-state">No trips with a capacity limit yet.</div>';
+        return;
+    }
+    card.innerHTML = capTrips.map(t => {
+        const filled = t.capacity - t.spotsRemaining;
+        const pct = Math.max(0, Math.min(100, Math.round((filled / t.capacity) * 100)));
+        return `
+            <div class="cap-row clickable" onclick="openRoster('${t.id}')">
+                <div class="cap-top"><span class="cap-name">${t.title}</span><span class="cap-count">${filled} of ${t.capacity}</span></div>
+                <div class="cap-track"><div class="cap-fill ${t.spotsRemaining <= 0 ? 'full' : ''}" style="width: ${pct}%;"></div></div>
+            </div>
+        `;
+    }).join('');
+}
+
+function renderPaymentStatus(revenue, unpaid) {
+    const card = document.getElementById('paymentStatusCard');
+    const total = revenue + unpaid;
+    if (total === 0) {
+        card.innerHTML = '<div class="empty-state">No registrations yet.</div>';
+        return;
+    }
+    const paidPct = Math.round((revenue / total) * 100);
+    const unpaidPct = 100 - paidPct;
+    card.innerHTML = `
+        <div class="paid-bar-wrap">
+            ${revenue > 0 ? `<div class="paid-seg paid" style="width: ${paidPct}%;">${paidPct}%</div>` : ''}
+            ${unpaid > 0 ? `<div class="paid-seg unpaid" style="width: ${unpaidPct}%;">${unpaidPct}%</div>` : ''}
+        </div>
+        <div class="paid-legend">
+            <span><span class="legend-dot" style="background: var(--forest);"></span>Paid ($${revenue.toFixed(2)})</span>
+            <span><span class="legend-dot" style="background: var(--gold, #D99A3D);"></span>Unpaid ($${unpaid.toFixed(2)})</span>
+        </div>
+    `;
+}
+
+function renderPopularTrips() {
+    const card = document.getElementById('popularTripsCard');
+    const attendeesByTrip = new Map();
+    registrations.forEach(r => {
+        const count = (r.adults || 0) + (r.children || 0);
+        attendeesByTrip.set(r.tripId, (attendeesByTrip.get(r.tripId) || 0) + count);
+    });
+    const ranked = trips
+        .map(t => ({ trip: t, count: attendeesByTrip.get(t.id) || 0 }))
+        .filter(x => x.count > 0)
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 5);
+    if (ranked.length === 0) {
+        card.innerHTML = '<div class="empty-state">No registrations yet.</div>';
+        return;
+    }
+    card.innerHTML = `<div class="popular-list">${ranked.map((x, i) => `
+        <div class="popular-row" onclick="openRoster('${x.trip.id}')">
+            <span class="popular-rank">${i + 1}</span>
+            <span class="popular-name">${x.trip.title}</span>
+            <span class="popular-count">${x.count} attendee${x.count === 1 ? '' : 's'}</span>
+        </div>
+    `).join('')}</div>`;
+}
+
+// Cross-trip unpaid list -- reuses the same roster-overlay used for a
+// single trip's roster, since the row markup and Paid pill behavior are
+// identical, just spanning every trip instead of one.
+function openUnpaidModal() {
+    const unpaidRegs = registrations
+        .filter(r => !r.paid)
+        .sort((a, b) => (b.dateRegistered || '').localeCompare(a.dateRegistered || ''));
+
+    document.getElementById('rosterTitle').textContent = 'Unpaid Registrants';
+    const totalDue = unpaidRegs.reduce((sum, r) => sum + (r.total || 0), 0);
+    document.getElementById('rosterSub').textContent = unpaidRegs.length === 0
+        ? 'Everyone is paid up.'
+        : `Across all trips · ${unpaidRegs.length} registration${unpaidRegs.length === 1 ? '' : 's'} · $${totalDue.toFixed(2)} total`;
+
+    document.getElementById('rosterBody').innerHTML = unpaidRegs.map(r => {
+        const trip = trips.find(t => t.id === r.tripId);
+        return `
+            <div class="roster-row">
+                <div>
+                    <div class="roster-name">${escapeHtml(r.parentName)}</div>
+                    <div class="roster-detail">${trip ? trip.title : 'Unknown trip'} · ${r.adults} adults, ${r.children} children · $${(r.total || 0).toFixed(2)}</div>
+                    <div class="roster-detail">${escapeHtml(r.email)}</div>
+                </div>
+                <button class="paid-pill" onclick="markPaidFromUnpaid('${r.tripId}', '${r.id}', this)">Mark Paid</button>
+            </div>
+        `;
+    }).join('');
+
+    openOverlay('roster-overlay');
+}
+
+async function markPaidFromUnpaid(tripId, id, btn) {
+    await togglePaid(tripId, id, btn);
+    openUnpaidModal();
 }
 
 function escapeHtml(s) {
