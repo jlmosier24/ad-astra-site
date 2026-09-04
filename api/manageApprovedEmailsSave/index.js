@@ -1,4 +1,5 @@
 const { getApprovedEmailsTable, toApprovedEmailDto, PARTITION_KEY } = require("../shared/approvedEmailsTable");
+const { logTransaction, getClientPrincipalEmail } = require("../shared/transactionLog");
 
 // Reachable at /api/manageApprovedEmailsSave (default folder-name routing).
 // Protected by an explicit route rule in staticwebapp.config.json (requires
@@ -16,15 +17,25 @@ module.exports = async function (context, req) {
     try {
         const table = getApprovedEmailsTable();
         let dateAdded = new Date().toISOString();
+        let isNew = false;
         try {
             const existing = await table.getEntity(PARTITION_KEY, normalized);
             dateAdded = existing.dateAdded || dateAdded;
         } catch (e) {
             // No existing entry -- this is a new one, keep the fresh timestamp.
+            isNew = true;
         }
 
         const entity = { partitionKey: PARTITION_KEY, rowKey: normalized, label: (label || "").trim(), dateAdded };
         await table.upsertEntity(entity, "Replace");
+        if (isNew) {
+            await logTransaction({
+                action: "created",
+                entityType: "ApprovedEmail",
+                summary: `"${normalized}" added to the approved list`,
+                actor: getClientPrincipalEmail(req)
+            });
+        }
         context.res = { status: 200, body: toApprovedEmailDto(entity) };
     } catch (e) {
         context.log.error("Failed to save approved email:", e);

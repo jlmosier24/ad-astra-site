@@ -2,6 +2,7 @@ const { EmailClient } = require("@azure/communication-email");
 const { getTripsTable, isPastTrip, PARTITION_KEY } = require("../shared/tripsTable");
 const { getRegistrationsTable, getRegisteredCountsByTrip } = require("../shared/registrationsTable");
 const { isApprovedEmail } = require("../shared/approvedEmailsTable");
+const { logTransaction } = require("../shared/transactionLog");
 
 const connectionString = process.env.AZURE_COMMUNICATION_CONNECTION_STRING;
 const client = new EmailClient(connectionString);
@@ -172,6 +173,13 @@ module.exports = async function (context, req) {
         context.res = { status: 500, body: "Error: " + (e.message || e.code || JSON.stringify(e)) };
         return;
     }
+
+    await logTransaction({
+        action: "created",
+        entityType: "Registration",
+        summary: `${parentName} registered for "${trip.title}"`,
+        actor: emailToCheck
+    });
 
     const emailMessage = {
         senderAddress: "DoNotReply@3baad923-9af9-429b-9620-064e01fac201.azurecomm.net",

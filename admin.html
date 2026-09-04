@@ -131,6 +131,17 @@
     .popular-name { font-weight: 700; font-size: 0.9rem; flex-grow: 1; }
     .popular-count { font-size: 0.82rem; color: var(--forest); font-weight: 700; white-space: nowrap; }
 
+    .log-list { display: flex; flex-direction: column; }
+    .log-row { display: flex; align-items: flex-start; gap: 14px; padding: 12px 8px; border-top: 1px solid var(--line); }
+    .log-row:first-child { border-top: none; }
+    .log-badge { flex-shrink: 0; padding: 4px 10px; border-radius: 999px; font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.02em; white-space: nowrap; margin-top: 2px; }
+    .log-badge-created { background: rgba(47,74,59,0.12); color: var(--forest); }
+    .log-badge-deleted { background: rgba(193,68,46,0.12); color: var(--accent); }
+    .log-badge-paid { background: rgba(47,122,61,0.14); color: #2F7A3D; }
+    .log-badge-unpaid { background: rgba(217,154,61,0.16); color: #B5792A; }
+    .log-summary { font-weight: 700; font-size: 0.88rem; }
+    .log-meta { font-size: 0.78rem; color: var(--sub); margin-top: 2px; }
+
     .tab-bar { display: flex; gap: 28px; margin-bottom: 26px; border-bottom: 1px solid var(--line); }
     .tab-btn {
         background: none; border: none; padding: 4px 2px 12px; margin-bottom: -1px;
@@ -188,6 +199,7 @@
         <button class="tab-btn active" id="tabBtn-dashboard" onclick="switchTab('dashboard')">Dashboard</button>
         <button class="tab-btn" id="tabBtn-trips" onclick="switchTab('trips')">Field Trips</button>
         <button class="tab-btn" id="tabBtn-approved" onclick="switchTab('approved')">Approved Users</button>
+        <button class="tab-btn" id="tabBtn-transactions" onclick="switchTab('transactions')">Transactions</button>
     </div>
 
     <div id="tabPanel-dashboard" class="tab-panel active">
@@ -247,6 +259,11 @@
             <button class="btn" onclick="addApprovedEmail()">Add</button>
         </div>
         <div id="approvedEmailsList" class="loading-state">Loading…</div>
+    </div>
+
+    <div id="tabPanel-transactions" class="tab-panel">
+        <div class="hint" style="margin-bottom: 14px;">Creates, deletes, and payment-status changes across trips, registrations, and approved emails. Routine edits aren't logged.</div>
+        <div id="transactionLogList" class="loading-state">Loading…</div>
     </div>
 </div>
 
@@ -394,9 +411,11 @@ function switchTab(tab) {
     document.getElementById('tabPanel-dashboard').classList.toggle('active', tab === 'dashboard');
     document.getElementById('tabPanel-trips').classList.toggle('active', tab === 'trips');
     document.getElementById('tabPanel-approved').classList.toggle('active', tab === 'approved');
+    document.getElementById('tabPanel-transactions').classList.toggle('active', tab === 'transactions');
     document.getElementById('tabBtn-dashboard').classList.toggle('active', tab === 'dashboard');
     document.getElementById('tabBtn-trips').classList.toggle('active', tab === 'trips');
     document.getElementById('tabBtn-approved').classList.toggle('active', tab === 'approved');
+    document.getElementById('tabBtn-transactions').classList.toggle('active', tab === 'transactions');
 }
 
 function toggleOverflowMenu(event, tripId) {
@@ -1201,9 +1220,60 @@ async function removeApprovedEmail(email) {
     }
 }
 
+const LOG_ACTION_LABELS = { created: 'Created', deleted: 'Deleted', paid: 'Paid', unpaid: 'Unpaid' };
+let transactionLog = [];
+
+async function loadTransactionLog() {
+    const listEl = document.getElementById('transactionLogList');
+    listEl.className = 'loading-state';
+    listEl.textContent = 'Loading…';
+    try {
+        const res = await fetchWithAuthRetry('/api/manageTransactionLogList');
+        if (!res.ok) {
+            const text = await res.text();
+            listEl.className = 'empty-state';
+            listEl.textContent = `Could not load the transaction log (HTTP ${res.status}): ${text || 'no details returned by the server'}`;
+            return;
+        }
+        transactionLog = await res.json();
+        renderTransactionLog();
+    } catch (e) {
+        listEl.className = 'empty-state';
+        listEl.textContent = 'Could not load the transaction log: ' + e.message;
+    }
+}
+
+function formatLogTimestamp(iso) {
+    try {
+        return new Date(iso).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
+    } catch (e) {
+        return iso || '';
+    }
+}
+
+function renderTransactionLog() {
+    const listEl = document.getElementById('transactionLogList');
+    if (transactionLog.length === 0) {
+        listEl.className = 'empty-state';
+        listEl.textContent = 'No activity logged yet.';
+        return;
+    }
+    listEl.className = 'log-list';
+    listEl.innerHTML = transactionLog.map(entry => `
+        <div class="log-row">
+            <div class="log-badge log-badge-${entry.action}">${LOG_ACTION_LABELS[entry.action] || entry.action}</div>
+            <div>
+                <div class="log-summary">${escapeHtml(entry.summary || '')}</div>
+                <div class="log-meta">${entry.actor ? escapeHtml(entry.actor) + ' · ' : ''}${formatLogTimestamp(entry.timestamp)}</div>
+            </div>
+        </div>
+    `).join('');
+}
+
 loadWhoAmI();
 loadRegistrations().then(loadTrips);
 loadApprovedEmails();
+loadTransactionLog();
 </script>
 
 </body>

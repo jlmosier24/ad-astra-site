@@ -1,4 +1,5 @@
 const { getTripsTable, PARTITION_KEY } = require("../shared/tripsTable");
+const { logTransaction, getClientPrincipalEmail } = require("../shared/transactionLog");
 
 // Reachable at /api/manageTripsDelete (default folder-name routing). Named
 // to avoid a literal "admin" prefix, since functions starting with "admin"
@@ -14,7 +15,21 @@ module.exports = async function (context, req) {
 
     try {
         const table = getTripsTable();
+        let title = id;
+        try {
+            const trip = await table.getEntity(PARTITION_KEY, id);
+            title = trip.title || id;
+        } catch (e) {
+            // Not fatal -- just falls back to the id in the log summary.
+        }
+
         await table.deleteEntity(PARTITION_KEY, id);
+        await logTransaction({
+            action: "deleted",
+            entityType: "Trip",
+            summary: `"${title}" trip deleted`,
+            actor: getClientPrincipalEmail(req)
+        });
         context.res = { status: 200, body: "Deleted" };
     } catch (e) {
         context.log.error("Failed to delete trip:", e);

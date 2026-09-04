@@ -1,6 +1,7 @@
 const { getTripsTable, PARTITION_KEY } = require("../shared/tripsTable");
 const { getRegistrationsTable } = require("../shared/registrationsTable");
 const { isApprovedEmail } = require("../shared/approvedEmailsTable");
+const { logTransaction } = require("../shared/transactionLog");
 
 // Public endpoint (no role gate) -- a parent can cancel their own
 // registration by re-entering the same approved email. Same authorization
@@ -46,6 +47,12 @@ module.exports = async function (context, req) {
 
     try {
         await registrationsTable.deleteEntity(tripId, registrationId);
+        await logTransaction({
+            action: "deleted",
+            entityType: "Registration",
+            summary: `${existing.parentName || "Registrant"}'s registration for "${tripTitle}" cancelled`,
+            actor: emailToCheck
+        });
         context.res = { status: 200, body: `Your registration for ${tripTitle} has been cancelled.` };
     } catch (e) {
         context.log.error("Failed to cancel registration:", e);

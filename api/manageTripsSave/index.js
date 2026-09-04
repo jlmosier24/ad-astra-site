@@ -1,4 +1,5 @@
 const { getTripsTable, toTripDto, slugify, PARTITION_KEY } = require("../shared/tripsTable");
+const { logTransaction, getClientPrincipalEmail } = require("../shared/transactionLog");
 
 async function generateUniqueId(table, title) {
     const base = slugify(title);
@@ -35,6 +36,7 @@ module.exports = async function (context, req) {
 
     try {
         const table = getTripsTable();
+        const isNew = !id;
         const rowKey = id || await generateUniqueId(table, title);
 
         const entity = {
@@ -57,6 +59,14 @@ module.exports = async function (context, req) {
         if (lon != null && lon !== "") entity.lon = Number(lon);
 
         await table.upsertEntity(entity, "Replace");
+        if (isNew) {
+            await logTransaction({
+                action: "created",
+                entityType: "Trip",
+                summary: `"${title}" trip created`,
+                actor: getClientPrincipalEmail(req)
+            });
+        }
         context.res = { status: 200, body: toTripDto(entity) };
     } catch (e) {
         context.log.error("Failed to save trip:", e);

@@ -1,4 +1,5 @@
 const { getApprovedEmailsTable, PARTITION_KEY } = require("../shared/approvedEmailsTable");
+const { logTransaction, getClientPrincipalEmail } = require("../shared/transactionLog");
 
 // Reachable at /api/manageApprovedEmailsDelete (default folder-name
 // routing). Protected by an explicit route rule in
@@ -13,6 +14,12 @@ module.exports = async function (context, req) {
     try {
         const table = getApprovedEmailsTable();
         await table.deleteEntity(PARTITION_KEY, email);
+        await logTransaction({
+            action: "deleted",
+            entityType: "ApprovedEmail",
+            summary: `"${email}" removed from the approved list`,
+            actor: getClientPrincipalEmail(req)
+        });
         context.res = { status: 200, body: "Deleted" };
     } catch (e) {
         context.log.error("Failed to delete approved email:", e);

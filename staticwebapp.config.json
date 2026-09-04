@@ -13,7 +13,8 @@
     { "route": "/api/geocodeAddress", "allowedRoles": ["administrator"] },
     { "route": "/api/manageApprovedEmailsList", "allowedRoles": ["administrator"] },
     { "route": "/api/manageApprovedEmailsSave", "allowedRoles": ["administrator"] },
-    { "route": "/api/manageApprovedEmailsDelete", "allowedRoles": ["administrator"] }
+    { "route": "/api/manageApprovedEmailsDelete", "allowedRoles": ["administrator"] },
+    { "route": "/api/manageTransactionLogList", "allowedRoles": ["administrator"] }
   ],
   "responseOverrides": {
     "401": {
