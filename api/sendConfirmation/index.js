@@ -1,5 +1,5 @@
 const { EmailClient } = require("@azure/communication-email");
-const { getTripsTable, isPastTrip, PARTITION_KEY } = require("../shared/tripsTable");
+const { getTripsTable, isRegistrationClosed, PARTITION_KEY } = require("../shared/tripsTable");
 const { getRegistrationsTable, getRegisteredCountsByTrip } = require("../shared/registrationsTable");
 const { isApprovedEmail } = require("../shared/approvedEmailsTable");
 const { logTransaction } = require("../shared/transactionLog");
@@ -121,7 +121,7 @@ module.exports = async function (context, req) {
         context.res = { status: 400, body: "Unknown trip." };
         return;
     }
-    if (isPastTrip(trip)) {
+    if (isRegistrationClosed(trip)) {
         context.res = { status: 400, body: "Registration for this trip has closed." };
         return;
     }

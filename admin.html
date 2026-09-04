@@ -74,6 +74,25 @@
     .form-group { margin-bottom: 14px; }
     .form-group label { display: block; font-weight: 700; font-size: 0.82rem; margin-bottom: 5px; }
     .form-group .hint { font-weight: 500; color: var(--sub); font-size: 0.76rem; margin-top: 4px; }
+    .field-label-row { position: relative; display: flex; align-items: center; gap: 6px; margin-bottom: 5px; }
+    .field-label-row label { margin-bottom: 0; }
+    .info-btn {
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid var(--sub); color: var(--sub);
+        background: none; font-size: 0.66rem; font-weight: 700; font-family: inherit; cursor: pointer; padding: 0; line-height: 1;
+    }
+    .info-btn:hover, .info-btn:focus-visible { border-color: var(--accent); color: var(--accent); }
+    .tooltip {
+        position: absolute; top: calc(100% + 9px); left: 0; z-index: 10;
+        background: var(--ink); color: #fff; font-size: 0.76rem; font-weight: 500; line-height: 1.45;
+        padding: 9px 12px; border-radius: 8px; width: max-content; max-width: 220px;
+        opacity: 0; transform: translateY(-4px); pointer-events: none; transition: opacity 0.15s ease, transform 0.15s ease;
+    }
+    .tooltip.visible { opacity: 1; transform: translateY(0); }
+    .tooltip::after {
+        content: ''; position: absolute; bottom: 100%; left: 12px;
+        border: 5px solid transparent; border-bottom-color: var(--ink);
+    }
     .address-suggestions {
         display: none; position: absolute; top: 100%; left: 0; right: 0; z-index: 10;
         background: var(--paper); border: 1px solid var(--line); border-radius: 8px; margin-top: 4px;
@@ -300,16 +319,26 @@
             </div>
         </div>
 
-        <div class="form-group">
-            <label>Point of Contact</label>
-            <select id="poc">
-                <option value="">— None selected —</option>
-                <option value="Alexis Conley">Alexis Conley</option>
-                <option value="Sam Levesque">Sam Levesque</option>
-                <option value="Kristina Palmer">Kristina Palmer</option>
-                <option value="Rachel Bueng">Rachel Bueng</option>
-                <option value="Linda Mosier">Linda Mosier</option>
-            </select>
+        <div class="form-row">
+            <div class="form-group">
+                <div class="field-label-row">
+                    <label>Registration Deadline</label>
+                    <button type="button" class="info-btn" id="deadlineInfoBtn" aria-label="What does Registration Deadline do?">i</button>
+                    <div class="tooltip" id="deadlineTooltip" role="tooltip">Closes sign-ups at the end of this day instead of waiting for the trip date. Leave blank to allow registration right up to the trip.</div>
+                </div>
+                <input type="date" id="registrationDeadline">
+            </div>
+            <div class="form-group">
+                <label>Point of Contact</label>
+                <select id="poc">
+                    <option value="">— None selected —</option>
+                    <option value="Alexis Conley">Alexis Conley</option>
+                    <option value="Sam Levesque">Sam Levesque</option>
+                    <option value="Kristina Palmer">Kristina Palmer</option>
+                    <option value="Rachel Bueng">Rachel Bueng</option>
+                    <option value="Linda Mosier">Linda Mosier</option>
+                </select>
+            </div>
         </div>
 
         <div class="form-group">
@@ -431,6 +460,18 @@ function closeOverflowMenus() {
 }
 
 document.addEventListener('click', closeOverflowMenus);
+
+const deadlineInfoBtn = document.getElementById('deadlineInfoBtn');
+const deadlineTooltip = document.getElementById('deadlineTooltip');
+deadlineInfoBtn.addEventListener('mouseenter', () => deadlineTooltip.classList.add('visible'));
+deadlineInfoBtn.addEventListener('mouseleave', () => deadlineTooltip.classList.remove('visible'));
+deadlineInfoBtn.addEventListener('focus', () => deadlineTooltip.classList.add('visible'));
+deadlineInfoBtn.addEventListener('blur', () => deadlineTooltip.classList.remove('visible'));
+deadlineInfoBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    deadlineTooltip.classList.toggle('visible');
+});
+document.addEventListener('click', () => deadlineTooltip.classList.remove('visible'));
 
 let editingTripHidden = false;
 
@@ -763,7 +804,7 @@ function selectAddressSuggestion(i) {
 function openForm() {
     document.getElementById('formTitle').textContent = 'Add Field Trip';
     document.getElementById('tripId').value = '';
-    ['title', 'address', 'placeName', 'date', 'time', 'poc', 'description', 'image'].forEach(id => document.getElementById(id).value = '');
+    ['title', 'address', 'placeName', 'date', 'time', 'registrationDeadline', 'poc', 'description', 'image'].forEach(id => document.getElementById(id).value = '');
     ['adultPrice', 'childPrice', 'capacity', 'addressLat', 'addressLon'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('addressSuggestions').style.display = 'none';
     editingTripHidden = false;
@@ -787,6 +828,7 @@ function editTrip(id) {
     document.getElementById('addressSuggestions').style.display = 'none';
     document.getElementById('date').value = t.date;
     document.getElementById('time').value = t.time || '';
+    document.getElementById('registrationDeadline').value = t.registrationDeadline || '';
     document.getElementById('poc').value = t.poc || '';
     document.getElementById('description').value = t.description;
     document.getElementById('adultPrice').value = t.adultPrice;
@@ -871,6 +913,7 @@ async function saveTrip() {
         lon: document.getElementById('addressLon').value,
         date: document.getElementById('date').value,
         time: document.getElementById('time').value,
+        registrationDeadline: document.getElementById('registrationDeadline').value,
         poc: document.getElementById('poc').value,
         description: document.getElementById('description').value.trim(),
         adultPrice: parseFloat(document.getElementById('adultPrice').value) || 0,
@@ -915,6 +958,7 @@ async function toggleHidden(id) {
         lon: t.lon,
         date: t.date,
         time: t.time || '',
+        registrationDeadline: t.registrationDeadline || '',
         poc: t.poc || '',
         description: t.description,
         adultPrice: t.adultPrice,

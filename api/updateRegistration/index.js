@@ -1,4 +1,4 @@
-const { getTripsTable, isPastTrip, PARTITION_KEY } = require("../shared/tripsTable");
+const { getTripsTable, isRegistrationClosed, PARTITION_KEY } = require("../shared/tripsTable");
 const { getRegistrationsTable, getRegisteredCountsByTrip } = require("../shared/registrationsTable");
 const { isApprovedEmail } = require("../shared/approvedEmailsTable");
 
@@ -34,8 +34,8 @@ module.exports = async function (context, req) {
         context.res = { status: 400, body: "Unknown trip." };
         return;
     }
-    if (isPastTrip(trip)) {
-        context.res = { status: 400, body: "This trip has already happened, so registrations can no longer be changed." };
+    if (isRegistrationClosed(trip)) {
+        context.res = { status: 400, body: "Registration for this trip is closed, so it can no longer be changed." };
         return;
     }
 

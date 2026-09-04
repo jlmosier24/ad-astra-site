@@ -95,6 +95,8 @@
     .price span { display: block; font-family: 'Public Sans', sans-serif; font-size: 0.68rem; font-weight: 500; color: var(--sub); }
     .btn { background: var(--ink); color: #fff; border: none; padding: 10px 20px; border-radius: 999px; font-weight: 700; font-size: 0.84rem; cursor: pointer; white-space: nowrap; }
     .btn:hover { background: var(--accent); }
+    .deadline-note { font-size: 0.76rem; color: var(--sub); margin-top: -6px; margin-bottom: 12px; }
+    .closed-pill { background: var(--cream); color: var(--sub); border-radius: 999px; padding: 10px 18px; font-weight: 700; font-size: 0.84rem; white-space: nowrap; }
 
     /* Loading skeletons, shown in the trips grid until /api/trips resolves
        -- so a cold start or slow connection reads as "loading" rather than
@@ -368,6 +370,23 @@ function formatFullDate(isoDate, time) {
     return timeLabel ? `${dateLabel} at ${timeLabel}` : dateLabel;
 }
 
+// Trips with a past date never reach the client -- /api/trips excludes them.
+// A registrationDeadline can still close sign-ups early on an upcoming trip,
+// so that's checked here against the browser's own local "today".
+function isRegistrationClosed(t) {
+    if (!t.registrationDeadline) return false;
+    const [y, m, d] = t.registrationDeadline.split('-').map(Number);
+    const deadline = new Date(y, m - 1, d);
+    deadline.setHours(23, 59, 59, 999);
+    return new Date() > deadline;
+}
+
+function deadlineNoteLabel(t) {
+    const [y, m, d] = t.registrationDeadline.split('-').map(Number);
+    const label = new Date(y, m - 1, d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return `Register by ${label}`;
+}
+
 function formatCardPrice(t) {
     if (t.adultPrice === 0 && t.childPrice === 0) return 'Free';
     const adultText = t.adultPrice === 0 ? 'Free' : `$${t.adultPrice.toFixed(2)}`;
@@ -493,9 +512,12 @@ function renderTripCards() {
                     </a>
                 </div>
                 <div class="card-desc">${t.description}</div>
+                ${t.registrationDeadline && !isRegistrationClosed(t) ? `<div class="deadline-note">${deadlineNoteLabel(t)}</div>` : ''}
                 <div class="card-footer">
                     <div class="price">${formatCardPrice(t)}</div>
-                    <button class="btn" onclick="openModal('${t.id}')">Register</button>
+                    ${isRegistrationClosed(t)
+                        ? `<span class="closed-pill">Registration Closed</span>`
+                        : `<button class="btn" onclick="openModal('${t.id}')">Register</button>`}
                 </div>
             </div>
         </div>

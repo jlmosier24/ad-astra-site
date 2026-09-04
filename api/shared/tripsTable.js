@@ -18,6 +18,7 @@ function toTripDto(entity) {
         lon: entity.lon,
         date: entity.date,
         time: entity.time || "",
+        registrationDeadline: entity.registrationDeadline || "",
         poc: entity.poc || "",
         description: entity.description,
         adultPrice: entity.adultPrice,
@@ -64,6 +65,15 @@ function isPastTrip(trip) {
     return !!trip.date && trip.date < todayIsoDate();
 }
 
+// Registration can close earlier than the trip itself -- either because
+// the trip has already happened, or because an explicit deadline (for a
+// headcount a coordinator needs a few days early) has passed. The trip
+// still shows on the public site either way; only sign-ups are blocked.
+function isRegistrationClosed(trip) {
+    if (isPastTrip(trip)) return true;
+    return !!trip.registrationDeadline && trip.registrationDeadline < todayIsoDate();
+}
+
 function slugify(title) {
     return title
         .toLowerCase()
@@ -72,4 +82,4 @@ function slugify(title) {
         .replace(/(^-|-$)/g, "") || "trip";
 }
 
-module.exports = { getTripsTable, toTripDto, withLiveSpotsRemaining, sortByDate, todayIsoDate, isPastTrip, slugify, PARTITION_KEY };
+module.exports = { getTripsTable, toTripDto, withLiveSpotsRemaining, sortByDate, todayIsoDate, isPastTrip, isRegistrationClosed, slugify, PARTITION_KEY };
