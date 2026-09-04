@@ -323,8 +323,8 @@
             <div class="form-group">
                 <div class="field-label-row">
                     <label>Registration Deadline</label>
-                    <button type="button" class="info-btn" id="deadlineInfoBtn" aria-label="What does Registration Deadline do?">i</button>
-                    <div class="tooltip" id="deadlineTooltip" role="tooltip">Closes sign-ups at the end of this day instead of waiting for the trip date. Leave blank to allow registration right up to the trip.</div>
+                    <button type="button" class="info-btn" aria-label="What does Registration Deadline do?">i</button>
+                    <div class="tooltip" role="tooltip">Closes sign-ups at the end of this day instead of waiting for the trip date. Leave blank to allow registration right up to the trip.</div>
                 </div>
                 <input type="date" id="registrationDeadline">
             </div>
@@ -358,9 +358,12 @@
         </div>
 
         <div class="form-group">
-            <label>Total capacity</label>
+            <div class="field-label-row">
+                <label>Total capacity</label>
+                <button type="button" class="info-btn" aria-label="What does Total capacity do?">i</button>
+                <div class="tooltip" role="tooltip">Leave blank or 0 for no maximum. Spots remaining is now calculated automatically from actual registrations — no need to track it by hand.</div>
+            </div>
             <input type="number" id="capacity" min="0">
-            <div class="hint">Leave blank or 0 for no maximum. Spots remaining is now calculated automatically from actual registrations — no need to track it by hand.</div>
         </div>
 
         <div class="form-group">
@@ -461,17 +464,20 @@ function closeOverflowMenus() {
 
 document.addEventListener('click', closeOverflowMenus);
 
-const deadlineInfoBtn = document.getElementById('deadlineInfoBtn');
-const deadlineTooltip = document.getElementById('deadlineTooltip');
-deadlineInfoBtn.addEventListener('mouseenter', () => deadlineTooltip.classList.add('visible'));
-deadlineInfoBtn.addEventListener('mouseleave', () => deadlineTooltip.classList.remove('visible'));
-deadlineInfoBtn.addEventListener('focus', () => deadlineTooltip.classList.add('visible'));
-deadlineInfoBtn.addEventListener('blur', () => deadlineTooltip.classList.remove('visible'));
-deadlineInfoBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    deadlineTooltip.classList.toggle('visible');
+document.querySelectorAll('.info-btn').forEach(btn => {
+    const tooltip = btn.nextElementSibling;
+    btn.addEventListener('mouseenter', () => tooltip.classList.add('visible'));
+    btn.addEventListener('mouseleave', () => tooltip.classList.remove('visible'));
+    btn.addEventListener('focus', () => tooltip.classList.add('visible'));
+    btn.addEventListener('blur', () => tooltip.classList.remove('visible'));
+    btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const wasVisible = tooltip.classList.contains('visible');
+        document.querySelectorAll('.tooltip.visible').forEach(t => t.classList.remove('visible'));
+        tooltip.classList.toggle('visible', !wasVisible);
+    });
 });
-document.addEventListener('click', () => deadlineTooltip.classList.remove('visible'));
+document.addEventListener('click', () => document.querySelectorAll('.tooltip.visible').forEach(t => t.classList.remove('visible')));
 
 let editingTripHidden = false;
 
