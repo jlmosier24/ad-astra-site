@@ -357,22 +357,28 @@
             </div>
         </div>
 
-        <div class="form-group">
-            <div class="field-label-row">
-                <label>Total capacity</label>
-                <button type="button" class="info-btn" aria-label="What does Total capacity do?">i</button>
-                <div class="tooltip" role="tooltip">Leave blank or 0 for no maximum. Spots remaining is now calculated automatically from actual registrations — no need to track it by hand.</div>
+        <div class="form-row">
+            <div class="form-group">
+                <div class="field-label-row">
+                    <label>Photo</label>
+                    <button type="button" class="info-btn" aria-label="What does Photo do?">i</button>
+                    <div class="tooltip" role="tooltip">Choose a photo to replace the current one, or leave blank to keep it.</div>
+                </div>
+                <input type="file" id="imageFile" accept="image/*" onchange="uploadImage()">
+                <div class="hint" id="uploadStatus"></div>
+                <input type="hidden" id="image">
             </div>
-            <input type="number" id="capacity" min="0">
+            <div class="form-group">
+                <div class="field-label-row">
+                    <label>Total capacity</label>
+                    <button type="button" class="info-btn" aria-label="What does Total capacity do?">i</button>
+                    <div class="tooltip" role="tooltip">Leave blank or 0 for no maximum. Spots remaining is now calculated automatically from actual registrations — no need to track it by hand.</div>
+                </div>
+                <input type="number" id="capacity" min="0">
+            </div>
         </div>
 
-        <div class="form-group">
-            <label>Photo</label>
-            <input type="file" id="imageFile" accept="image/*" onchange="uploadImage()">
-            <div class="hint" id="uploadStatus">Choose a photo to upload, or leave blank to keep the current one.</div>
-            <img id="imagePreview" style="display:none; max-width: 160px; border-radius: 8px; margin-top: 10px;">
-            <input type="hidden" id="image">
-        </div>
+        <img id="imagePreview" style="display:none; max-width: 160px; border-radius: 8px; margin-top: 10px;">
 
         <div class="modal-actions">
             <span class="modal-cancel" style="color: var(--sub); cursor: pointer; font-weight: 600; font-size: 0.88rem;" onclick="closeForm()">Cancel</span>
@@ -816,7 +822,7 @@ function openForm() {
     editingTripHidden = false;
     document.getElementById('imageFile').value = '';
     document.getElementById('imagePreview').style.display = 'none';
-    document.getElementById('uploadStatus').textContent = 'Choose a photo to upload, or leave blank to keep the current one.';
+    document.getElementById('uploadStatus').textContent = '';
     document.getElementById('status-message').style.display = 'none';
     openOverlay('modal-overlay');
 }
@@ -850,7 +856,7 @@ function editTrip(id) {
     } else {
         preview.style.display = 'none';
     }
-    document.getElementById('uploadStatus').textContent = 'Choose a photo to replace the current one, or leave blank to keep it.';
+    document.getElementById('uploadStatus').textContent = '';
     document.getElementById('status-message').style.display = 'none';
     openOverlay('modal-overlay');
 }
