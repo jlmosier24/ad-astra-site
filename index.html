@@ -96,6 +96,27 @@
     .btn { background: var(--ink); color: #fff; border: none; padding: 10px 20px; border-radius: 999px; font-weight: 700; font-size: 0.84rem; cursor: pointer; white-space: nowrap; }
     .btn:hover { background: var(--accent); }
 
+    /* Loading skeletons, shown in the trips grid until /api/trips resolves
+       -- so a cold start or slow connection reads as "loading" rather than
+       a blank, possibly-broken page. */
+    .skeleton-card { background: var(--paper); border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 8px 22px rgba(34,30,25,0.06); }
+    .skeleton-img { height: 210px; }
+    .skeleton-body { padding: 20px 22px 22px; display: flex; flex-direction: column; flex-grow: 1; }
+    .skeleton-line { border-radius: 4px; }
+    .skeleton-footer { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--line); padding-top: 14px; margin-top: auto; }
+    .shimmer {
+        background: linear-gradient(90deg, var(--line) 0%, var(--line) 40%, rgba(255,255,255,0.8) 50%, var(--line) 60%, var(--line) 100%);
+        background-size: 200% 100%;
+        animation: shimmer 1.6s linear infinite;
+    }
+    @keyframes shimmer {
+        from { background-position: 200% 0; }
+        to { background-position: -200% 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .shimmer { animation: none; background: var(--line); }
+    }
+
     footer { text-align: center; padding: 30px 24px 50px; font-size: 0.8rem; color: var(--sub); border-top: 1px solid var(--line); }
 
     /* Registration modal (functionality carried over from the previous site) */
@@ -199,7 +220,50 @@
     <div class="trips-head">
         <h2>Upcoming Trips</h2>
     </div>
-    <div class="grid" id="tripsGrid"></div>
+    <div class="grid" id="tripsGrid">
+        <div class="skeleton-card">
+            <div class="skeleton-img shimmer"></div>
+            <div class="skeleton-body">
+                <div class="skeleton-line shimmer" style="width: 60%; height: 22px; margin-bottom: 12px;"></div>
+                <div class="skeleton-line shimmer" style="width: 85%; height: 14px; margin-bottom: 16px;"></div>
+                <div class="skeleton-line shimmer" style="width: 100%; height: 12px; margin-bottom: 8px;"></div>
+                <div class="skeleton-line shimmer" style="width: 90%; height: 12px; margin-bottom: 8px;"></div>
+                <div class="skeleton-line shimmer" style="width: 55%; height: 12px; margin-bottom: 18px;"></div>
+                <div class="skeleton-footer">
+                    <div class="skeleton-line shimmer" style="width: 70px; height: 20px;"></div>
+                    <div class="skeleton-line shimmer" style="width: 100px; height: 38px; border-radius: 999px;"></div>
+                </div>
+            </div>
+        </div>
+        <div class="skeleton-card">
+            <div class="skeleton-img shimmer"></div>
+            <div class="skeleton-body">
+                <div class="skeleton-line shimmer" style="width: 70%; height: 22px; margin-bottom: 12px;"></div>
+                <div class="skeleton-line shimmer" style="width: 80%; height: 14px; margin-bottom: 16px;"></div>
+                <div class="skeleton-line shimmer" style="width: 100%; height: 12px; margin-bottom: 8px;"></div>
+                <div class="skeleton-line shimmer" style="width: 95%; height: 12px; margin-bottom: 8px;"></div>
+                <div class="skeleton-line shimmer" style="width: 65%; height: 12px; margin-bottom: 18px;"></div>
+                <div class="skeleton-footer">
+                    <div class="skeleton-line shimmer" style="width: 70px; height: 20px;"></div>
+                    <div class="skeleton-line shimmer" style="width: 100px; height: 38px; border-radius: 999px;"></div>
+                </div>
+            </div>
+        </div>
+        <div class="skeleton-card">
+            <div class="skeleton-img shimmer"></div>
+            <div class="skeleton-body">
+                <div class="skeleton-line shimmer" style="width: 55%; height: 22px; margin-bottom: 12px;"></div>
+                <div class="skeleton-line shimmer" style="width: 90%; height: 14px; margin-bottom: 16px;"></div>
+                <div class="skeleton-line shimmer" style="width: 100%; height: 12px; margin-bottom: 8px;"></div>
+                <div class="skeleton-line shimmer" style="width: 85%; height: 12px; margin-bottom: 8px;"></div>
+                <div class="skeleton-line shimmer" style="width: 60%; height: 12px; margin-bottom: 18px;"></div>
+                <div class="skeleton-footer">
+                    <div class="skeleton-line shimmer" style="width: 70px; height: 20px;"></div>
+                    <div class="skeleton-line shimmer" style="width: 100px; height: 38px; border-radius: 999px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <footer>Ad Astra Active · Fredericksburg, VA · <a href="admin.html" style="color: inherit;">Admin</a></footer>
