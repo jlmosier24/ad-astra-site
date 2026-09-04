@@ -165,7 +165,7 @@ module.exports = async function (context, req) {
             adults: adultCount,
             children: childCount,
             total,
-            paid: false,
+            paid: total === 0,
             dateRegistered: new Date().toISOString()
         });
     } catch (e) {
