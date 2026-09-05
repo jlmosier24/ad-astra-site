@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ad Astra Active | Field Trips</title>
+<meta name="description" content="Field trip sign-ups and schedules for the Ad Astra Active homeschool co-op in Fredericksburg, VA.">
+<meta property="og:title" content="Ad Astra Active | Field Trips">
+<meta property="og:description" content="Field trip sign-ups and schedules for the Ad Astra Active homeschool co-op in Fredericksburg, VA.">
+<meta property="og:type" content="website">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cpath d='M24 8 L27.2 19.6 L39 22 L27.2 24.4 L24 36 L20.8 24.4 L9 22 L20.8 19.6 Z' fill='%23C1442E'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Public+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
     :root {
@@ -487,7 +494,7 @@ function renderTripCards() {
     grid.innerHTML = trips.map(t => `
         <div class="card">
             <div class="art-frame">
-                <img src="${t.image}" alt="${t.title}">
+                <img src="${t.image}" alt="${t.title}" loading="lazy">
                 <div class="art-fade"></div>
                 ${t.capacity > 0 ? `<div class="spots-tag">Limited capacity</div>` : ''}
                 <div class="date-tag">${formatDateLabel(t.date)}</div>
