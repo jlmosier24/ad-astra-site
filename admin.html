@@ -523,7 +523,8 @@ async function loadWhoAmI() {
         const data = await res.json();
         const principal = data.clientPrincipal;
         if (principal) {
-            el.innerHTML = `${principal.userDetails} &nbsp;·&nbsp; <a href="/.auth/logout">Log out</a>`;
+            const displayName = (principal.userDetails || '').split('@')[0];
+            el.innerHTML = `${displayName} &nbsp;·&nbsp; <a href="/.auth/logout">Log out</a>`;
         } else {
             el.innerHTML = `<a href="/.auth/login/aad">Log in</a>`;
         }
