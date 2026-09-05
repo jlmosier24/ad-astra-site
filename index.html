@@ -42,24 +42,17 @@
     .hero-scrim { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0.12) 0%, rgba(0,0,0,0.03) 40%, rgba(0,0,0,0.45) 100%); z-index: 1; }
 
     .hero-date-tag { position: absolute; top: 20px; right: 24px; z-index: 2; background: var(--accent); color: #fff; border-radius: 999px; padding: 5px 14px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; transition: opacity 0.3s ease; }
-    .hero-headline {
-        position: absolute; left: 24px; right: 24px; top: 44%; z-index: 2;
-        transform: translateY(-50%);
-        font-family: 'Anton', sans-serif; font-weight: 400;
-        font-size: clamp(2.2rem, 6.5vw, 4.4rem);
-        line-height: 0.95; color: #fff; text-transform: uppercase;
-        transition: opacity 0.3s ease;
-    }
-    .hero-dots { position: absolute; left: 24px; bottom: 78px; z-index: 2; display: flex; gap: 8px; }
+    .hero-dots { position: absolute; left: 50%; transform: translateX(-50%); bottom: 20px; z-index: 2; display: flex; gap: 8px; }
     .hero-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.4); border: none; cursor: pointer; padding: 0; }
     .hero-dot.active { background: #fff; }
-    .hero-cta {
-        position: absolute; right: 24px; bottom: 24px; z-index: 2; width: 84px; height: 84px; border-radius: 50%;
-        background: rgba(255,255,255,0.16); border: 1px solid rgba(255,255,255,0.5); backdrop-filter: blur(3px);
-        color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
-        font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; cursor: pointer;
+    .hero-chip {
+        position: absolute; left: 24px; bottom: 24px; z-index: 2;
+        background: rgba(34,30,25,0.86); color: #fff; border-radius: 12px;
+        padding: 10px 10px 10px 18px; display: flex; align-items: center; gap: 16px;
+        transition: opacity 0.3s ease;
     }
-    .hero-cta svg { width: 16px; height: 16px; }
+    .hero-chip-title { font-family: 'Anton', sans-serif; font-weight: 400; font-size: 1.3rem; line-height: 1; color: #fff; text-transform: uppercase; }
+    .hero-chip-btn { background: #fff; color: var(--ink); border: none; padding: 9px 18px; border-radius: 8px; font-weight: 700; font-size: 0.82rem; cursor: pointer; white-space: nowrap; }
 
     .trips { max-width: 1080px; margin: 0 auto; padding: 40px 24px 80px; }
     .trips-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 26px; flex-wrap: wrap; gap: 8px; }
@@ -210,11 +203,10 @@
         <div class="hero-bg-layer" id="heroBgLayer"></div>
         <div class="hero-scrim"></div>
         <div class="hero-date-tag" id="heroDateTag"></div>
-        <div class="hero-headline" id="heroHeadline"></div>
         <div class="hero-dots" id="heroDots"></div>
-        <div class="hero-cta" id="heroCta">
-            <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
-            Register
+        <div class="hero-chip" id="heroChip">
+            <div class="hero-chip-title" id="heroHeadline"></div>
+            <button class="hero-chip-btn" id="heroCta">Register</button>
         </div>
     </div>
 </div>
@@ -447,13 +439,13 @@ function applyHeroSlide(idx) {
 }
 
 function fadeToHeroSlide(idx) {
-    const headline = document.getElementById('heroHeadline');
+    const chip = document.getElementById('heroChip');
     const dateTag = document.getElementById('heroDateTag');
-    headline.style.opacity = 0;
+    chip.style.opacity = 0;
     dateTag.style.opacity = 0;
     setTimeout(() => {
         applyHeroSlide(idx);
-        headline.style.opacity = 1;
+        chip.style.opacity = 1;
         dateTag.style.opacity = 1;
     }, 300);
 }
