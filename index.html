@@ -62,6 +62,9 @@
     .hero-chip-title { font-family: 'Anton', sans-serif; font-weight: 400; font-size: 1.3rem; line-height: 1; color: #fff; text-transform: uppercase; }
     .hero-chip-btn { background: #fff; color: var(--ink); border: none; padding: 9px 18px; border-radius: 8px; font-weight: 700; font-size: 0.82rem; cursor: pointer; white-space: nowrap; }
 
+    .mobile-tagline { display: none; padding: 0 24px 14px; font-size: 0.86rem; line-height: 1.5; color: var(--sub); }
+    .mobile-tagline strong { color: var(--ink); font-weight: 700; }
+
     .trips { max-width: 1080px; margin: 0 auto; padding: 40px 24px 80px; }
     .trips-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 26px; flex-wrap: wrap; gap: 8px; }
     .trips-head h2 { font-family: 'Anton', sans-serif; font-weight: 400; text-transform: uppercase; font-size: clamp(1.6rem, 3.5vw, 2.2rem); margin: 0; letter-spacing: 0.01em; }
@@ -180,7 +183,8 @@
         }
         .nav-links.open { display: flex; }
         .hero { display: none; }
-        .trips { padding-top: 18px; }
+        .mobile-tagline { display: block; }
+        .trips { padding-top: 4px; }
         .grid { grid-template-columns: 1fr; }
         .card-footer { flex-direction: column; align-items: stretch; gap: 12px; }
         .btn { width: 100%; padding: 12px; }
@@ -205,6 +209,8 @@
         <a href="#">Contact</a>
     </div>
 </nav>
+
+<p class="mobile-tagline">Field trips for our homeschool co-op &mdash; <strong>history, science, and the outdoors</strong>.</p>
 
 <div class="hero">
     <div class="hero-frame">
