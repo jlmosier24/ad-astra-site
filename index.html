@@ -436,6 +436,7 @@ function closeOverlay(id) {
 
 let selectedTrip = null;
 let existingRegistration = null;
+let suggestedName = null;
 
 function renderHeroLayer() {
     const layer = document.getElementById('heroBgLayer');
@@ -539,6 +540,7 @@ function openModal(tripId) {
     selectedTrip = trips.find(t => t.id === tripId);
     if (!selectedTrip) return;
     existingRegistration = null;
+    suggestedName = null;
 
     const modalImage = document.getElementById('modalImage');
     modalImage.src = selectedTrip.image;
@@ -599,7 +601,7 @@ function populateRegForm() {
         notice.style.display = 'none';
         submitBtn.textContent = 'Complete Registration';
         cancelLink.style.display = 'none';
-        document.getElementById('parentName').value = '';
+        document.getElementById('parentName').value = suggestedName || '';
         document.getElementById('adultCount').value = '0';
         document.getElementById('childCount').value = '0';
         document.getElementById('adultCountDisplay').textContent = '0';
@@ -691,6 +693,7 @@ function closeModal() {
     document.getElementById('parentName').value = '';
     selectedTrip = null;
     existingRegistration = null;
+    suggestedName = null;
 }
 
 async function verifyEmail() {
@@ -706,6 +709,7 @@ async function verifyEmail() {
             return;
         }
         existingRegistration = data.existingRegistration || null;
+        suggestedName = data.suggestedName || null;
         document.getElementById('status-message').style.display = 'none';
         document.getElementById('email-section').style.display = 'none';
         document.getElementById('reg-form').style.display = 'block';
