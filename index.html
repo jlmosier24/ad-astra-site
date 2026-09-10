@@ -73,7 +73,7 @@
     .trips-head p { color: var(--sub); font-size: 0.9rem; margin: 0; }
 
     .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
-    .card { background: var(--paper); border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 8px 22px rgba(34,30,25,0.06); }
+    .card { background: var(--paper); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 8px 22px rgba(34,30,25,0.06); }
     .art-frame { position: relative; height: 210px; overflow: hidden; background: #B7D8E0; }
     .art-frame img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 40%; display: block; }
     .art-fade { position: absolute; left: 0; right: 0; bottom: 0; height: 60px; background: linear-gradient(to top, rgba(0,0,0,0.28), rgba(0,0,0,0)); pointer-events: none; }
@@ -107,7 +107,7 @@
     /* Loading skeletons, shown in the trips grid until /api/trips resolves
        -- so a cold start or slow connection reads as "loading" rather than
        a blank, possibly-broken page. */
-    .skeleton-card { background: var(--paper); border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 8px 22px rgba(34,30,25,0.06); }
+    .skeleton-card { background: var(--paper); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 8px 22px rgba(34,30,25,0.06); }
     .skeleton-img { height: 210px; }
     .skeleton-body { padding: 20px 22px 22px; display: flex; flex-direction: column; flex-grow: 1; }
     .skeleton-line { border-radius: 4px; }
