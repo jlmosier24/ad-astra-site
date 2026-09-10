@@ -26,7 +26,8 @@
     }
     * { box-sizing: border-box; }
     :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-    body { margin: 0; min-height: 100vh; background: #FBFAF7; font-family: 'Manrope', sans-serif; color: var(--ink); }
+    body { margin: 0; min-height: 100vh; background: #FBFAF7; font-family: 'Manrope', sans-serif; color: var(--ink); visibility: hidden; }
+    body.auth-checked { visibility: visible; }
 
     nav {
         display: flex; align-items: center; justify-content: space-between;
@@ -849,6 +850,7 @@ async function init() {
     } catch (e) {
         trips = [];
     }
+    document.body.classList.add('auth-checked');
 
     renderTripCards();
     const heroEl = document.querySelector('.hero');
@@ -873,6 +875,9 @@ async function init() {
 }
 
 init();
+// Safety net: if the auth check hangs (slow connection, cold start), don't
+// leave the page invisible forever -- surface it as-is after a few seconds.
+setTimeout(() => document.body.classList.add('auth-checked'), 6000);
 </script>
 
 </body>
