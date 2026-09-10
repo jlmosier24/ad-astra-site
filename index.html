@@ -62,10 +62,11 @@
     .hero-chip-btn { background: #fff; color: var(--ink); border: none; padding: 9px 18px; border-radius: 8px; font-weight: 700; font-size: 0.82rem; cursor: pointer; white-space: nowrap; }
 
     .mobile-banner { display: none; }
-    .mobile-banner-photo { margin: 0 24px; border-radius: 16px; overflow: hidden; height: 150px; box-shadow: 0 8px 22px rgba(34,30,25,0.08); }
-    .mobile-banner-photo img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 35%; display: block; }
-    .mobile-tagline { padding: 12px 24px 14px; margin: 0; font-size: 0.86rem; line-height: 1.5; color: var(--sub); }
-    .mobile-tagline strong { color: var(--ink); font-weight: 700; }
+    .banner-icon-card { margin: 0 24px; background: var(--forest); border-radius: 16px; padding: 20px 20px 19px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 8px 22px rgba(34,30,25,0.08); }
+    .banner-icon-badge { width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; }
+    .banner-icon-badge svg { width: 30px; height: 30px; }
+    .banner-icon-title { font-family: 'Anton', sans-serif; font-weight: 400; text-transform: uppercase; font-size: 1.15rem; line-height: 1.2; color: #fff; letter-spacing: 0.01em; }
+    .banner-icon-sub { font-size: 0.82rem; color: rgba(255,255,255,0.82); line-height: 1.5; }
 
     .trips { max-width: 1080px; margin: 0 auto; padding: 40px 24px 80px; }
     .trips-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 26px; flex-wrap: wrap; gap: 8px; }
@@ -210,10 +211,15 @@
 </nav>
 
 <div class="mobile-banner">
-    <div class="mobile-banner-photo">
-        <img src="images/mobile-banner-goat.jpg" alt="Kids feeding a goat on an Ad Astra Active field trip">
+    <div class="banner-icon-card">
+        <div class="banner-icon-badge">
+            <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M24 6 L27.2 19.6 L39 22 L27.2 24.4 L24 38 L20.8 24.4 L9 22 L20.8 19.6 Z" fill="#D99A3D"/>
+            </svg>
+        </div>
+        <div class="banner-icon-title">Field Trips for Our Co-op</div>
+        <div class="banner-icon-sub">History, science, and the outdoors &mdash; a few times each season.</div>
     </div>
-    <p class="mobile-tagline">Field trips for our homeschool co-op &mdash; <strong>history, science, and the outdoors</strong>.</p>
 </div>
 
 <div class="hero">
