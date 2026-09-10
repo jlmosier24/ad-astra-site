@@ -182,7 +182,7 @@ module.exports = async function (context, req) {
     });
 
     const emailMessage = {
-        senderAddress: "DoNotReply@3baad923-9af9-429b-9620-064e01fac201.azurecomm.net",
+        senderAddress: "registration@adastraactive.com",
         content: {
             subject: `Registration Confirmed: ${trip.title}`,
             html: buildConfirmationHtml({ trip, parentName, adultCount, childCount, total }),
