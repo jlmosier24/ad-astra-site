@@ -1,7 +1,16 @@
 const { getTripsTable, toTripDto, withLiveSpotsRemaining, sortByDate, isPastTrip, PARTITION_KEY } = require("../shared/tripsTable");
 const { getRegisteredCountsByTrip } = require("../shared/registrationsTable");
+const { isApprovedEmail } = require("../shared/approvedEmailsTable");
+const { parseCookies, verifySessionToken, SESSION_COOKIE_NAME } = require("../shared/sessionAuth");
 
 module.exports = async function (context, req) {
+    const cookies = parseCookies(req);
+    const email = verifySessionToken(cookies[SESSION_COOKIE_NAME]);
+    if (!email || !(await isApprovedEmail(email))) {
+        context.res = { status: 401, body: { message: "Sign in required." } };
+        return;
+    }
+
     try {
         const table = getTripsTable();
         const registeredCounts = await getRegisteredCountsByTrip();

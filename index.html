@@ -205,6 +205,7 @@
         <a href="#trips">Trips</a>
         <a href="about.html">About</a>
         <a href="#">Contact</a>
+        <a href="#" id="signOutLink">Sign Out</a>
     </div>
 </nav>
 
@@ -831,9 +832,19 @@ async function cancelRegistration() {
     }
 }
 
+document.getElementById('signOutLink').addEventListener('click', async (e) => {
+    e.preventDefault();
+    try { await fetch('/api/logout', { method: 'POST' }); } catch (err) {}
+    location.href = 'signin.html';
+});
+
 async function init() {
     try {
         const res = await fetch('/api/trips');
+        if (res.status === 401) {
+            location.href = 'signin.html?return=' + encodeURIComponent(location.pathname + location.search);
+            return;
+        }
         trips = await res.json();
     } catch (e) {
         trips = [];

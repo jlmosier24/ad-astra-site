@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script>if (location.hostname === 'www.adastraactive.com') location.replace('https://adastraactive.com' + location.pathname + location.search + location.hash);</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ad Astra Active — Member Sign In</title>
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cpath d='M24 8 L27.2 19.6 L39 22 L27.2 24.4 L24 36 L20.8 24.4 L9 22 L20.8 19.6 Z' fill='%23C1442E'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --cream: #F3EEE4; --paper: #FFFFFF; --ink: #221E19; --sub: #6E6659;
+        --accent: #C1442E; --forest: #2F4A3B; --line: rgba(34,30,25,0.12);
+    }
+    * { box-sizing: border-box; }
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    body {
+        margin: 0; min-height: 100vh; background: #FBFAF7;
+        font-family: 'Manrope', sans-serif; color: var(--ink);
+        display: flex; align-items: center; justify-content: center; padding: 24px;
+    }
+
+    .gate-wrap { display: flex; flex-direction: column; align-items: center; width: 100%; }
+
+    .gate-card {
+        background: var(--paper); border-radius: 20px; padding: 44px 38px;
+        max-width: 420px; width: 100%; text-align: center;
+        box-shadow: 0 12px 32px rgba(34,30,25,0.08);
+    }
+    .brand-name { display: block; font-weight: 800; font-size: 1rem; letter-spacing: -0.01em; margin-bottom: 26px; }
+
+    .gate-title { font-family: 'Anton', sans-serif; font-weight: 400; text-transform: uppercase; font-size: 1.6rem; margin: 0 0 10px; letter-spacing: 0.01em; text-wrap: balance; }
+    .gate-sub { color: var(--sub); font-size: 0.9rem; line-height: 1.55; margin: 0 0 26px; }
+    .gate-sub strong { color: var(--ink); font-weight: 700; }
+
+    .field-label { text-align: left; font-size: 0.78rem; font-weight: 700; color: var(--sub); text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 6px; }
+    .email-input {
+        width: 100%; padding: 13px 16px; border-radius: 10px; border: 1.5px solid var(--line);
+        font-family: 'Manrope', sans-serif; font-size: 0.95rem; margin-bottom: 6px; background: #FBFAF7; color: var(--ink);
+    }
+    .email-input:focus { outline: none; border-color: var(--forest); background: var(--paper); }
+    .email-input.error { border-color: var(--accent); }
+
+    .error-msg { text-align: left; color: var(--accent); font-size: 0.8rem; margin-bottom: 14px; min-height: 1.1em; }
+    .helper-msg { text-align: left; color: var(--forest); font-size: 0.8rem; margin-bottom: 14px; min-height: 1.1em; }
+
+    .verify-btn {
+        width: 100%; background: var(--forest); color: #fff; border: none; padding: 13px;
+        border-radius: 999px; font-weight: 700; font-size: 0.92rem; cursor: pointer; margin-top: 8px;
+        font-family: 'Manrope', sans-serif; transition: background 0.15s ease;
+    }
+    .verify-btn:hover { background: var(--accent); }
+    .verify-btn:disabled { background: var(--line); color: var(--sub); cursor: not-allowed; }
+
+    .not-member {
+        margin-top: 22px; padding-top: 20px; border-top: 1px solid var(--line);
+        font-size: 0.82rem; color: var(--sub); line-height: 1.5;
+    }
+    .not-member a { color: var(--forest); font-weight: 700; text-decoration: none; }
+    .not-member a:hover { text-decoration: underline; }
+
+    .code-row { display: flex; gap: 8px; margin-bottom: 6px; }
+    .code-digit {
+        width: 100%; aspect-ratio: 1; text-align: center; font-family: 'Manrope', sans-serif; font-weight: 800;
+        font-size: 1.25rem; border: 1.5px solid var(--line); border-radius: 10px; background: #FBFAF7; color: var(--ink);
+    }
+    .code-digit:focus { outline: none; border-color: var(--forest); background: var(--paper); }
+    .code-digit.error { border-color: var(--accent); }
+
+    .remember-row { display: flex; align-items: flex-start; gap: 10px; margin: 16px 0 4px; text-align: left; }
+    .remember-row input { margin-top: 3px; width: 16px; height: 16px; accent-color: var(--forest); flex-shrink: 0; }
+    .remember-row label { font-size: 0.83rem; line-height: 1.45; color: var(--sub); }
+    .remember-row label strong { color: var(--ink); font-weight: 700; }
+
+    .resend-note { font-size: 0.8rem; color: var(--sub); text-align: center; margin-top: 16px; }
+    .resend-note button { background: none; border: none; padding: 0; font: inherit; color: var(--forest); font-weight: 700; text-decoration: underline; cursor: pointer; }
+    .resend-note button:disabled { color: var(--sub); text-decoration: none; cursor: default; }
+    .back-link { display: block; text-align: center; margin-top: 10px; font-size: 0.8rem; color: var(--sub); text-decoration: none; font-weight: 600; cursor: pointer; background: none; border: none; font-family: 'Manrope', sans-serif; }
+    .back-link:hover { color: var(--accent); }
+
+    .success-icon {
+        width: 52px; height: 52px; border-radius: 50%; background: rgba(47,122,61,0.12);
+        display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;
+    }
+    .success-icon svg { width: 24px; height: 24px; color: #2F7A3D; }
+
+    [data-step] { display: none; }
+    [data-step].active { display: block; }
+
+    @media (prefers-reduced-motion: no-preference) {
+        .gate-card { animation: rise 0.35s ease; }
+        @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    }
+</style>
+</head>
+<body>
+
+<div class="gate-wrap">
+
+    <div data-step="email" class="active">
+        <div class="gate-card">
+            <span class="brand-name">Ad Astra Active</span>
+            <div class="gate-title">Member Access</div>
+            <p class="gate-sub">Field trips are open to Ad Astra Active member families. Enter your email and we'll send a 6-digit code.</p>
+
+            <div class="field-label">Email Address</div>
+            <input type="email" id="gateEmail" class="email-input" placeholder="you@example.com" autocomplete="email">
+            <div class="error-msg" id="emailError"></div>
+
+            <button class="verify-btn" id="sendCodeBtn" type="button">Send Code</button>
+
+            <div class="not-member">
+                Not a member yet? <a href="#">Get in touch</a> to learn more about joining.
+            </div>
+        </div>
+    </div>
+
+    <div data-step="code">
+        <div class="gate-card">
+            <span class="brand-name">Ad Astra Active</span>
+            <div class="gate-title">Enter Your Code</div>
+            <p class="gate-sub">We sent a 6-digit code to <strong id="codeEmailLabel"></strong>.</p>
+
+            <div class="code-row" id="codeRow">
+                <input class="code-digit" inputmode="numeric" maxlength="1">
+                <input class="code-digit" inputmode="numeric" maxlength="1">
+                <input class="code-digit" inputmode="numeric" maxlength="1">
+                <input class="code-digit" inputmode="numeric" maxlength="1">
+                <input class="code-digit" inputmode="numeric" maxlength="1">
+                <input class="code-digit" inputmode="numeric" maxlength="1">
+            </div>
+            <div class="error-msg" id="codeError"></div>
+
+            <div class="remember-row">
+                <input type="checkbox" id="rememberCheck" checked>
+                <label for="rememberCheck"><strong>Remember this device</strong> &mdash; skip the code here for 60 days.</label>
+            </div>
+
+            <button class="verify-btn" id="verifyBtn" type="button" disabled>Verify &amp; Continue</button>
+
+            <p class="resend-note">Didn't get it? <button type="button" id="resendBtn">Resend code</button></p>
+            <button class="back-link" id="backLink" type="button">&larr; Use a different email</button>
+        </div>
+    </div>
+
+    <div data-step="success">
+        <div class="gate-card">
+            <div class="success-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div class="gate-title">You're Verified</div>
+            <p class="gate-sub" id="successSub">Taking you to upcoming trips now.</p>
+        </div>
+    </div>
+
+</div>
+
+<script>
+(function () {
+    const params = new URLSearchParams(location.search);
+    const returnTo = params.get('return') || 'index.html';
+
+    const steps = document.querySelectorAll('[data-step]');
+    function showStep(name) {
+        steps.forEach(s => s.classList.toggle('active', s.dataset.step === name));
+    }
+
+    const emailInput = document.getElementById('gateEmail');
+    const emailError = document.getElementById('emailError');
+    const sendCodeBtn = document.getElementById('sendCodeBtn');
+
+    async function sendCode() {
+        const val = emailInput.value.trim().toLowerCase();
+        if (!val.includes('@') || !val.includes('.')) {
+            emailInput.classList.add('error');
+            emailError.textContent = 'Enter a valid email address.';
+            return;
+        }
+        emailInput.classList.remove('error');
+        emailError.textContent = '';
+        sendCodeBtn.disabled = true;
+        sendCodeBtn.textContent = 'Sending...';
+        try {
+            const res = await fetch('/api/requestAuthCode', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: val }),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                emailInput.classList.add('error');
+                emailError.textContent = data.message || 'Something went wrong. Try again.';
+                return;
+            }
+            document.getElementById('codeEmailLabel').textContent = val;
+            showStep('code');
+            document.querySelector('.code-digit').focus();
+        } catch (e) {
+            emailInput.classList.add('error');
+            emailError.textContent = 'Network error. Try again.';
+        } finally {
+            sendCodeBtn.disabled = false;
+            sendCodeBtn.textContent = 'Send Code';
+        }
+    }
+    sendCodeBtn.addEventListener('click', sendCode);
+    emailInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendCode(); });
+
+    const digits = Array.from(document.querySelectorAll('.code-digit'));
+    const verifyBtn = document.getElementById('verifyBtn');
+    const codeError = document.getElementById('codeError');
+    const resendBtn = document.getElementById('resendBtn');
+
+    function currentCode() { return digits.map(d => d.value).join(''); }
+    function updateVerifyState() { verifyBtn.disabled = currentCode().length !== 6; }
+    function clearCodeError() { digits.forEach(d => d.classList.remove('error')); codeError.textContent = ''; codeError.style.color = ''; }
+
+    digits.forEach((d, i) => {
+        d.addEventListener('input', () => {
+            d.value = d.value.replace(/[^0-9]/g, '').slice(0, 1);
+            clearCodeError();
+            if (d.value && i < digits.length - 1) digits[i + 1].focus();
+            updateVerifyState();
+        });
+        d.addEventListener('keydown', (e) => {
+            if (e.key === 'Backspace' && !d.value && i > 0) digits[i - 1].focus();
+            if (e.key === 'Enter' && currentCode().length === 6) verifyCode();
+        });
+        d.addEventListener('paste', (e) => {
+            const text = (e.clipboardData.getData('text') || '').replace(/[^0-9]/g, '').slice(0, 6);
+            if (!text) return;
+            e.preventDefault();
+            text.split('').forEach((ch, idx) => { if (digits[idx]) digits[idx].value = ch; });
+            digits[Math.min(text.length, 6) - 1].focus();
+            updateVerifyState();
+        });
+    });
+
+    async function verifyCode() {
+        const email = document.getElementById('codeEmailLabel').textContent;
+        const code = currentCode();
+        if (code.length !== 6) return;
+        verifyBtn.disabled = true;
+        verifyBtn.textContent = 'Verifying...';
+        try {
+            const res = await fetch('/api/verifyAuthCode', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, code, remember: document.getElementById('rememberCheck').checked }),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                digits.forEach(d => d.classList.add('error'));
+                codeError.textContent = data.message || "That code doesn't match. Try again.";
+                verifyBtn.disabled = false;
+                verifyBtn.textContent = 'Verify & Continue';
+                return;
+            }
+            showStep('success');
+            setTimeout(() => { location.href = returnTo; }, 900);
+        } catch (e) {
+            codeError.textContent = 'Network error. Try again.';
+            verifyBtn.disabled = false;
+            verifyBtn.textContent = 'Verify & Continue';
+        }
+    }
+    verifyBtn.addEventListener('click', verifyCode);
+
+    const RESEND_COOLDOWN_DISPLAY_MS = 30 * 1000;
+    resendBtn.addEventListener('click', async () => {
+        const email = document.getElementById('codeEmailLabel').textContent;
+        digits.forEach(d => d.value = '');
+        clearCodeError();
+        updateVerifyState();
+        resendBtn.disabled = true;
+        try {
+            await fetch('/api/requestAuthCode', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email }),
+            });
+            codeError.style.color = 'var(--forest)';
+            codeError.textContent = 'A new code is on its way.';
+        } finally {
+            digits[0].focus();
+            setTimeout(() => { resendBtn.disabled = false; }, RESEND_COOLDOWN_DISPLAY_MS);
+        }
+    });
+
+    document.getElementById('backLink').addEventListener('click', () => {
+        digits.forEach(d => d.value = '');
+        clearCodeError();
+        updateVerifyState();
+        showStep('email');
+        emailInput.focus();
+    });
+})();
+</script>
+
+</body>
+</html>
