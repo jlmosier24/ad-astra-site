@@ -300,14 +300,6 @@
             <p class="success-sub" id="successSub"></p>
         </div>
 
-        <div id="email-section">
-            <div class="form-group">
-                <label>Email</label>
-                <input type="email" id="emailInput" placeholder="Enter approved email">
-            </div>
-            <button class="btn-submit" onclick="verifyEmail()">Verify Email</button>
-        </div>
-
         <div id="reg-form">
             <div id="existingRegNotice" class="existing-reg-notice" style="display: none;">You're already registered for this trip. Update your counts below, or cancel your registration.</div>
             <div class="form-group">
@@ -438,6 +430,7 @@ function closeOverlay(id) {
 let selectedTrip = null;
 let existingRegistration = null;
 let suggestedName = null;
+let sessionEmail = null;
 
 function renderHeroLayer() {
     const layer = document.getElementById('heroBgLayer');
@@ -551,8 +544,32 @@ function openModal(tripId) {
     document.getElementById('adultLabel').textContent = `Adult ($${selectedTrip.adultPrice.toFixed(2)})`;
     document.getElementById('childLabel').textContent = `Child (2-11) ($${selectedTrip.childPrice.toFixed(2)})`;
 
+    document.getElementById('reg-form').style.display = 'none';
     openOverlay('modal-overlay');
-    populateRegForm();
+    loadRegistrationState();
+}
+
+// Runs automatically when the modal opens -- the member is already signed
+// in (site-wide sign-in gate), so this only needs to look up whether they
+// already have a registration on this specific trip, not re-verify them.
+async function loadRegistrationState() {
+    if (!selectedTrip) return;
+    if (!sessionEmail) {
+        showStatus("Please refresh the page and try again.");
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/verifyEmail?email=${encodeURIComponent(sessionEmail)}&tripId=${encodeURIComponent(selectedTrip.id)}`);
+        const data = await response.json();
+        existingRegistration = data.existingRegistration || null;
+        suggestedName = data.suggestedName || null;
+        document.getElementById('status-message').style.display = 'none';
+        document.getElementById('reg-form').style.display = 'block';
+        populateRegForm();
+    } catch (error) {
+        showStatus("Connection error. Please try again.");
+    }
 }
 
 function updateTotals() {
@@ -665,7 +682,6 @@ function showStatus(message, isError = true) {
 // sees, so it earns a little more polish than a static line of text.
 function showSuccessState(subMessage) {
     document.getElementById('status-message').style.display = 'none';
-    document.getElementById('email-section').style.display = 'none';
     document.getElementById('reg-form').style.display = 'none';
     document.querySelector('.modal-cancel').style.display = 'none';
 
@@ -685,39 +701,14 @@ function showSuccessState(subMessage) {
 
 function closeModal() {
     closeOverlay('modal-overlay');
-    document.getElementById('email-section').style.display = 'block';
     document.getElementById('reg-form').style.display = 'none';
     document.getElementById('status-message').style.display = 'none';
     document.getElementById('success-state').style.display = 'none';
     document.querySelector('.modal-cancel').style.display = '';
-    document.getElementById('emailInput').value = '';
     document.getElementById('parentName').value = '';
     selectedTrip = null;
     existingRegistration = null;
     suggestedName = null;
-}
-
-async function verifyEmail() {
-    const email = document.getElementById('emailInput').value.toLowerCase().trim();
-    if (!email) { showStatus("Please enter an email address."); return; }
-    if (!selectedTrip) return;
-
-    try {
-        const response = await fetch(`/api/verifyEmail?email=${encodeURIComponent(email)}&tripId=${encodeURIComponent(selectedTrip.id)}`);
-        const data = await response.json();
-        if (!data.isApproved) {
-            showStatus("This email is not on the authorized list.");
-            return;
-        }
-        existingRegistration = data.existingRegistration || null;
-        suggestedName = data.suggestedName || null;
-        document.getElementById('status-message').style.display = 'none';
-        document.getElementById('email-section').style.display = 'none';
-        document.getElementById('reg-form').style.display = 'block';
-        populateRegForm();
-    } catch (error) {
-        showStatus("Connection error. Please try again.");
-    }
 }
 
 async function submitRegistration() {
@@ -728,7 +719,7 @@ async function submitRegistration() {
     const adults = document.getElementById('adultCount').value;
     const children = document.getElementById('childCount').value;
     const total = document.getElementById('grandTotal').textContent;
-    const email = document.getElementById('emailInput').value;
+    const email = sessionEmail;
 
     if (!parentName || (adults == 0 && children == 0)) {
         showStatus("Please enter your name and select at least one attendee.");
@@ -769,7 +760,7 @@ async function updateExistingRegistration() {
     const parentName = document.getElementById('parentName').value;
     const adults = document.getElementById('adultCount').value;
     const children = document.getElementById('childCount').value;
-    const email = document.getElementById('emailInput').value;
+    const email = sessionEmail;
 
     if (!parentName || (adults == 0 && children == 0)) {
         showStatus("Please enter your name and select at least one attendee, or use Cancel My Registration below.");
@@ -807,7 +798,7 @@ async function cancelRegistration() {
     if (!selectedTrip || !existingRegistration) return;
     if (!confirm(`Cancel your registration for ${selectedTrip.title}? This can't be undone.`)) return;
 
-    const email = document.getElementById('emailInput').value;
+    const email = sessionEmail;
     showStatus("Cancelling your registration...", false);
 
     try {
@@ -841,12 +832,14 @@ document.getElementById('signOutLink').addEventListener('click', async (e) => {
 
 async function init() {
     try {
-        const res = await fetch('/api/trips');
-        if (res.status === 401) {
+        const [tripsRes, sessionRes] = await Promise.all([fetch('/api/trips'), fetch('/api/session')]);
+        if (tripsRes.status === 401) {
             location.href = 'signin.html?return=' + encodeURIComponent(location.pathname + location.search);
             return;
         }
-        trips = await res.json();
+        trips = await tripsRes.json();
+        const sessionData = await sessionRes.json().catch(() => ({}));
+        sessionEmail = sessionData.email || null;
     } catch (e) {
         trips = [];
     }
