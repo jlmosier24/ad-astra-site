@@ -139,7 +139,9 @@
         background: var(--paper); border-radius: 20px;
         width: 100%; max-width: 460px; max-height: 90vh; max-height: 90dvh; overflow-y: auto;
         transform: scale(0.96) translateY(8px); transition: transform 0.2s ease;
+        scrollbar-width: none; -ms-overflow-style: none;
     }
+    .modal::-webkit-scrollbar { display: none; }
     #modal-overlay.visible .modal { transform: scale(1) translateY(0); }
     .modal-photo { position: relative; height: 160px; overflow: hidden; border-radius: 20px 20px 0 0; background: #B7D8E0; }
     .modal-photo img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 40%; display: block; }
