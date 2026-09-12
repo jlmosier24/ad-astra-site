@@ -3,6 +3,7 @@ const { getTripsTable, isRegistrationClosed, PARTITION_KEY } = require("../share
 const { getRegistrationsTable, getRegisteredCountsByTrip } = require("../shared/registrationsTable");
 const { isApprovedEmail } = require("../shared/approvedEmailsTable");
 const { logTransaction } = require("../shared/transactionLog");
+const { parseCookies, verifySessionToken, SESSION_COOKIE_NAME } = require("../shared/sessionAuth");
 
 const connectionString = process.env.AZURE_COMMUNICATION_CONNECTION_STRING;
 const client = new EmailClient(connectionString);
@@ -100,6 +101,13 @@ module.exports = async function (context, req) {
     const emailToCheck = (email || "").toLowerCase().trim();
     if (!emailToCheck || !(await isApprovedEmail(emailToCheck))) {
         context.res = { status: 403, body: "This email is not on the authorized list." };
+        return;
+    }
+
+    const cookies = parseCookies(req);
+    const sessionEmail = verifySessionToken(cookies[SESSION_COOKIE_NAME]);
+    if (!sessionEmail || sessionEmail !== emailToCheck) {
+        context.res = { status: 401, body: "Sign in required." };
         return;
     }
 

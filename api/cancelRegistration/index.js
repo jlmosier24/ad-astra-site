@@ -2,11 +2,13 @@ const { getTripsTable, PARTITION_KEY } = require("../shared/tripsTable");
 const { getRegistrationsTable } = require("../shared/registrationsTable");
 const { isApprovedEmail } = require("../shared/approvedEmailsTable");
 const { logTransaction } = require("../shared/transactionLog");
+const { parseCookies, verifySessionToken, SESSION_COOKIE_NAME } = require("../shared/sessionAuth");
 
-// Public endpoint (no role gate) -- a parent can cancel their own
-// registration by re-entering the same approved email. Same authorization
-// as updateRegistration: submitted email must be approved AND match the
-// stored email on the registration being cancelled.
+// Public endpoint (no role gate) -- a signed-in parent can cancel their own
+// registration. Same authorization as updateRegistration: the caller's
+// session email must match the submitted email, that email must be
+// approved, AND it must match the stored email on the registration being
+// cancelled.
 module.exports = async function (context, req) {
     const body = req.body || {};
     const { tripId, registrationId, email } = body;
@@ -19,6 +21,13 @@ module.exports = async function (context, req) {
     const emailToCheck = (email || "").toLowerCase().trim();
     if (!emailToCheck || !(await isApprovedEmail(emailToCheck))) {
         context.res = { status: 403, body: "This email is not on the authorized list." };
+        return;
+    }
+
+    const cookies = parseCookies(req);
+    const sessionEmail = verifySessionToken(cookies[SESSION_COOKIE_NAME]);
+    if (!sessionEmail || sessionEmail !== emailToCheck) {
+        context.res = { status: 401, body: "Sign in required." };
         return;
     }
 

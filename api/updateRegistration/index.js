@@ -1,13 +1,14 @@
 const { getTripsTable, isRegistrationClosed, PARTITION_KEY } = require("../shared/tripsTable");
 const { getRegistrationsTable, getRegisteredCountsByTrip } = require("../shared/registrationsTable");
 const { isApprovedEmail } = require("../shared/approvedEmailsTable");
+const { parseCookies, verifySessionToken, SESSION_COOKIE_NAME } = require("../shared/sessionAuth");
 
-// Public endpoint (no role gate) -- a parent can update their own
-// registration by re-entering the same approved email in the trip's
-// registration modal. Authorization: the submitted email must be on the
-// approved list AND match the stored email on the registration being
-// edited, so one family can't modify another's registration even if they
-// somehow knew its id.
+// Public endpoint (no role gate) -- a signed-in parent can update their own
+// registration from the trip's registration modal. Authorization: the
+// caller's session email must match the submitted email, that email must be
+// on the approved list, AND it must match the stored email on the
+// registration being edited, so one family can't modify another's
+// registration even if they somehow knew its id.
 module.exports = async function (context, req) {
     const body = req.body || {};
     const { tripId, registrationId, parentName, adults, children, email } = body;
@@ -20,6 +21,13 @@ module.exports = async function (context, req) {
     const emailToCheck = (email || "").toLowerCase().trim();
     if (!emailToCheck || !(await isApprovedEmail(emailToCheck))) {
         context.res = { status: 403, body: "This email is not on the authorized list." };
+        return;
+    }
+
+    const cookies = parseCookies(req);
+    const sessionEmail = verifySessionToken(cookies[SESSION_COOKIE_NAME]);
+    if (!sessionEmail || sessionEmail !== emailToCheck) {
+        context.res = { status: 401, body: "Sign in required." };
         return;
     }
 
