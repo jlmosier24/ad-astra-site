@@ -77,6 +77,7 @@
     #modal-overlay.visible .modal, #email-overlay.visible .modal { transform: scale(1) translateY(0); }
     .modal h2 { font-family: 'Anton', sans-serif; font-weight: 400; text-transform: uppercase; color: var(--forest); margin: 0 0 20px; }
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .form-row-3 { grid-template-columns: 1fr 1fr 1fr; }
     .form-group { margin-bottom: 14px; }
     .form-group label { display: block; font-weight: 700; font-size: 0.82rem; margin-bottom: 5px; }
     .form-group .hint { font-weight: 500; color: var(--sub); font-size: 0.76rem; margin-top: 4px; }
@@ -351,7 +352,7 @@
             <textarea id="description" placeholder="Shown on the trip card and homepage banner."></textarea>
         </div>
 
-        <div class="form-row">
+        <div class="form-row form-row-3">
             <div class="form-group">
                 <label>Adult price ($)</label>
                 <input type="number" id="adultPrice" step="0.01" min="0">
@@ -359,6 +360,10 @@
             <div class="form-group">
                 <label>Child price ($)</label>
                 <input type="number" id="childPrice" step="0.01" min="0">
+            </div>
+            <div class="form-group">
+                <label>Child range</label>
+                <input type="text" id="childAgeRange" placeholder="2-11">
             </div>
         </div>
 
@@ -822,7 +827,7 @@ function selectAddressSuggestion(i) {
 function openForm() {
     document.getElementById('formTitle').textContent = 'Add Field Trip';
     document.getElementById('tripId').value = '';
-    ['title', 'address', 'placeName', 'date', 'time', 'registrationDeadline', 'poc', 'description', 'image'].forEach(id => document.getElementById(id).value = '');
+    ['title', 'address', 'placeName', 'date', 'time', 'registrationDeadline', 'poc', 'description', 'image', 'childAgeRange'].forEach(id => document.getElementById(id).value = '');
     ['adultPrice', 'childPrice', 'capacity', 'addressLat', 'addressLon'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('addressSuggestions').style.display = 'none';
     editingTripHidden = false;
@@ -851,6 +856,7 @@ function editTrip(id) {
     document.getElementById('description').value = t.description;
     document.getElementById('adultPrice').value = t.adultPrice;
     document.getElementById('childPrice').value = t.childPrice;
+    document.getElementById('childAgeRange').value = t.childAgeRange || '2-11';
     document.getElementById('capacity').value = t.capacity;
     document.getElementById('image').value = t.image;
     editingTripHidden = t.hidden;
@@ -936,6 +942,7 @@ async function saveTrip() {
         description: document.getElementById('description').value.trim(),
         adultPrice: parseFloat(document.getElementById('adultPrice').value) || 0,
         childPrice: parseFloat(document.getElementById('childPrice').value) || 0,
+        childAgeRange: document.getElementById('childAgeRange').value.trim(),
         capacity: parseInt(document.getElementById('capacity').value, 10) || 0,
         image: document.getElementById('image').value.trim(),
         hidden: editingTripHidden
@@ -981,6 +988,7 @@ async function toggleHidden(id) {
         description: t.description,
         adultPrice: t.adultPrice,
         childPrice: t.childPrice,
+        childAgeRange: t.childAgeRange || '',
         capacity: t.capacity,
         image: t.image || '',
         hidden: !t.hidden

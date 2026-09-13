@@ -397,7 +397,7 @@ function formatCardPrice(t) {
     if (t.adultPrice === 0 && t.childPrice === 0) return 'Free';
     const adultText = t.adultPrice === 0 ? 'Free' : `$${t.adultPrice.toFixed(2)}`;
     const childText = t.childPrice === 0 ? 'Free' : `$${t.childPrice.toFixed(2)}`;
-    return `${adultText} <span>ages 12+ · ${childText} ages 2–11</span>`;
+    return `${adultText} <span>ages 12+ · ${childText} ages ${t.childAgeRange || '2-11'}</span>`;
 }
 
 function toggleNavMenu() {
@@ -544,7 +544,7 @@ function openModal(tripId) {
     document.getElementById('modal-title').textContent = selectedTrip.title;
     document.getElementById('modal-details').textContent = formatFullDate(selectedTrip.date, selectedTrip.time);
     document.getElementById('adultLabel').textContent = `Adult ($${selectedTrip.adultPrice.toFixed(2)})`;
-    document.getElementById('childLabel').textContent = `Child (2-11) ($${selectedTrip.childPrice.toFixed(2)})`;
+    document.getElementById('childLabel').textContent = `Child (${selectedTrip.childAgeRange || '2-11'}) ($${selectedTrip.childPrice.toFixed(2)})`;
 
     document.getElementById('reg-form').style.display = 'none';
     openOverlay('modal-overlay');

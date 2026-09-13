@@ -23,6 +23,7 @@ function toTripDto(entity) {
         description: entity.description,
         adultPrice: entity.adultPrice,
         childPrice: entity.childPrice,
+        childAgeRange: entity.childAgeRange || "2-11",
         capacity: entity.capacity,
         image: entity.image,
         hidden: !!entity.hidden
