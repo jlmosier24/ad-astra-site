@@ -37,16 +37,18 @@
     .nav-toggle { display: none; background: none; border: none; padding: 4px; color: var(--ink); cursor: pointer; }
     .nav-toggle svg { width: 26px; height: 26px; }
 
-    .page-head { max-width: 1080px; margin: 0 auto; padding: 30px 24px 10px; }
+    .page-head { max-width: 1080px; margin: 0 auto; padding: 30px 24px 0; }
     .page-head h1 { font-family: 'Anton', sans-serif; font-weight: 400; text-transform: uppercase; font-size: clamp(2.2rem, 6vw, 3.2rem); margin: 0 0 16px; letter-spacing: 0.01em; }
     .page-head p { font-size: 1rem; line-height: 1.65; color: var(--sub); margin: 0 0 6px; }
 
     .section { max-width: 1080px; margin: 0 auto; padding: 40px 24px; }
+    #contact-section { padding-top: 34px; }
+    #reasons-section { padding-top: 14px; }
     .section-title { font-family: 'Anton', sans-serif; font-weight: 400; text-transform: uppercase; font-size: 1.4rem; letter-spacing: 0.01em; margin: 0 0 22px; color: var(--forest); }
 
     /* Primary contact card */
     .contact-card {
-        background: var(--paper); border-radius: 16px; padding: 32px 30px;
+        background: var(--paper); border: 1px solid var(--line); border-radius: 16px; padding: 32px 30px;
         box-shadow: 0 8px 22px rgba(34,30,25,0.06);
         display: flex; align-items: center; gap: 22px;
     }
@@ -132,7 +134,7 @@
     <p>Questions about an upcoming trip, membership, or anything else — reach out and a coordinator will get back to you.</p>
 </div>
 
-<div class="section">
+<div class="section" id="contact-section">
     <div class="contact-card">
         <div class="contact-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 6l-10 7L2 6"/><rect x="2" y="4" width="20" height="16" rx="2"/></svg>
@@ -153,7 +155,7 @@
     </div>
 </div>
 
-<div class="section">
+<div class="section" id="reasons-section">
     <div class="section-title">What to Reach Out About</div>
     <div class="reasons">
         <div class="reason-item">
