@@ -165,6 +165,8 @@
     .capacity-note { font-size: 0.78rem; color: var(--sub); margin: -6px 0 14px; }
     .existing-reg-notice { background: #E4EBE6; color: var(--forest); font-size: 0.85rem; line-height: 1.5; padding: 12px 14px; border-radius: 10px; margin-bottom: 18px; }
     .cancel-reg-link { text-align: center; color: var(--accent); cursor: pointer; margin-top: 10px; font-weight: 600; font-size: 0.85rem; }
+    .cancel-warning { background: rgba(193,68,46,0.08); color: var(--accent); font-size: 0.85rem; line-height: 1.5; padding: 12px 14px; border-radius: 10px; margin-bottom: 18px; }
+    .never-mind-link { text-align: center; color: var(--sub); cursor: pointer; margin-top: 10px; font-weight: 600; font-size: 0.85rem; }
     .grand-total-row { display: flex; justify-content: space-between; font-size: 1.1rem; font-weight: 800; border-top: 2px dashed var(--line); padding-top: 14px; margin: 6px 0 20px; color: var(--forest); }
     .btn-submit { background: var(--accent); color: #fff; border: none; padding: 13px; border-radius: 999px; font-size: 1rem; font-weight: 700; cursor: pointer; width: 100%; }
     .btn-submit:hover { background: var(--ink); }
@@ -343,7 +345,13 @@
             </div>
 
             <button class="btn-submit" id="submitBtn" onclick="submitRegistration()">Complete Registration</button>
-            <p class="cancel-reg-link" id="cancelRegLink" onclick="cancelRegistration()" style="display: none;">Cancel My Registration</p>
+            <p class="cancel-reg-link" id="cancelRegLink" onclick="promptCancelRegistration()" style="display: none;">Cancel My Registration</p>
+        </div>
+
+        <div id="cancel-confirm" style="display: none;">
+            <div class="cancel-warning">Cancel your registration for <strong id="cancelConfirmTripName"></strong>? This can't be undone.</div>
+            <button class="btn-submit" onclick="cancelRegistration()">Yes, Cancel Registration</button>
+            <p class="never-mind-link" onclick="dismissCancelConfirm()">Never Mind</p>
         </div>
 
         <p class="modal-cancel" onclick="closeModal()">Cancel</p>
@@ -608,6 +616,9 @@ function populateRegForm() {
     const submitBtn = document.getElementById('submitBtn');
     const cancelLink = document.getElementById('cancelRegLink');
 
+    document.getElementById('cancel-confirm').style.display = 'none';
+    document.getElementById('reg-form').style.display = 'block';
+
     if (existingRegistration) {
         notice.style.display = 'block';
         submitBtn.textContent = 'Save Changes';
@@ -704,6 +715,7 @@ function showSuccessState(subMessage) {
 function closeModal() {
     closeOverlay('modal-overlay');
     document.getElementById('reg-form').style.display = 'none';
+    document.getElementById('cancel-confirm').style.display = 'none';
     document.getElementById('status-message').style.display = 'none';
     document.getElementById('success-state').style.display = 'none';
     document.querySelector('.modal-cancel').style.display = '';
@@ -711,6 +723,18 @@ function closeModal() {
     selectedTrip = null;
     existingRegistration = null;
     suggestedName = null;
+}
+
+function promptCancelRegistration() {
+    if (!selectedTrip) return;
+    document.getElementById('cancelConfirmTripName').textContent = selectedTrip.title;
+    document.getElementById('reg-form').style.display = 'none';
+    document.getElementById('cancel-confirm').style.display = 'block';
+}
+
+function dismissCancelConfirm() {
+    document.getElementById('cancel-confirm').style.display = 'none';
+    document.getElementById('reg-form').style.display = 'block';
 }
 
 async function submitRegistration() {
@@ -798,8 +822,8 @@ async function updateExistingRegistration() {
 
 async function cancelRegistration() {
     if (!selectedTrip || !existingRegistration) return;
-    if (!confirm(`Cancel your registration for ${selectedTrip.title}? This can't be undone.`)) return;
 
+    document.getElementById('cancel-confirm').style.display = 'none';
     const email = sessionEmail;
     showStatus("Cancelling your registration...", false);
 
@@ -820,9 +844,11 @@ async function cancelRegistration() {
             setTimeout(closeModal, 2000);
         } else {
             showStatus("Error: " + message);
+            document.getElementById('reg-form').style.display = 'block';
         }
     } catch (error) {
         showStatus("Connection error. Please try again.");
+        document.getElementById('reg-form').style.display = 'block';
     }
 }
 
