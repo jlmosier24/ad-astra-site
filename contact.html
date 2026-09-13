@@ -123,6 +123,7 @@
         <a href="index.html#trips">Trips</a>
         <a href="about.html">About</a>
         <a href="contact.html" class="current">Contact</a>
+        <a href="#" id="signOutLink">Sign Out</a>
     </div>
 </nav>
 
@@ -205,6 +206,12 @@ document.querySelectorAll('.nav-links a').forEach(a => {
         document.getElementById('navLinks').classList.remove('open');
         document.getElementById('navToggle').setAttribute('aria-expanded', 'false');
     });
+});
+
+document.getElementById('signOutLink').addEventListener('click', async (e) => {
+    e.preventDefault();
+    try { await fetch('/api/logout', { method: 'POST' }); } catch (err) {}
+    location.href = 'signin.html';
 });
 </script>
 
