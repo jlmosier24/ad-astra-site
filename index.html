@@ -421,6 +421,9 @@ function deadlineNoteLabel(t) {
 
 function formatCardPrice(t) {
     if (t.adultPrice === 0 && t.childPrice === 0) return 'Free';
+    if (t.adultPrice === t.childPrice) {
+        return `<div class="price-item"><span class="price-amount">$${t.adultPrice.toFixed(2)}</span><span class="price-label">all ages</span></div>`;
+    }
     const adultText = t.adultPrice === 0 ? 'Free' : `$${t.adultPrice.toFixed(2)}`;
     const childText = t.childPrice === 0 ? 'Free' : `$${t.childPrice.toFixed(2)}`;
     return `
