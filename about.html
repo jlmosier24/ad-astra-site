@@ -10,24 +10,23 @@
 <meta property="og:description" content="Meet the coordinators behind Ad Astra Active's homeschool field trips.">
 <meta property="og:type" content="website">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cpath d='M24 8 L27.2 19.6 L39 22 L27.2 24.4 L24 36 L20.8 24.4 L9 22 L20.8 19.6 Z' fill='%23C1442E'/%3E%3C/svg%3E">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Anton&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
     :root {
-        --cream: #F3EEE4;
+        --cream: #E7E3DD;
         --paper: #FFFFFF;
-        --ink: #221E19;
-        --sub: #6E6659;
-        --accent: #C1442E;
-        --forest: #2F4A3B;
-        --gold: #D99A3D;
-        --line: rgba(34,30,25,0.12);
+        --ink: #1F2430;
+        --sub: #5C6270;
+        --accent: #7D2935;
+        --line: rgba(31,36,48,0.12);
     }
     * { box-sizing: border-box; }
     :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-    body { margin: 0; min-height: 100vh; background: #FBFAF7; font-family: 'Manrope', sans-serif; color: var(--ink); }
+    body { margin: 0; min-height: 100vh; background: #FFFFFF; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: var(--ink); }
 
+    .nav-shell {
+        position: sticky; top: 0; z-index: 50; border-bottom: 1px solid var(--line); box-shadow: 0 2px 12px rgba(20,20,25,0.04);
+        background: rgba(255,255,255,0.8); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    }
     nav { display: flex; align-items: center; justify-content: space-between; max-width: 1080px; margin: 0 auto; padding: 22px 24px; }
     .brand { display: flex; align-items: center; gap: 9px; text-decoration: none; color: inherit; }
     .brand-name { font-weight: 800; font-size: 1.15rem; letter-spacing: -0.01em; }
@@ -38,7 +37,7 @@
     .nav-toggle svg { width: 26px; height: 26px; }
 
     .page-head { max-width: 1080px; margin: 0 auto; padding: 30px 24px 10px; }
-    .page-head h1 { font-family: 'Anton', sans-serif; font-weight: 400; text-transform: uppercase; font-size: clamp(2.2rem, 6vw, 3.2rem); margin: 0 0 20px; letter-spacing: 0.01em; }
+    .page-head h1 { font-weight: 800; font-size: clamp(2rem, 5.5vw, 3rem); margin: 0 0 20px; letter-spacing: -0.01em; }
     .page-head p { font-size: 1rem; line-height: 1.65; color: var(--sub); margin: 0 0 6px; }
     .page-head-photo {
         width: 100%; margin: 22px 0 26px; border-radius: 16px; overflow: hidden;
@@ -47,7 +46,7 @@
     .page-head-photo img { width: 100%; height: 320px; object-fit: cover; object-position: 50% 35%; display: block; }
 
     .section { max-width: 1080px; margin: 0 auto; padding: 40px 24px; }
-    .section-title { font-family: 'Anton', sans-serif; font-weight: 400; text-transform: uppercase; font-size: 1.4rem; letter-spacing: 0.01em; margin: 0 0 22px; color: var(--forest); }
+    .section-title { font-weight: 800; font-size: 1.3rem; letter-spacing: -0.01em; margin: 0 0 22px; color: var(--ink); }
 
     /* Who runs it */
     .coordinators-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
@@ -55,7 +54,7 @@
         background: var(--paper); border-radius: 16px; padding: 26px 20px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 4px;
         box-shadow: 0 8px 22px rgba(34,30,25,0.06);
     }
-    .coordinator-avatar { width: 76px; height: 76px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: var(--forest); margin-bottom: 10px; }
+    .coordinator-avatar { width: 76px; height: 76px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: var(--ink); margin-bottom: 10px; }
     .coordinator-avatar svg { width: 100%; height: 100%; display: block; }
     .coordinator-name { font-weight: 800; font-size: 1rem; margin-bottom: 2px; }
     .coordinator-role { font-size: 0.76rem; color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 10px; }
@@ -66,8 +65,8 @@
     .step-item { display: grid; grid-template-columns: 44px 1fr; gap: 16px; padding: 20px 0; border-top: 1px solid var(--line); }
     .step-item:last-child { border-bottom: 1px solid var(--line); }
     .step-num {
-        width: 32px; height: 32px; border-radius: 50%; background: var(--forest); color: #fff;
-        font-family: 'Anton', sans-serif; font-size: 0.95rem; display: flex; align-items: center; justify-content: center;
+        width: 32px; height: 32px; border-radius: 50%; background: var(--ink); color: #fff;
+        font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; justify-content: center;
     }
     .step-title { font-weight: 800; font-size: 1rem; margin-bottom: 4px; letter-spacing: -0.005em; }
     .step-desc { font-size: 0.9rem; color: var(--sub); line-height: 1.55; }
@@ -82,7 +81,7 @@
         line-height: 1.6;
     }
     .callout strong { color: var(--accent); }
-    .callout a { color: var(--forest); font-weight: 700; text-decoration: none; }
+    .callout a { color: var(--ink); font-weight: 700; text-decoration: none; }
     .callout a:hover { text-decoration: underline; }
 
     footer { text-align: center; padding: 30px 24px 50px; font-size: 0.8rem; color: var(--sub); border-top: 1px solid var(--line); margin-top: 20px; }
@@ -107,6 +106,7 @@
 </head>
 <body>
 
+<div class="nav-shell">
 <nav>
     <a class="brand" href="index.html">
         <span class="brand-name">Ad Astra Active</span>
@@ -121,6 +121,7 @@
         <a href="#" id="signOutLink">Sign Out</a>
     </div>
 </nav>
+</div>
 
 <div class="page-head">
     <h1>About Ad Astra Active</h1>
@@ -137,9 +138,9 @@
         <div class="coordinator-card">
             <div class="coordinator-avatar">
                 <svg viewBox="0 0 92 92" xmlns="http://www.w3.org/2000/svg">
-                    <rect width="92" height="92" fill="#2F4A3B"/>
-                    <circle cx="46" cy="36" r="17" fill="#F3EEE4"/>
-                    <path d="M12 92 C12 66 26 56 46 56 C66 56 80 66 80 92 Z" fill="#F3EEE4"/>
+                    <rect width="92" height="92" fill="#1F2430"/>
+                    <circle cx="46" cy="36" r="17" fill="#E7E3DD"/>
+                    <path d="M12 92 C12 66 26 56 46 56 C66 56 80 66 80 92 Z" fill="#E7E3DD"/>
                 </svg>
             </div>
             <div class="coordinator-name">Alexis Conley</div>
@@ -149,9 +150,9 @@
         <div class="coordinator-card">
             <div class="coordinator-avatar">
                 <svg viewBox="0 0 92 92" xmlns="http://www.w3.org/2000/svg">
-                    <rect width="92" height="92" fill="#2F4A3B"/>
-                    <circle cx="46" cy="36" r="17" fill="#F3EEE4"/>
-                    <path d="M12 92 C12 66 26 56 46 56 C66 56 80 66 80 92 Z" fill="#F3EEE4"/>
+                    <rect width="92" height="92" fill="#1F2430"/>
+                    <circle cx="46" cy="36" r="17" fill="#E7E3DD"/>
+                    <path d="M12 92 C12 66 26 56 46 56 C66 56 80 66 80 92 Z" fill="#E7E3DD"/>
                 </svg>
             </div>
             <div class="coordinator-name">Sam Levesque</div>
@@ -161,9 +162,9 @@
         <div class="coordinator-card">
             <div class="coordinator-avatar">
                 <svg viewBox="0 0 92 92" xmlns="http://www.w3.org/2000/svg">
-                    <rect width="92" height="92" fill="#2F4A3B"/>
-                    <circle cx="46" cy="36" r="17" fill="#F3EEE4"/>
-                    <path d="M12 92 C12 66 26 56 46 56 C66 56 80 66 80 92 Z" fill="#F3EEE4"/>
+                    <rect width="92" height="92" fill="#1F2430"/>
+                    <circle cx="46" cy="36" r="17" fill="#E7E3DD"/>
+                    <path d="M12 92 C12 66 26 56 46 56 C66 56 80 66 80 92 Z" fill="#E7E3DD"/>
                 </svg>
             </div>
             <div class="coordinator-name">Kristina Palmer</div>
@@ -173,9 +174,9 @@
         <div class="coordinator-card">
             <div class="coordinator-avatar">
                 <svg viewBox="0 0 92 92" xmlns="http://www.w3.org/2000/svg">
-                    <rect width="92" height="92" fill="#2F4A3B"/>
-                    <circle cx="46" cy="36" r="17" fill="#F3EEE4"/>
-                    <path d="M12 92 C12 66 26 56 46 56 C66 56 80 66 80 92 Z" fill="#F3EEE4"/>
+                    <rect width="92" height="92" fill="#1F2430"/>
+                    <circle cx="46" cy="36" r="17" fill="#E7E3DD"/>
+                    <path d="M12 92 C12 66 26 56 46 56 C66 56 80 66 80 92 Z" fill="#E7E3DD"/>
                 </svg>
             </div>
             <div class="coordinator-name">Rachel Bueng</div>
@@ -185,9 +186,9 @@
         <div class="coordinator-card">
             <div class="coordinator-avatar">
                 <svg viewBox="0 0 92 92" xmlns="http://www.w3.org/2000/svg">
-                    <rect width="92" height="92" fill="#2F4A3B"/>
-                    <circle cx="46" cy="36" r="17" fill="#F3EEE4"/>
-                    <path d="M12 92 C12 66 26 56 46 56 C66 56 80 66 80 92 Z" fill="#F3EEE4"/>
+                    <rect width="92" height="92" fill="#1F2430"/>
+                    <circle cx="46" cy="36" r="17" fill="#E7E3DD"/>
+                    <path d="M12 92 C12 66 26 56 46 56 C66 56 80 66 80 92 Z" fill="#E7E3DD"/>
                 </svg>
             </div>
             <div class="coordinator-name">Linda Mosier</div>
