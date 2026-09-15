@@ -56,7 +56,11 @@ module.exports = async function (context, req) {
             recipients: { to: [{ address: email }] },
         };
         const poller = await client.beginSend(emailMessage);
-        await poller.pollUntilDone();
+        // Don't block the response on full delivery confirmation -- beginSend
+        // has already queued the send, and polling to completion can take
+        // several seconds. Let it finish in the background; just log if it
+        // ultimately fails.
+        poller.pollUntilDone().catch((e) => context.log.error("Auth code email send failed after queuing:", e));
 
         context.res = { status: 200, body: { message: "Code sent." } };
     } catch (e) {

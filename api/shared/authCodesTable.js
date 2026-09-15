@@ -9,26 +9,25 @@ function getAuthCodesTable() {
     return TableClient.fromConnectionString(connectionString, "AuthCodes");
 }
 
-async function ensureTableExists(table) {
-    try {
-        await table.createTable();
-    } catch (e) {
-        if (e.statusCode !== 409) throw e;
-    }
-}
-
 async function setAuthCode(email, code) {
     const table = getAuthCodesTable();
-    await ensureTableExists(table);
     const now = new Date();
-    await table.upsertEntity({
+    const entity = {
         partitionKey: PARTITION_KEY,
         rowKey: email,
         code,
         attempts: 0,
         createdAt: now.toISOString(),
         expiresAt: new Date(now.getTime() + CODE_TTL_MINUTES * 60 * 1000).toISOString(),
-    }, "Replace");
+    };
+    try {
+        await table.upsertEntity(entity, "Replace");
+    } catch (e) {
+        // Table doesn't exist yet (first run ever) -- create it and retry once.
+        if (e.statusCode !== 404) throw e;
+        await table.createTable();
+        await table.upsertEntity(entity, "Replace");
+    }
 }
 
 async function getAuthCode(email) {
