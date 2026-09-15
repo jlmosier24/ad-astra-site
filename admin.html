@@ -7,26 +7,26 @@
 <title>Ad Astra Active | Admin</title>
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cpath d='M24 8 L27.2 19.6 L39 22 L27.2 24.4 L24 36 L20.8 24.4 L9 22 L20.8 19.6 Z' fill='%23C1442E'/%3E%3C/svg%3E">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Anton&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
     :root {
-        --cream: #F3EEE4;
+        --cream: #E7E3DD;
         --paper: #FFFFFF;
-        --ink: #221E19;
-        --sub: #6E6659;
-        --accent: #C1442E;
-        --forest: #2F4A3B;
-        --line: rgba(34,30,25,0.12);
+        --ink: #1F2430;
+        --sub: #5C6270;
+        --accent: #7D2935;
+        --line: rgba(31,36,48,0.12);
     }
     * { box-sizing: border-box; }
     html { scrollbar-gutter: stable; }
     :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-    body { margin: 0; min-height: 100vh; background: #FBFAF7; font-family: 'Manrope', sans-serif; color: var(--ink); }
+    body { margin: 0; min-height: 100vh; background: #FFFFFF; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: var(--ink); }
 
+    .topbar-shell {
+        position: sticky; top: 0; z-index: 50; border-bottom: 1px solid var(--line); box-shadow: 0 2px 12px rgba(20,20,25,0.04);
+        background: rgba(255,255,255,0.8); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    }
     .topbar { display: flex; align-items: center; justify-content: space-between; max-width: 960px; margin: 0 auto; padding: 22px 24px; }
-    .topbar h1 { font-family: 'Anton', sans-serif; font-weight: 400; text-transform: uppercase; font-size: 1.4rem; margin: 0; letter-spacing: 0.01em; }
+    .topbar h1 { font-weight: 800; font-size: 1.3rem; margin: 0; }
     .whoami { font-size: 0.85rem; color: var(--sub); display: flex; align-items: center; gap: 12px; }
     .whoami a { color: var(--accent); text-decoration: none; font-weight: 700; }
 
@@ -75,7 +75,7 @@
     .confirm-message { margin: 0 0 22px; font-size: 0.95rem; line-height: 1.5; }
     .modal { background: var(--paper); border-radius: 20px; padding: 32px; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; transform: scale(0.96) translateY(8px); transition: transform 0.2s ease; }
     #modal-overlay.visible .modal, #email-overlay.visible .modal { transform: scale(1) translateY(0); }
-    .modal h2 { font-family: 'Anton', sans-serif; font-weight: 400; text-transform: uppercase; color: var(--forest); margin: 0 0 20px; }
+    .modal h2 { font-weight: 800; color: var(--ink); margin: 0 0 20px; }
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .form-row-3 { grid-template-columns: 1fr 1fr 1fr; }
     .form-group { margin-bottom: 14px; }
@@ -112,11 +112,11 @@
     .modal-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
     #status-message, #email-status-message { display: none; padding: 10px 12px; border-radius: 8px; margin-bottom: 14px; font-size: 0.85rem; font-weight: 600; }
     #status-message.error, #email-status-message.error { background: #FBE4DF; color: var(--accent); }
-    #status-message.success, #email-status-message.success { background: #E4EBE6; color: var(--forest); }
+    #status-message.success, #email-status-message.success { background: var(--cream); color: var(--ink); }
 
     .trip-count { font-size: 0.78rem; color: var(--sub); margin-top: 4px; }
 
-    .section-heading { font-family: 'Anton', sans-serif; font-weight: 400; text-transform: uppercase; font-size: 1.1rem; letter-spacing: 0.01em; color: var(--sub); margin: 36px 0 14px; }
+    .section-heading { font-weight: 800; font-size: 1rem; color: var(--sub); margin: 36px 0 14px; }
     #tabPanel-dashboard .section-heading:first-child { margin-top: 0; }
 
     .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
@@ -124,7 +124,7 @@
     .stat-card.clickable { cursor: pointer; transition: box-shadow 0.15s ease, transform 0.15s ease; }
     .stat-card.clickable:hover { box-shadow: 0 8px 22px rgba(34,30,25,0.1); transform: translateY(-2px); }
     .stat-card.clickable .stat-label { text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 3px; }
-    .stat-value { font-family: 'Anton', sans-serif; font-size: 1.7rem; color: var(--forest); line-height: 1; margin-bottom: 6px; }
+    .stat-value { font-weight: 800; font-size: 1.6rem; color: var(--ink); line-height: 1; margin-bottom: 6px; }
     .stat-value.accent { color: var(--accent); }
     .stat-label { font-size: 0.78rem; color: var(--sub); font-weight: 600; }
 
@@ -138,13 +138,13 @@
     .cap-name { font-weight: 700; font-size: 0.88rem; }
     .cap-count { font-size: 0.78rem; color: var(--sub); }
     .cap-track { height: 9px; background: var(--cream); border-radius: 999px; overflow: hidden; }
-    .cap-fill { height: 100%; border-radius: 999px; background: var(--forest); }
+    .cap-fill { height: 100%; border-radius: 999px; background: var(--ink); }
     .cap-fill.full { background: var(--accent); }
 
     .paid-bar-wrap { display: flex; height: 34px; border-radius: 8px; overflow: hidden; margin-bottom: 12px; }
     .paid-seg { display: flex; align-items: center; justify-content: center; font-size: 0.78rem; font-weight: 700; color: #fff; }
-    .paid-seg.paid { background: var(--forest); }
-    .paid-seg.unpaid { background: var(--gold, #D99A3D); }
+    .paid-seg.paid { background: var(--ink); }
+    .paid-seg.unpaid { background: var(--accent); }
     .paid-legend { display: flex; gap: 20px; font-size: 0.8rem; color: var(--sub); }
     .paid-legend span { display: inline-flex; align-items: center; gap: 6px; }
     .legend-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
@@ -153,26 +153,25 @@
     .popular-row { display: flex; align-items: center; gap: 14px; padding: 11px 8px; border-top: 1px solid var(--line); cursor: pointer; border-radius: 8px; transition: background 0.15s ease; }
     .popular-row:hover { background: var(--cream); }
     .popular-row:first-child { border-top: none; }
-    .popular-rank { font-family: 'Anton', sans-serif; font-size: 1.1rem; color: var(--sub); width: 22px; flex-shrink: 0; }
+    .popular-rank { font-weight: 800; font-size: 1.05rem; color: var(--sub); width: 22px; flex-shrink: 0; }
     .popular-name { font-weight: 700; font-size: 0.9rem; flex-grow: 1; }
-    .popular-count { font-size: 0.82rem; color: var(--forest); font-weight: 700; white-space: nowrap; }
+    .popular-count { font-size: 0.82rem; color: var(--ink); font-weight: 700; white-space: nowrap; }
 
     .log-list { display: flex; flex-direction: column; }
     .log-row { display: flex; align-items: flex-start; gap: 14px; padding: 12px 8px; border-top: 1px solid var(--line); }
     .log-row:first-child { border-top: none; }
     .log-badge { flex-shrink: 0; width: 80px; text-align: center; padding: 4px 6px; border-radius: 999px; font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.02em; white-space: nowrap; margin-top: 2px; }
-    .log-badge-created { background: rgba(47,74,59,0.12); color: var(--forest); }
-    .log-badge-deleted { background: rgba(193,68,46,0.12); color: var(--accent); }
-    .log-badge-paid { background: rgba(47,122,61,0.14); color: #2F7A3D; }
-    .log-badge-unpaid { background: rgba(217,154,61,0.16); color: #B5792A; }
+    .log-badge-created { background: rgba(31,36,48,0.1); color: var(--ink); }
+    .log-badge-deleted { background: rgba(125,41,53,0.12); color: var(--accent); }
+    .log-badge-paid { background: rgba(31,36,48,0.1); color: var(--ink); }
+    .log-badge-unpaid { background: rgba(125,41,53,0.12); color: var(--accent); }
     .log-summary { font-weight: 700; font-size: 0.88rem; }
     .log-meta { font-size: 0.78rem; color: var(--sub); margin-top: 2px; }
 
     .tab-bar { display: flex; gap: 28px; margin-bottom: 26px; border-bottom: 1px solid var(--line); }
     .tab-btn {
         background: none; border: none; padding: 4px 2px 12px; margin-bottom: -1px;
-        font-family: 'Anton', sans-serif; font-weight: 400; text-transform: uppercase;
-        font-size: 0.95rem; letter-spacing: 0.01em; color: var(--sub);
+        font-weight: 800; font-size: 0.92rem; color: var(--sub);
         cursor: pointer; border-bottom: 2px solid transparent;
     }
     .tab-btn:hover { color: var(--ink); }
@@ -192,14 +191,14 @@
     .roster-modal { background: var(--paper); border-radius: 20px; padding: 32px; width: 100%; max-width: 640px; max-height: 85vh; overflow-y: auto; transform: scale(0.96) translateY(8px); transition: transform 0.2s ease; }
     #roster-overlay.visible .roster-modal { transform: scale(1) translateY(0); }
     .roster-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-    .roster-modal h2 { font-family: 'Anton', sans-serif; font-weight: 400; text-transform: uppercase; color: var(--forest); margin: 0 0 4px; }
+    .roster-modal h2 { font-weight: 800; color: var(--ink); margin: 0 0 4px; }
     .roster-sub { color: var(--sub); font-size: 0.85rem; margin-bottom: 18px; }
     .roster-row { display: flex; justify-content: space-between; align-items: center; gap: 14px; padding: 12px 0; border-top: 1px solid var(--line); }
     .roster-row:first-of-type { border-top: none; }
     .roster-name { font-weight: 700; font-size: 0.92rem; }
     .roster-detail { color: var(--sub); font-size: 0.8rem; margin-top: 2px; }
     .paid-pill { flex-shrink: 0; padding: 6px 16px; border-radius: 999px; font-weight: 700; font-size: 0.8rem; cursor: pointer; background: none; color: var(--sub); border: 1px solid var(--line); transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease; }
-    .paid-pill.active { background: #2F7A3D; color: #fff; border-color: #2F7A3D; }
+    .paid-pill.active { background: var(--ink); color: #fff; border-color: var(--ink); }
     .roster-close { text-align: center; color: var(--sub); cursor: pointer; font-weight: 600; font-size: 0.88rem; margin-top: 16px; }
 
     @media (max-width: 560px) {
@@ -214,9 +213,11 @@
 </head>
 <body>
 
+<div class="topbar-shell">
 <div class="topbar">
     <h1>Administration</h1>
     <div class="whoami" id="whoami">Loading…</div>
+</div>
 </div>
 
 <div class="wrap">
@@ -702,8 +703,8 @@ function renderPaymentStatus(revenue, unpaid) {
             ${unpaid > 0 ? `<div class="paid-seg unpaid" style="width: ${unpaidPct}%;">${unpaidPct}%</div>` : ''}
         </div>
         <div class="paid-legend">
-            <span><span class="legend-dot" style="background: var(--forest);"></span>Paid ($${revenue.toFixed(2)})</span>
-            <span><span class="legend-dot" style="background: var(--gold, #D99A3D);"></span>Unpaid ($${unpaid.toFixed(2)})</span>
+            <span><span class="legend-dot" style="background: var(--ink);"></span>Paid ($${revenue.toFixed(2)})</span>
+            <span><span class="legend-dot" style="background: var(--accent);"></span>Unpaid ($${unpaid.toFixed(2)})</span>
         </div>
     `;
 }
