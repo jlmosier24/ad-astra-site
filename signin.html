@@ -7,19 +7,16 @@
 <title>Ad Astra Active — Member Sign In</title>
 <meta name="robots" content="noindex">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cpath d='M24 8 L27.2 19.6 L39 22 L27.2 24.4 L24 36 L20.8 24.4 L9 22 L20.8 19.6 Z' fill='%23C1442E'/%3E%3C/svg%3E">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Anton&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
     :root {
-        --cream: #F3EEE4; --paper: #FFFFFF; --ink: #221E19; --sub: #6E6659;
-        --accent: #C1442E; --forest: #2F4A3B; --line: rgba(34,30,25,0.12);
+        --cream: #E7E3DD; --paper: #FFFFFF; --ink: #1F2430; --sub: #5C6270;
+        --accent: #7D2935; --line: rgba(31,36,48,0.12);
     }
     * { box-sizing: border-box; }
     :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     body {
-        margin: 0; min-height: 100vh; background: #FBFAF7;
-        font-family: 'Manrope', sans-serif; color: var(--ink);
+        margin: 0; min-height: 100vh; background: #FFFFFF;
+        font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: var(--ink);
         display: flex; align-items: center; justify-content: center; padding: 24px;
     }
 
@@ -32,25 +29,25 @@
     }
     .brand-name { display: block; font-weight: 800; font-size: 1rem; letter-spacing: -0.01em; margin-bottom: 26px; }
 
-    .gate-title { font-family: 'Anton', sans-serif; font-weight: 400; text-transform: uppercase; font-size: 1.6rem; margin: 0 0 10px; letter-spacing: 0.01em; text-wrap: balance; }
+    .gate-title { font-weight: 800; font-size: 1.5rem; margin: 0 0 10px; letter-spacing: -0.01em; text-wrap: balance; }
     .gate-sub { color: var(--sub); font-size: 0.9rem; line-height: 1.55; margin: 0 0 26px; }
     .gate-sub strong { color: var(--ink); font-weight: 700; }
 
     .field-label { text-align: left; font-size: 0.78rem; font-weight: 700; color: var(--sub); text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 6px; }
     .email-input {
         width: 100%; padding: 13px 16px; border-radius: 10px; border: 1.5px solid var(--line);
-        font-family: 'Manrope', sans-serif; font-size: 0.95rem; margin-bottom: 6px; background: #FBFAF7; color: var(--ink);
+        font-size: 0.95rem; margin-bottom: 6px; background: #F7F7F9; color: var(--ink);
     }
-    .email-input:focus { outline: none; border-color: var(--forest); background: var(--paper); }
+    .email-input:focus { outline: none; border-color: var(--ink); background: var(--paper); }
     .email-input.error { border-color: var(--accent); }
 
     .error-msg { text-align: left; color: var(--accent); font-size: 0.8rem; margin-bottom: 14px; min-height: 1.1em; }
-    .helper-msg { text-align: left; color: var(--forest); font-size: 0.8rem; margin-bottom: 14px; min-height: 1.1em; }
+    .helper-msg { text-align: left; color: var(--ink); font-size: 0.8rem; margin-bottom: 14px; min-height: 1.1em; }
 
     .verify-btn {
-        width: 100%; background: var(--forest); color: #fff; border: none; padding: 13px;
+        width: 100%; background: var(--ink); color: #fff; border: none; padding: 13px;
         border-radius: 999px; font-weight: 700; font-size: 0.92rem; cursor: pointer; margin-top: 8px;
-        font-family: 'Manrope', sans-serif; transition: background 0.15s ease;
+        transition: background 0.15s ease;
     }
     .verify-btn:hover { background: var(--accent); }
     .verify-btn:disabled { background: var(--line); color: var(--sub); cursor: not-allowed; }
@@ -59,33 +56,33 @@
         margin-top: 22px; padding-top: 20px; border-top: 1px solid var(--line);
         font-size: 0.82rem; color: var(--sub); line-height: 1.5;
     }
-    .not-member a { color: var(--forest); font-weight: 700; text-decoration: none; }
+    .not-member a { color: var(--ink); font-weight: 700; text-decoration: none; }
     .not-member a:hover { text-decoration: underline; }
 
     .code-row { display: flex; gap: 8px; margin-bottom: 6px; }
     .code-digit {
-        width: 100%; aspect-ratio: 1; text-align: center; font-family: 'Manrope', sans-serif; font-weight: 800;
-        font-size: 1.25rem; border: 1.5px solid var(--line); border-radius: 10px; background: #FBFAF7; color: var(--ink);
+        width: 100%; aspect-ratio: 1; text-align: center; font-weight: 800;
+        font-size: 1.25rem; border: 1.5px solid var(--line); border-radius: 10px; background: #F7F7F9; color: var(--ink);
     }
-    .code-digit:focus { outline: none; border-color: var(--forest); background: var(--paper); }
+    .code-digit:focus { outline: none; border-color: var(--ink); background: var(--paper); }
     .code-digit.error { border-color: var(--accent); }
 
     .remember-row { display: flex; align-items: flex-start; gap: 10px; margin: 16px 0 4px; text-align: left; }
-    .remember-row input { margin-top: 3px; width: 16px; height: 16px; accent-color: var(--forest); flex-shrink: 0; }
+    .remember-row input { margin-top: 3px; width: 16px; height: 16px; accent-color: var(--ink); flex-shrink: 0; }
     .remember-row label { font-size: 0.83rem; line-height: 1.45; color: var(--sub); }
     .remember-row label strong { color: var(--ink); font-weight: 700; }
 
     .resend-note { font-size: 0.8rem; color: var(--sub); text-align: center; margin-top: 16px; }
-    .resend-note button { background: none; border: none; padding: 0; font: inherit; color: var(--forest); font-weight: 700; text-decoration: underline; cursor: pointer; }
+    .resend-note button { background: none; border: none; padding: 0; font: inherit; color: var(--ink); font-weight: 700; text-decoration: underline; cursor: pointer; }
     .resend-note button:disabled { color: var(--sub); text-decoration: none; cursor: default; }
-    .back-link { display: block; text-align: center; margin-top: 10px; font-size: 0.8rem; color: var(--sub); text-decoration: none; font-weight: 600; cursor: pointer; background: none; border: none; font-family: 'Manrope', sans-serif; }
+    .back-link { display: block; text-align: center; margin-top: 10px; font-size: 0.8rem; color: var(--sub); text-decoration: none; font-weight: 600; cursor: pointer; background: none; border: none; }
     .back-link:hover { color: var(--accent); }
 
     .success-icon {
-        width: 52px; height: 52px; border-radius: 50%; background: rgba(47,122,61,0.12);
+        width: 52px; height: 52px; border-radius: 50%; background: var(--cream);
         display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;
     }
-    .success-icon svg { width: 24px; height: 24px; color: #2F7A3D; }
+    .success-icon svg { width: 24px; height: 24px; color: var(--ink); }
 
     [data-step] { display: none; }
     [data-step].active { display: block; }
@@ -282,7 +279,7 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email }),
             });
-            codeError.style.color = 'var(--forest)';
+            codeError.style.color = 'var(--ink)';
             codeError.textContent = 'A new code is on its way.';
         } finally {
             digits[0].focus();
