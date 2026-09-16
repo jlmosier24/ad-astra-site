@@ -68,11 +68,15 @@
     .trips-head p { color: var(--sub); font-size: 0.9rem; margin: 0; }
 
     .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
-    .card { background: var(--paper); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 8px 22px rgba(34,30,25,0.06); }
+    .card {
+        background: var(--paper); border: 1px solid var(--line); border-radius: 16px; overflow: hidden;
+        display: flex; flex-direction: column; box-shadow: 0 8px 22px rgba(34,30,25,0.06);
+        cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .card:hover { transform: translateY(-3px); box-shadow: 0 14px 30px rgba(34,30,25,0.11); }
     .art-frame { position: relative; height: 210px; overflow: hidden; background: #B7D8E0; }
     .art-frame img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 40%; display: block; }
     .art-fade { position: absolute; left: 0; right: 0; bottom: 0; height: 60px; background: linear-gradient(to top, rgba(0,0,0,0.28), rgba(0,0,0,0)); pointer-events: none; }
-    .spots-tag { position: absolute; top: 14px; left: 14px; background: rgba(255,255,255,0.94); border-radius: 999px; padding: 4px 11px; font-size: 0.68rem; font-weight: 700; color: var(--ink); }
     .date-tag { position: absolute; top: 14px; right: 14px; background: var(--accent); color: #fff; border-radius: 999px; padding: 4px 12px; font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; white-space: nowrap; }
 
     .card-body { padding: 20px 22px 22px; display: flex; flex-direction: column; flex-grow: 1; }
@@ -96,10 +100,15 @@
     .price-item { display: flex; flex-direction: column; gap: 1px; min-width: 58px; }
     .price-amount { font-weight: 800; font-size: 0.94rem; color: var(--ink); }
     .price-label { font-size: 0.66rem; font-weight: 500; color: var(--sub); }
-    .btn { background: var(--ink); color: #fff; border: none; padding: 10px 20px; border-radius: 999px; font-weight: 700; font-size: 0.84rem; cursor: pointer; white-space: nowrap; }
-    .btn:hover { background: var(--accent); }
     .deadline-note { font-size: 0.76rem; color: var(--sub); margin-top: -6px; margin-bottom: 12px; }
-    .closed-pill { background: var(--cream); color: var(--sub); border-radius: 999px; padding: 10px 18px; font-weight: 700; font-size: 0.84rem; white-space: nowrap; }
+    .closed-pill { background: var(--cream); color: var(--sub); border-radius: 999px; padding: 10px 18px; font-weight: 700; font-size: 0.84rem; white-space: nowrap; display: block; box-sizing: border-box; width: 100%; text-align: center; }
+
+    /* Trip detail view, opened by clicking a card. Reuses .modal/.modal-photo/
+       .modal-body/.modal-date from the registration modal below so it shares
+       the same look with no new overlay chrome. */
+    .detail-price-block { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 14px 0; margin: 4px 0 18px; }
+    .detail-spots { font-size: 0.78rem; color: var(--sub); font-weight: 600; }
+    .back-to-detail-link { text-align: center; color: var(--sub); cursor: pointer; margin: 0 0 16px; font-weight: 600; font-size: 0.85rem; }
 
     /* Loading skeletons, shown in the trips grid until /api/trips resolves
        -- so a cold start or slow connection reads as "loading" rather than
@@ -124,14 +133,16 @@
 
     footer { text-align: center; padding: 30px 24px 50px; font-size: 0.8rem; color: var(--sub); border-top: 1px solid var(--line); }
 
-    /* Registration modal (functionality carried over from the previous site) */
-    #modal-overlay {
+    /* Registration modal (functionality carried over from the previous site),
+       and the trip detail view opened from a card -- both share the same
+       overlay/backdrop and .modal chrome. */
+    #modal-overlay, #detail-overlay {
         display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
         background: rgba(34,30,25,0.55); backdrop-filter: blur(4px);
         z-index: 1000; justify-content: center; align-items: center; padding: 20px;
         opacity: 0; transition: opacity 0.2s ease;
     }
-    #modal-overlay.visible { opacity: 1; }
+    #modal-overlay.visible, #detail-overlay.visible { opacity: 1; }
     .modal {
         background: var(--paper); border-radius: 20px;
         width: 100%; max-width: 460px; max-height: 90vh; max-height: 90dvh; overflow-y: auto;
@@ -139,7 +150,7 @@
         scrollbar-width: none; -ms-overflow-style: none;
     }
     .modal::-webkit-scrollbar { display: none; }
-    #modal-overlay.visible .modal { transform: scale(1) translateY(0); }
+    #modal-overlay.visible .modal, #detail-overlay.visible .modal { transform: scale(1) translateY(0); }
     .modal-photo { position: relative; height: 160px; overflow: hidden; border-radius: 20px 20px 0 0; background: #B7D8E0; }
     .modal-photo img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 40%; display: block; }
     .modal-body { padding: 32px; }
@@ -188,8 +199,6 @@
         .hero { display: none; }
         .trips { padding-top: 14px; }
         .grid { grid-template-columns: 1fr; }
-        .card-footer { flex-direction: column; align-items: stretch; gap: 12px; }
-        .btn { width: 100%; padding: 12px; }
     }
 </style>
 </head>
@@ -277,6 +286,40 @@
 
 <footer>Ad Astra Active · Fredericksburg, VA · <a href="admin.html" style="color: inherit;">Admin</a></footer>
 
+<div id="detail-overlay">
+    <div class="modal">
+        <div class="modal-photo"><img id="detailImage" src="" alt=""></div>
+        <div class="modal-body">
+        <h2 id="detail-title"></h2>
+        <div class="modal-date" id="detail-date"></div>
+
+        <div class="card-location">
+            <div class="location-text">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                <span id="detail-address"></span>
+            </div>
+            <a class="directions-link" id="detail-directions" href="#" target="_blank" rel="noopener">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+                Directions
+            </a>
+        </div>
+
+        <p class="card-desc" id="detail-desc"></p>
+        <div id="detail-deadline-note" class="deadline-note" style="display: none;"></div>
+
+        <div class="detail-price-block">
+            <div class="price" id="detail-price"></div>
+            <span class="detail-spots" id="detail-spots"></span>
+        </div>
+
+        <button class="btn-submit" id="detailRegisterBtn" onclick="openRegisterFromDetail()">Register</button>
+        <span class="closed-pill" id="detailClosedPill" style="display: none;">Registration Closed</span>
+
+        <p class="modal-cancel" onclick="closeOverlay('detail-overlay')">Close</p>
+        </div>
+    </div>
+</div>
+
 <div id="modal-overlay">
     <div class="modal">
         <div class="modal-photo"><img id="modalImage" src="" alt=""></div>
@@ -296,6 +339,7 @@
         </div>
 
         <div id="reg-form">
+            <p class="back-to-detail-link" onclick="backToDetailFromRegister()">&larr; Back to details</p>
             <div id="existingRegNotice" class="existing-reg-notice" style="display: none;">You're already registered for this trip. Update your counts below, or cancel your registration.</div>
             <div class="form-group">
                 <label>Parent Name</label>
@@ -505,11 +549,10 @@ function cityStateLabel(address) {
 function renderTripCards() {
     const grid = document.getElementById('tripsGrid');
     grid.innerHTML = trips.map(t => `
-        <div class="card">
+        <div class="card" onclick="openTripDetail('${t.id}')">
             <div class="art-frame">
                 <img src="${t.image}" alt="${t.title}" loading="lazy">
                 <div class="art-fade"></div>
-                ${t.capacity > 0 ? `<div class="spots-tag">Limited capacity</div>` : ''}
                 <div class="date-tag">${formatDateLabel(t.date)}</div>
             </div>
             <div class="card-body">
@@ -519,22 +562,64 @@ function renderTripCards() {
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg>
                         <span>${cityStateLabel(t.address)}</span>
                     </div>
-                    <a class="directions-link" href="${directionsUrl(t)}" target="_blank" rel="noopener">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
-                        Directions
-                    </a>
                 </div>
-                <div class="card-desc">${t.description}</div>
-                ${t.registrationDeadline && !isRegistrationClosed(t) ? `<div class="deadline-note">${deadlineNoteLabel(t)}</div>` : ''}
                 <div class="card-footer">
                     <div class="price">${formatCardPrice(t)}</div>
-                    ${isRegistrationClosed(t)
-                        ? `<span class="closed-pill">Registration Closed</span>`
-                        : `<button class="btn" onclick="openModal('${t.id}')">Register</button>`}
                 </div>
             </div>
         </div>
     `).join('');
+}
+
+// Card click opens this detail view first -- description, directions,
+// deadline and capacity all live here now instead of on the card itself.
+// Register hands off to the existing openModal() flow unchanged.
+function openTripDetail(tripId) {
+    const t = trips.find(tr => tr.id === tripId);
+    if (!t) return;
+    selectedTrip = t;
+
+    const detailImage = document.getElementById('detailImage');
+    detailImage.src = t.image;
+    detailImage.alt = t.title;
+    document.getElementById('detail-title').textContent = t.title;
+    document.getElementById('detail-date').textContent = formatFullDate(t.date, t.time);
+    document.getElementById('detail-address').textContent = cityStateLabel(t.address);
+    document.getElementById('detail-directions').href = directionsUrl(t);
+    document.getElementById('detail-desc').textContent = t.description;
+
+    const closed = isRegistrationClosed(t);
+    const noteEl = document.getElementById('detail-deadline-note');
+    if (t.registrationDeadline && !closed) {
+        noteEl.style.display = 'block';
+        noteEl.textContent = deadlineNoteLabel(t);
+    } else {
+        noteEl.style.display = 'none';
+    }
+
+    document.getElementById('detail-price').innerHTML = formatCardPrice(t);
+    document.getElementById('detail-spots').textContent = t.capacity > 0 ? `${t.spotsRemaining} spot${t.spotsRemaining === 1 ? '' : 's'} remaining` : '';
+
+    document.getElementById('detailRegisterBtn').style.display = closed ? 'none' : 'block';
+    document.getElementById('detailClosedPill').style.display = closed ? 'block' : 'none';
+
+    openOverlay('detail-overlay');
+}
+
+function openRegisterFromDetail() {
+    if (!selectedTrip) return;
+    const tripId = selectedTrip.id;
+    closeOverlay('detail-overlay');
+    setTimeout(() => openModal(tripId), 200);
+}
+
+// "Back to details" link inside the register step -- closeModal() already
+// resets selectedTrip, so its id is captured first.
+function backToDetailFromRegister() {
+    if (!selectedTrip) return;
+    const tripId = selectedTrip.id;
+    closeModal();
+    setTimeout(() => openTripDetail(tripId), 200);
 }
 
 function openModal(tripId) {
