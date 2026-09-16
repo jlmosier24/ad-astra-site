@@ -380,22 +380,6 @@ function formatTimeLabel(time) {
     return `${hour12}:${String(m).padStart(2, '0')} ${period}`;
 }
 
-// Compact form for the date badge on trip photos, e.g. "9AM" or "9:30AM" --
-// formatTimeLabel's "9:00 AM" is too wide once paired with the date there.
-function formatShortTimeLabel(time) {
-    if (!time) return '';
-    const [h, m] = time.split(':').map(Number);
-    const period = h >= 12 ? 'PM' : 'AM';
-    const hour12 = h % 12 || 12;
-    return m === 0 ? `${hour12}${period}` : `${hour12}:${String(m).padStart(2, '0')}${period}`;
-}
-
-function formatBadgeDateLabel(t) {
-    const dateLabel = formatDateLabel(t.date);
-    const timeLabel = formatShortTimeLabel(t.time);
-    return timeLabel ? `${dateLabel} · ${timeLabel}` : dateLabel;
-}
-
 function formatFullDate(isoDate, time) {
     const [y, m, d] = isoDate.split('-').map(Number);
     const dateLabel = new Date(y, m - 1, d).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
@@ -538,7 +522,7 @@ function renderTripCards() {
                 <img src="${t.image}" alt="${t.title}" loading="lazy">
                 <div class="art-fade"></div>
                 ${t.capacity > 0 ? `<div class="spots-tag">Limited capacity</div>` : ''}
-                <div class="date-tag">${formatBadgeDateLabel(t)}</div>
+                <div class="date-tag">${formatDateLabel(t.date)}</div>
             </div>
             <div class="card-body">
                 <div class="card-title">${t.title}</div>
