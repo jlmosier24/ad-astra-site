@@ -160,9 +160,6 @@
     #status-message.error { background: #FBE4DF; color: var(--accent); }
     #status-message.success { background: var(--cream); color: var(--ink); }
     #reg-form { display: none; }
-    .form-group { margin-bottom: 16px; }
-    .form-group label { display: block; font-weight: 700; font-size: 0.85rem; margin-bottom: 6px; }
-    .form-group input { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; font-size: 0.95rem; font-family: inherit; }
     .price-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; }
     .price-total-display { min-width: 60px; text-align: right; font-weight: 700; }
     .stepper { display: flex; align-items: center; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
@@ -341,10 +338,7 @@
         <div id="reg-form">
             <p class="back-to-detail-link" onclick="backToDetailFromRegister()">&larr; Back to details</p>
             <div id="existingRegNotice" class="existing-reg-notice" style="display: none;">You're already registered for this trip. Update your counts below, or cancel your registration.</div>
-            <div class="form-group">
-                <label>Parent Name</label>
-                <input type="text" id="parentName">
-            </div>
+            <input type="hidden" id="parentName">
 
             <div class="price-row">
                 <div id="adultLabel" style="font-weight: 700;">Adult</div>
@@ -714,7 +708,7 @@ function populateRegForm() {
         notice.style.display = 'none';
         submitBtn.textContent = 'Complete Registration';
         cancelLink.style.display = 'none';
-        document.getElementById('parentName').value = suggestedName || '';
+        document.getElementById('parentName').value = suggestedName || sessionEmail || '';
         document.getElementById('adultCount').value = '0';
         document.getElementById('childCount').value = '0';
         document.getElementById('adultCountDisplay').textContent = '0';
