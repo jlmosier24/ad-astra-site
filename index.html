@@ -566,6 +566,21 @@ function cardBadgeHtml(t) {
     return label ? `<div class="status-tag">${label}</div>` : '';
 }
 
+// Re-fetches trips after a register/update/cancel so the card grid's
+// Registered badge and spots-remaining reflect the change immediately,
+// instead of only updating on the next full page load.
+async function refreshTripsAndCards() {
+    try {
+        const res = await fetch('/api/trips');
+        if (res.ok) {
+            trips = await res.json();
+            renderTripCards();
+        }
+    } catch (e) {
+        // Not fatal -- the grid just stays as it was until next reload.
+    }
+}
+
 function renderTripCards() {
     const grid = document.getElementById('tripsGrid');
     grid.innerHTML = trips.map(t => {
@@ -884,6 +899,7 @@ async function submitRegistration() {
 
         if (response.ok) {
             showSuccessState(`You're registered for ${selectedTrip.title}. Check your inbox for a confirmation email.`);
+            refreshTripsAndCards();
             setTimeout(closeModal, 2600);
         } else {
             const errorText = await response.text();
@@ -924,6 +940,7 @@ async function updateExistingRegistration() {
         const message = await response.text();
         if (response.ok) {
             showStatus(message || 'Your registration has been updated.', false);
+            refreshTripsAndCards();
             setTimeout(closeModal, 2500);
         } else {
             showStatus("Error: " + message);
@@ -954,6 +971,7 @@ async function cancelRegistration() {
         if (response.ok) {
             showStatus(message || 'Your registration has been cancelled.', false);
             existingRegistration = null;
+            refreshTripsAndCards();
             setTimeout(closeModal, 2000);
         } else {
             showStatus("Error: " + message);
