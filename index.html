@@ -78,6 +78,7 @@
     .art-frame { position: relative; height: 210px; overflow: hidden; background: #B7D8E0; }
     .art-frame img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 40%; display: block; }
     .art-fade { position: absolute; left: 0; right: 0; bottom: 0; height: 60px; background: linear-gradient(to top, rgba(0,0,0,0.28), rgba(0,0,0,0)); pointer-events: none; }
+    .status-tag { position: absolute; top: 14px; left: 14px; background: rgba(255,255,255,0.94); border-radius: 999px; padding: 4px 11px; font-size: 0.68rem; font-weight: 700; color: var(--ink); }
     .date-tag { position: absolute; top: 14px; right: 14px; background: var(--accent); color: #fff; border-radius: 999px; padding: 4px 12px; font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; white-space: nowrap; }
 
     .card-body { padding: 20px 22px 22px; display: flex; flex-direction: column; flex-grow: 1; }
@@ -426,6 +427,15 @@ function isRegistrationClosed(t) {
     return new Date() > deadline;
 }
 
+// A trip can be unavailable for two different reasons -- the deadline
+// passed, or every spot is taken -- and callers show a different message
+// for each rather than lumping both into one generic "closed" state.
+function getTripStatus(t) {
+    if (isRegistrationClosed(t)) return 'closed';
+    if (t.capacity > 0 && t.spotsRemaining <= 0) return 'full';
+    return 'open';
+}
+
 function deadlineNoteLabel(t) {
     const [y, m, d] = t.registrationDeadline.split('-').map(Number);
     const label = new Date(y, m - 1, d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
@@ -542,13 +552,18 @@ function cityStateLabel(address) {
     return `${city}, ${state}`;
 }
 
+const STATUS_BADGE_LABEL = { open: null, full: 'Full', closed: 'Closed' };
+
 function renderTripCards() {
     const grid = document.getElementById('tripsGrid');
-    grid.innerHTML = trips.map(t => `
+    grid.innerHTML = trips.map(t => {
+        const badge = STATUS_BADGE_LABEL[getTripStatus(t)];
+        return `
         <div class="card" onclick="openTripDetail('${t.id}')">
             <div class="art-frame">
                 <img src="${t.image}" alt="${t.title}" loading="lazy">
                 <div class="art-fade"></div>
+                ${badge ? `<div class="status-tag">${badge}</div>` : ''}
                 <div class="date-tag">${formatDateLabel(t.date)}</div>
             </div>
             <div class="card-body">
@@ -564,7 +579,8 @@ function renderTripCards() {
                 </div>
             </div>
         </div>
-    `).join('');
+    `;
+    }).join('');
 }
 
 // Card click opens this detail view first -- description, directions,
@@ -584,9 +600,9 @@ function openTripDetail(tripId) {
     document.getElementById('detail-directions').href = directionsUrl(t);
     document.getElementById('detail-desc').textContent = t.description;
 
-    const closed = isRegistrationClosed(t);
+    const status = getTripStatus(t);
     const noteEl = document.getElementById('detail-deadline-note');
-    if (t.registrationDeadline && !closed) {
+    if (t.registrationDeadline && status === 'open') {
         noteEl.style.display = 'block';
         noteEl.textContent = deadlineNoteLabel(t);
     } else {
@@ -594,10 +610,18 @@ function openTripDetail(tripId) {
     }
 
     document.getElementById('detail-price').innerHTML = formatCardPrice(t);
-    document.getElementById('detail-spots').textContent = t.capacity > 0 ? `${t.spotsRemaining} spot${t.spotsRemaining === 1 ? '' : 's'} remaining` : '';
+    document.getElementById('detail-spots').textContent = status === 'open' && t.capacity > 0 ? `${t.spotsRemaining} spot${t.spotsRemaining === 1 ? '' : 's'} remaining` : '';
 
-    document.getElementById('detailRegisterBtn').style.display = closed ? 'none' : 'block';
-    document.getElementById('detailClosedPill').style.display = closed ? 'block' : 'none';
+    const registerBtn = document.getElementById('detailRegisterBtn');
+    const closedPill = document.getElementById('detailClosedPill');
+    if (status === 'open') {
+        registerBtn.style.display = 'block';
+        closedPill.style.display = 'none';
+    } else {
+        registerBtn.style.display = 'none';
+        closedPill.style.display = 'block';
+        closedPill.textContent = status === 'full' ? 'Trip Full' : 'Registration Closed';
+    }
 
     openOverlay('detail-overlay');
 }
