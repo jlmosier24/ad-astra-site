@@ -144,7 +144,7 @@ module.exports = async function (context, req) {
     if (trip.capacity > 0) {
         let alreadyRegistered = 0;
         try {
-            const counts = await getRegisteredCountsByTrip();
+            const { counts } = await getRegisteredCountsByTrip();
             alreadyRegistered = counts.get(trip.rowKey) || 0;
         } catch (e) {
             context.log.error("Failed to check capacity:", e);

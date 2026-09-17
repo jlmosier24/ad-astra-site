@@ -11,7 +11,7 @@ const { getRegisteredCountsByTrip } = require("../shared/registrationsTable");
 module.exports = async function (context, req) {
     try {
         const table = getTripsTable();
-        const registeredCounts = await getRegisteredCountsByTrip();
+        const { counts: registeredCounts } = await getRegisteredCountsByTrip();
         const trips = [];
         for await (const entity of table.listEntities({ queryOptions: { filter: `PartitionKey eq '${PARTITION_KEY}'` } })) {
             const dto = toTripDto(entity);

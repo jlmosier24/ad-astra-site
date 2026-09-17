@@ -70,7 +70,7 @@ module.exports = async function (context, req) {
     if (trip.capacity > 0) {
         let totalRegistered = 0;
         try {
-            const counts = await getRegisteredCountsByTrip();
+            const { counts } = await getRegisteredCountsByTrip();
             totalRegistered = counts.get(tripId) || 0;
         } catch (e) {
             context.log.error("Failed to check capacity:", e);

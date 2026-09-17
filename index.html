@@ -79,6 +79,8 @@
     .art-frame img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 40%; display: block; }
     .art-fade { position: absolute; left: 0; right: 0; bottom: 0; height: 60px; background: linear-gradient(to top, rgba(0,0,0,0.28), rgba(0,0,0,0)); pointer-events: none; }
     .status-tag { position: absolute; top: 14px; left: 14px; background: rgba(255,255,255,0.94); border-radius: 999px; padding: 4px 11px; font-size: 0.68rem; font-weight: 700; color: var(--ink); }
+    .registered-tag { position: absolute; top: 14px; left: 14px; background: var(--ink); color: #fff; border-radius: 999px; padding: 4px 11px 4px 9px; font-size: 0.68rem; font-weight: 700; display: flex; align-items: center; gap: 4px; }
+    .registered-tag svg { width: 12px; height: 12px; flex-shrink: 0; }
     .date-tag { position: absolute; top: 14px; right: 14px; background: var(--accent); color: #fff; border-radius: 999px; padding: 4px 12px; font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; white-space: nowrap; }
 
     .card-body { padding: 20px 22px 22px; display: flex; flex-direction: column; flex-grow: 1; }
@@ -553,17 +555,26 @@ function cityStateLabel(address) {
 }
 
 const STATUS_BADGE_LABEL = { open: null, full: 'Full', closed: 'Closed' };
+const REGISTERED_CHECK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+
+// A trip you're already registered for shows that instead of Full/Closed --
+// whether it's full or closed for everyone else doesn't matter once you
+// already have your own spot.
+function cardBadgeHtml(t) {
+    if (t.registered) return `<div class="registered-tag">${REGISTERED_CHECK_SVG}Registered</div>`;
+    const label = STATUS_BADGE_LABEL[getTripStatus(t)];
+    return label ? `<div class="status-tag">${label}</div>` : '';
+}
 
 function renderTripCards() {
     const grid = document.getElementById('tripsGrid');
     grid.innerHTML = trips.map(t => {
-        const badge = STATUS_BADGE_LABEL[getTripStatus(t)];
         return `
         <div class="card" onclick="openTripDetail('${t.id}')">
             <div class="art-frame">
                 <img src="${t.image}" alt="${t.title}" loading="lazy">
                 <div class="art-fade"></div>
-                ${badge ? `<div class="status-tag">${badge}</div>` : ''}
+                ${cardBadgeHtml(t)}
                 <div class="date-tag">${formatDateLabel(t.date)}</div>
             </div>
             <div class="card-body">
