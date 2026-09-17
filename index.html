@@ -642,6 +642,7 @@ function openTripDetail(tripId) {
     const closedPill = document.getElementById('detailClosedPill');
     if (status === 'open') {
         registerBtn.style.display = 'block';
+        registerBtn.textContent = t.registered ? 'Update Registration' : 'Register';
         closedPill.style.display = 'none';
     } else {
         registerBtn.style.display = 'none';
