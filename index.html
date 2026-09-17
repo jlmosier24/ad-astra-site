@@ -638,9 +638,12 @@ function openTripDetail(tripId) {
     document.getElementById('detail-price').innerHTML = formatCardPrice(t);
     document.getElementById('detail-spots').textContent = status === 'open' && t.capacity > 0 ? `${t.spotsRemaining} spot${t.spotsRemaining === 1 ? '' : 's'} remaining` : '';
 
+    // A trip you're already registered for stays manageable (so you can
+    // reduce your count or cancel) even if it's now full or closed for
+    // everyone else -- same priority the card badge already gives you.
     const registerBtn = document.getElementById('detailRegisterBtn');
     const closedPill = document.getElementById('detailClosedPill');
-    if (status === 'open') {
+    if (status === 'open' || t.registered) {
         registerBtn.style.display = 'block';
         registerBtn.textContent = t.registered ? 'Update Registration' : 'Register';
         closedPill.style.display = 'none';
