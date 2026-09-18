@@ -112,7 +112,9 @@
        the same look with no new overlay chrome. */
     .detail-price-block { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 14px 0; margin: 4px 0 18px; }
     .detail-spots { font-size: 0.78rem; color: var(--sub); font-weight: 600; }
-    .back-to-detail-link { text-align: center; color: var(--sub); cursor: pointer; margin: 0 0 16px; font-weight: 600; font-size: 0.85rem; }
+    .back-to-detail-link { display: flex; align-items: center; gap: 5px; color: var(--sub); cursor: pointer; margin: 0 0 16px; font-weight: 600; font-size: 0.85rem; }
+    .back-to-detail-link svg { width: 15px; height: 15px; flex-shrink: 0; }
+    .back-to-detail-link:hover { color: var(--ink); }
 
     /* Loading skeletons, shown in the trips grid until /api/trips resolves
        -- so a cold start or slow connection reads as "loading" rather than
@@ -341,7 +343,10 @@
         </div>
 
         <div id="reg-form">
-            <p class="back-to-detail-link" onclick="backToDetailFromRegister()">&larr; Back to details</p>
+            <p class="back-to-detail-link" onclick="backToDetailFromRegister()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                Back to details
+            </p>
             <div id="existingRegNotice" class="existing-reg-notice" style="display: none;">You're already registered for this trip. Update your counts below, or cancel your registration.</div>
             <input type="hidden" id="parentName">
 
