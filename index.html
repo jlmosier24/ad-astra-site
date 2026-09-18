@@ -955,6 +955,7 @@ async function updateExistingRegistration() {
         const message = await response.text();
         if (response.ok) {
             showStatus(message || 'Your registration has been updated.', false);
+            document.getElementById('existingRegNotice').style.display = 'none';
             refreshTripsAndCards();
             setTimeout(closeModal, 2500);
         } else {
