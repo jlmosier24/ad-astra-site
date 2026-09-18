@@ -111,6 +111,12 @@
        .modal-body/.modal-date from the registration modal below so it shares
        the same look with no new overlay chrome. */
     .detail-price-block { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 14px 0; margin: 4px 0 18px; }
+    /* The detail view shows the full street address (the card keeps the
+       short city/state form) and stacks Directions below it instead of
+       beside it, so the address has the full width to wrap in. */
+    #detail-overlay .card-location { flex-direction: column; align-items: flex-start; gap: 8px; }
+    #detail-overlay .location-text { align-items: flex-start; }
+    #detail-overlay .location-text span { white-space: normal; }
     .detail-spots { font-size: 0.78rem; color: var(--sub); font-weight: 600; }
     .back-to-detail-link { display: flex; align-items: center; gap: 5px; color: var(--sub); cursor: pointer; margin: 0 0 16px; font-weight: 600; font-size: 0.85rem; }
     .back-to-detail-link svg { width: 15px; height: 15px; flex-shrink: 0; }
@@ -627,7 +633,7 @@ function openTripDetail(tripId) {
     detailImage.alt = t.title;
     document.getElementById('detail-title').textContent = t.title;
     document.getElementById('detail-date').textContent = formatFullDate(t.date, t.time);
-    document.getElementById('detail-address').textContent = cityStateLabel(t.address);
+    document.getElementById('detail-address').textContent = t.address;
     document.getElementById('detail-directions').href = directionsUrl(t);
     document.getElementById('detail-desc').textContent = t.description;
 
