@@ -873,11 +873,16 @@ function promptCancelRegistration() {
     document.getElementById('cancelConfirmTripName').textContent = selectedTrip.title;
     document.getElementById('reg-form').style.display = 'none';
     document.getElementById('cancel-confirm').style.display = 'block';
+    // "Never Mind" already covers backing out of this step -- the generic
+    // Cancel link (which closes the whole modal) alongside it just gives
+    // two different ways to say "don't do that."
+    document.querySelector('#modal-overlay .modal-cancel').style.display = 'none';
 }
 
 function dismissCancelConfirm() {
     document.getElementById('cancel-confirm').style.display = 'none';
     document.getElementById('reg-form').style.display = 'block';
+    document.querySelector('#modal-overlay .modal-cancel').style.display = '';
 }
 
 async function submitRegistration() {
