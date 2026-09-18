@@ -975,6 +975,7 @@ async function cancelRegistration() {
     if (!selectedTrip || !existingRegistration) return;
 
     document.getElementById('cancel-confirm').style.display = 'none';
+    document.querySelector('#modal-overlay .modal-cancel').style.display = 'none';
     const email = sessionEmail;
     showStatus("Cancelling your registration...", false);
 
@@ -997,10 +998,12 @@ async function cancelRegistration() {
         } else {
             showStatus("Error: " + message);
             document.getElementById('reg-form').style.display = 'block';
+            document.querySelector('#modal-overlay .modal-cancel').style.display = '';
         }
     } catch (error) {
         showStatus("Connection error. Please try again.");
         document.getElementById('reg-form').style.display = 'block';
+        document.querySelector('#modal-overlay .modal-cancel').style.display = '';
     }
 }
 
