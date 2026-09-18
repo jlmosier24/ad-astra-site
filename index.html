@@ -839,7 +839,7 @@ function showStatus(message, isError = true) {
 function showSuccessState(subMessage) {
     document.getElementById('status-message').style.display = 'none';
     document.getElementById('reg-form').style.display = 'none';
-    document.querySelector('.modal-cancel').style.display = 'none';
+    document.querySelector('#modal-overlay .modal-cancel').style.display = 'none';
 
     const state = document.getElementById('success-state');
     document.getElementById('successSub').textContent = subMessage;
@@ -861,7 +861,7 @@ function closeModal() {
     document.getElementById('cancel-confirm').style.display = 'none';
     document.getElementById('status-message').style.display = 'none';
     document.getElementById('success-state').style.display = 'none';
-    document.querySelector('.modal-cancel').style.display = '';
+    document.querySelector('#modal-overlay .modal-cancel').style.display = '';
     document.getElementById('parentName').value = '';
     selectedTrip = null;
     existingRegistration = null;
