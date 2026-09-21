@@ -511,8 +511,20 @@ function renderHeroLayer() {
     `).join('');
 }
 
+// The label for the Register button on a trip, or null when there's nothing
+// to offer (full or closed, and you're not already registered). Shared by the
+// hero button and the detail view so they always agree.
+function registerActionLabel(t) {
+    if (t.registered) return 'Update Registration';
+    return getTripStatus(t) === 'open' ? 'Register' : null;
+}
+
 function applyHeroSlide(idx) {
     const t = trips[idx];
+    const heroBtn = document.getElementById('heroCta');
+    const heroLabel = registerActionLabel(t);
+    heroBtn.style.display = heroLabel ? '' : 'none';
+    if (heroLabel) heroBtn.textContent = heroLabel;
     document.querySelectorAll('.hero-slide-bg').forEach(el => {
         el.classList.toggle('active', el.dataset.scene === t.id);
     });
@@ -586,6 +598,7 @@ async function refreshTripsAndCards() {
         if (res.ok) {
             trips = await res.json();
             renderTripCards();
+            if (trips.length && heroIndex < trips.length) applyHeroSlide(heroIndex);
         }
     } catch (e) {
         // Not fatal -- the grid just stays as it was until next reload.
@@ -654,9 +667,10 @@ function openTripDetail(tripId) {
     // everyone else -- same priority the card badge already gives you.
     const registerBtn = document.getElementById('detailRegisterBtn');
     const closedPill = document.getElementById('detailClosedPill');
-    if (status === 'open' || t.registered) {
+    const actionLabel = registerActionLabel(t);
+    if (actionLabel) {
         registerBtn.style.display = 'block';
-        registerBtn.textContent = t.registered ? 'Update Registration' : 'Register';
+        registerBtn.textContent = actionLabel;
         closedPill.style.display = 'none';
     } else {
         registerBtn.style.display = 'none';
