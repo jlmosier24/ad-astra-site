@@ -924,7 +924,7 @@ async function submitRegistration() {
     const email = sessionEmail;
 
     if (!parentName || (adults == 0 && children == 0)) {
-        showStatus("Please enter your name and select at least one attendee.");
+        showStatus("Please select at least one attendee.");
         return;
     }
 
@@ -966,7 +966,7 @@ async function updateExistingRegistration() {
     const email = sessionEmail;
 
     if (!parentName || (adults == 0 && children == 0)) {
-        showStatus("Please enter your name and select at least one attendee, or use Cancel My Registration below.");
+        showStatus("Please select at least one attendee, or use Cancel My Registration below.");
         return;
     }
 
