@@ -456,15 +456,17 @@ function deadlineNoteLabel(t) {
 }
 
 function formatCardPrice(t) {
-    if (t.adultPrice === 0 && t.childPrice === 0) return 'Free';
+    if (t.adultPrice === 0 && t.childPrice === 0) {
+        return `<div class="price-item"><span class="price-amount">Free</span><span class="price-label">all ages</span></div>`;
+    }
     if (t.adultPrice === t.childPrice) {
         return `<div class="price-item"><span class="price-amount">$${t.adultPrice.toFixed(2)}</span><span class="price-label">all ages</span></div>`;
     }
     const adultText = t.adultPrice === 0 ? 'Free' : `$${t.adultPrice.toFixed(2)}`;
     const childText = t.childPrice === 0 ? 'Free' : `$${t.childPrice.toFixed(2)}`;
     return `
-        <div class="price-item"><span class="price-amount">${adultText}</span><span class="price-label">ages 12+</span></div>
-        <div class="price-item"><span class="price-amount">${childText}</span><span class="price-label">ages ${t.childAgeRange || '2-11'}</span></div>
+        <div class="price-item"><span class="price-amount">${adultText}</span><span class="price-label">adults</span></div>
+        <div class="price-item"><span class="price-amount">${childText}</span><span class="price-label">children ${t.childAgeRange || '2-11'}</span></div>
     `;
 }
 
