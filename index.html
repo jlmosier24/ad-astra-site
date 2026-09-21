@@ -104,6 +104,7 @@
     .price-item { display: flex; flex-direction: column; gap: 1px; min-width: 58px; }
     .price-amount { font-weight: 800; font-size: 0.94rem; color: var(--ink); }
     .price-label { font-size: 0.66rem; font-weight: 500; color: var(--sub); }
+    .spots-pill { font-size: 0.7rem; font-weight: 700; color: var(--accent); background: rgba(125,41,53,0.09); border-radius: 999px; padding: 4px 10px; white-space: nowrap; }
     .deadline-note { font-size: 0.76rem; color: var(--sub); margin-top: -6px; margin-bottom: 12px; }
     .closed-pill { background: var(--cream); color: var(--sub); border-radius: 999px; padding: 10px 18px; font-weight: 700; font-size: 0.84rem; white-space: nowrap; display: block; box-sizing: border-box; width: 100%; text-align: center; }
 
@@ -607,6 +608,16 @@ async function refreshTripsAndCards() {
     }
 }
 
+// Only worth a callout when a capped trip is nearly gone. Hidden for trips
+// you're already on (not relevant to you) and for closed/full trips, which
+// already have a badge.
+const LOW_SPOTS_THRESHOLD = 5;
+function spotsLeftPillHtml(t) {
+    if (t.registered || t.capacity <= 0 || getTripStatus(t) !== 'open') return '';
+    if (t.spotsRemaining < 1 || t.spotsRemaining > LOW_SPOTS_THRESHOLD) return '';
+    return `<span class="spots-pill">${t.spotsRemaining} spot${t.spotsRemaining === 1 ? '' : 's'} left</span>`;
+}
+
 function renderTripCards() {
     const grid = document.getElementById('tripsGrid');
     grid.innerHTML = trips.map(t => {
@@ -628,6 +639,7 @@ function renderTripCards() {
                 </div>
                 <div class="card-footer">
                     <div class="price">${formatCardPrice(t)}</div>
+                    ${spotsLeftPillHtml(t)}
                 </div>
             </div>
         </div>
