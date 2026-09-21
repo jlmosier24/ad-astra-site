@@ -611,7 +611,7 @@ async function refreshTripsAndCards() {
 // Only worth a callout when a capped trip is nearly gone. Hidden for trips
 // you're already on (not relevant to you) and for closed/full trips, which
 // already have a badge.
-const LOW_SPOTS_THRESHOLD = 5;
+const LOW_SPOTS_THRESHOLD = 10;
 function spotsLeftPillHtml(t) {
     if (t.registered || t.capacity <= 0 || getTripStatus(t) !== 'open') return '';
     if (t.spotsRemaining < 1 || t.spotsRemaining > LOW_SPOTS_THRESHOLD) return '';
