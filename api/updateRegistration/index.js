@@ -1,5 +1,5 @@
 const { getTripsTable, isRegistrationClosed, PARTITION_KEY } = require("../shared/tripsTable");
-const { getRegistrationsTable, getRegisteredCountsByTrip } = require("../shared/registrationsTable");
+const { getRegistrationsTable, getRegisteredCountsByTrip, registeredCountForCapacity, attendeesForCapacity } = require("../shared/registrationsTable");
 const { isApprovedEmail } = require("../shared/approvedEmailsTable");
 const { parseCookies, verifySessionToken, SESSION_COOKIE_NAME } = require("../shared/sessionAuth");
 
@@ -70,8 +70,8 @@ module.exports = async function (context, req) {
     if (trip.capacity > 0) {
         let totalRegistered = 0;
         try {
-            const { counts } = await getRegisteredCountsByTrip();
-            totalRegistered = counts.get(tripId) || 0;
+            const { counts, childCounts } = await getRegisteredCountsByTrip();
+            totalRegistered = registeredCountForCapacity(trip, counts, childCounts);
         } catch (e) {
             context.log.error("Failed to check capacity:", e);
             context.res = { status: 500, body: "Error: " + (e.message || e.code || JSON.stringify(e)) };
@@ -79,9 +79,9 @@ module.exports = async function (context, req) {
         }
         // Exclude this registration's own current attendees -- they aren't
         // competing against themselves for the remaining spots.
-        const otherRegistered = totalRegistered - (existing.adults || 0) - (existing.children || 0);
-        const spotsLeft = Math.max(0, trip.capacity - otherRegistered);
-        if (adultCount + childCount > spotsLeft) {
+        const ownExisting = attendeesForCapacity(trip, existing.adults || 0, existing.children || 0);
+        const spotsLeft = Math.max(0, trip.capacity - (totalRegistered - ownExisting));
+        if (attendeesForCapacity(trip, adultCount, childCount) > spotsLeft) {
             context.res = { status: 400, body: `Only ${spotsLeft} spot${spotsLeft === 1 ? '' : 's'} left for this trip.` };
             return;
         }

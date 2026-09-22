@@ -1,5 +1,5 @@
 const { getTripsTable, toTripDto, withLiveSpotsRemaining, sortByDate, isPastTrip, PARTITION_KEY } = require("../shared/tripsTable");
-const { getRegisteredCountsByTrip } = require("../shared/registrationsTable");
+const { getRegisteredCountsByTrip, registeredCountForCapacity } = require("../shared/registrationsTable");
 const { isApprovedEmail } = require("../shared/approvedEmailsTable");
 const { parseCookies, verifySessionToken, SESSION_COOKIE_NAME } = require("../shared/sessionAuth");
 
@@ -13,12 +13,13 @@ module.exports = async function (context, req) {
 
     try {
         const table = getTripsTable();
-        const { counts, myTripIds } = await getRegisteredCountsByTrip(email);
+        const { counts, childCounts, myTripIds } = await getRegisteredCountsByTrip(email);
         const trips = [];
         for await (const entity of table.listEntities({ queryOptions: { filter: `PartitionKey eq '${PARTITION_KEY}'` } })) {
             const dto = toTripDto(entity);
             if (!dto.hidden && !isPastTrip(dto)) {
-                trips.push({ ...withLiveSpotsRemaining(dto, counts.get(dto.id)), registered: myTripIds.has(dto.id) });
+                const registeredCount = registeredCountForCapacity(dto, counts, childCounts);
+                trips.push({ ...withLiveSpotsRemaining(dto, registeredCount), registered: myTripIds.has(dto.id) });
             }
         }
         context.res = { status: 200, body: sortByDate(trips) };

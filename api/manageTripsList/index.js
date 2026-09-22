@@ -1,5 +1,5 @@
 const { getTripsTable, toTripDto, withLiveSpotsRemaining, sortByDate, PARTITION_KEY } = require("../shared/tripsTable");
-const { getRegisteredCountsByTrip } = require("../shared/registrationsTable");
+const { getRegisteredCountsByTrip, registeredCountForCapacity } = require("../shared/registrationsTable");
 
 // Reachable at /api/manageTripsList (default folder-name routing). Named to
 // avoid a literal "admin" prefix, since functions starting with "admin"
@@ -11,11 +11,11 @@ const { getRegisteredCountsByTrip } = require("../shared/registrationsTable");
 module.exports = async function (context, req) {
     try {
         const table = getTripsTable();
-        const { counts: registeredCounts } = await getRegisteredCountsByTrip();
+        const { counts, childCounts } = await getRegisteredCountsByTrip();
         const trips = [];
         for await (const entity of table.listEntities({ queryOptions: { filter: `PartitionKey eq '${PARTITION_KEY}'` } })) {
             const dto = toTripDto(entity);
-            trips.push(withLiveSpotsRemaining(dto, registeredCounts.get(dto.id)));
+            trips.push(withLiveSpotsRemaining(dto, registeredCountForCapacity(dto, counts, childCounts)));
         }
         context.res = { status: 200, body: sortByDate(trips) };
     } catch (e) {

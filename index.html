@@ -767,15 +767,22 @@ function updateTotals() {
     document.getElementById('grandTotal').textContent = `$${grandTotal.toFixed(2)}`;
 }
 
-// Trips with a capacity behave as one shared pool of spots for adults and
-// children combined. Trips with no maximum (capacity 0) still get a sane
-// ceiling so the stepper can't be tapped into an absurd number. When
-// editing an existing registration, its own current attendees are added
-// back in -- they aren't competing against themselves for the remaining
-// spots.
-function getAttendeeCap(trip) {
-    const base = trip.capacity > 0 ? trip.spotsRemaining : 20;
-    const ownExisting = existingRegistration ? (existingRegistration.adults + existingRegistration.children) : 0;
+// By default a trip's capacity is one shared pool of spots for adults and
+// children combined. A trip whose capacity only limits children
+// (capacityScope 'kids') caps each field independently instead -- adults
+// get a sane fixed ceiling rather than competing with children for the
+// same number. Trips with no maximum (capacity 0) get that same ceiling.
+// When editing an existing registration, its own current attendees are
+// added back in -- they aren't competing against themselves for the
+// remaining spots.
+const NO_CAP_CEILING = 20;
+function fieldCap(trip, field) {
+    if (trip.capacityScope === 'kids' && field === 'adult') return NO_CAP_CEILING;
+    const base = trip.capacity > 0 ? trip.spotsRemaining : NO_CAP_CEILING;
+    if (!existingRegistration) return base;
+    const ownExisting = trip.capacityScope === 'kids'
+        ? existingRegistration.children
+        : existingRegistration.adults + existingRegistration.children;
     return base + ownExisting;
 }
 
@@ -816,11 +823,13 @@ function populateRegForm() {
 
 function adjustCount(fieldId, delta) {
     if (!selectedTrip) return;
+    const field = fieldId === 'adultCount' ? 'adult' : 'child';
+    const sharedPool = selectedTrip.capacityScope !== 'kids';
     const input = document.getElementById(fieldId);
     const otherId = fieldId === 'adultCount' ? 'childCount' : 'adultCount';
     const current = parseInt(input.value, 10) || 0;
-    const other = parseInt(document.getElementById(otherId).value, 10) || 0;
-    const cap = getAttendeeCap(selectedTrip);
+    const other = sharedPool ? (parseInt(document.getElementById(otherId).value, 10) || 0) : 0;
+    const cap = fieldCap(selectedTrip, field);
 
     const next = Math.max(0, Math.min(current + delta, cap - other));
     input.value = next;
@@ -834,23 +843,38 @@ function refreshStepperState() {
     if (!selectedTrip) return;
     const adults = parseInt(document.getElementById('adultCount').value, 10) || 0;
     const children = parseInt(document.getElementById('childCount').value, 10) || 0;
-    const cap = getAttendeeCap(selectedTrip);
-    const total = adults + children;
-    const atCap = total >= cap;
+    const sharedPool = selectedTrip.capacityScope !== 'kids';
 
     document.getElementById('adultMinus').disabled = adults <= 0;
     document.getElementById('childMinus').disabled = children <= 0;
-    document.getElementById('adultPlus').disabled = atCap;
-    document.getElementById('childPlus').disabled = atCap;
 
     const noteEl = document.getElementById('capacityNote');
-    if (selectedTrip.capacity > 0) {
-        noteEl.style.display = 'block';
-        noteEl.textContent = atCap
-            ? `That's all ${cap} spot${cap === 1 ? '' : 's'} available for this trip.`
-            : `${cap - total} of ${cap} spot${cap === 1 ? '' : 's'} left for this trip.`;
+    if (sharedPool) {
+        const cap = fieldCap(selectedTrip, 'adult'); // same cap for either field in this scope
+        const atCap = (adults + children) >= cap;
+        document.getElementById('adultPlus').disabled = atCap;
+        document.getElementById('childPlus').disabled = atCap;
+        if (selectedTrip.capacity > 0) {
+            noteEl.style.display = 'block';
+            noteEl.textContent = atCap
+                ? `That's all ${cap} spot${cap === 1 ? '' : 's'} available for this trip.`
+                : `${cap - (adults + children)} of ${cap} spot${cap === 1 ? '' : 's'} left for this trip.`;
+        } else {
+            noteEl.style.display = 'none';
+        }
     } else {
-        noteEl.style.display = 'none';
+        const adultCap = fieldCap(selectedTrip, 'adult');
+        const childCap = fieldCap(selectedTrip, 'child');
+        document.getElementById('adultPlus').disabled = adults >= adultCap;
+        document.getElementById('childPlus').disabled = children >= childCap;
+        if (selectedTrip.capacity > 0) {
+            noteEl.style.display = 'block';
+            noteEl.textContent = children >= childCap
+                ? `That's all ${childCap} child seat${childCap === 1 ? '' : 's'} available for this trip.`
+                : `${childCap - children} of ${childCap} child seat${childCap === 1 ? '' : 's'} left for this trip.`;
+        } else {
+            noteEl.style.display = 'none';
+        }
     }
 }
 

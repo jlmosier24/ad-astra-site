@@ -21,25 +21,45 @@ function toRegistrationDto(entity) {
 }
 
 // Scans every registration once and sums attendees per trip, so callers
-// don't need a separate query per trip. When an email is given, also
+// don't need a separate query per trip. Also builds a children-only count
+// per trip in the same pass, for trips whose capacity only limits
+// children (see registeredCountForCapacity). When an email is given, also
 // collects which trips that email is registered for from this same pass
 // -- piggybacking on the scan that already happens on every trips-list
 // load, rather than running a second full-table scan just for that.
-// Returns { counts: Map<tripId, number>, myTripIds: Set<tripId> }.
+// Returns { counts, childCounts: Map<tripId, number>, myTripIds: Set<tripId> }.
 async function getRegisteredCountsByTrip(email) {
     const table = getRegistrationsTable();
     const counts = new Map();
+    const childCounts = new Map();
     const myTripIds = new Set();
     const normalizedEmail = (email || "").toLowerCase();
     for await (const entity of table.listEntities()) {
         const tripId = entity.partitionKey;
-        const attendees = (entity.adults || 0) + (entity.children || 0);
-        counts.set(tripId, (counts.get(tripId) || 0) + attendees);
+        const adults = entity.adults || 0;
+        const children = entity.children || 0;
+        counts.set(tripId, (counts.get(tripId) || 0) + adults + children);
+        childCounts.set(tripId, (childCounts.get(tripId) || 0) + children);
         if (normalizedEmail && (entity.email || "").toLowerCase() === normalizedEmail) {
             myTripIds.add(tripId);
         }
     }
-    return { counts, myTripIds };
+    return { counts, childCounts, myTripIds };
 }
 
-module.exports = { getRegistrationsTable, toRegistrationDto, getRegisteredCountsByTrip };
+// Which of the two counts above applies against a trip's capacity. Works
+// for both trip DTOs (.id) and raw Table Storage entities (.rowKey).
+function registeredCountForCapacity(trip, counts, childCounts) {
+    const map = trip.capacityScope === 'kids' ? childCounts : counts;
+    return map.get(trip.id || trip.rowKey) || 0;
+}
+
+// How many of a given adult/child split count toward that same capacity.
+function attendeesForCapacity(trip, adults, children) {
+    return trip.capacityScope === 'kids' ? children : adults + children;
+}
+
+module.exports = {
+    getRegistrationsTable, toRegistrationDto, getRegisteredCountsByTrip,
+    registeredCountForCapacity, attendeesForCapacity
+};

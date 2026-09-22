@@ -18,6 +18,7 @@ function toTripDto(entity) {
         lon: entity.lon,
         date: entity.date,
         time: entity.time || "",
+        endTime: entity.endTime || "",
         registrationDeadline: entity.registrationDeadline || "",
         poc: entity.poc || "",
         description: entity.description,
@@ -25,6 +26,10 @@ function toTripDto(entity) {
         childPrice: entity.childPrice,
         childAgeRange: entity.childAgeRange || "2-11",
         capacity: entity.capacity,
+        // Whether Total Capacity above limits every attendee ('everyone',
+        // today's only behavior, so it's the default for older trips) or
+        // just children ('kids').
+        capacityScope: entity.capacityScope || "everyone",
         image: entity.image,
         hidden: !!entity.hidden
     };
