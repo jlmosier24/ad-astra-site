@@ -7,7 +7,7 @@ const { logTransaction, getClientPrincipalEmail } = require("../shared/transacti
 // label on an existing one -- the email itself (the row key) can't be
 // edited in place, only added or removed.
 module.exports = async function (context, req) {
-    const { email, label } = req.body || {};
+    const { email, label, phone } = req.body || {};
     const normalized = (email || "").toLowerCase().trim();
     if (!normalized || !normalized.includes("@")) {
         context.res = { status: 400, body: "A valid email is required." };
@@ -26,7 +26,7 @@ module.exports = async function (context, req) {
             isNew = true;
         }
 
-        const entity = { partitionKey: PARTITION_KEY, rowKey: normalized, label: (label || "").trim(), dateAdded };
+        const entity = { partitionKey: PARTITION_KEY, rowKey: normalized, label: (label || "").trim(), phone: (phone || "").trim(), dateAdded };
         await table.upsertEntity(entity, "Replace");
         if (isNew) {
             await logTransaction({

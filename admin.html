@@ -186,10 +186,32 @@
 
     .approved-add-row { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
     .approved-add-row input { flex: 1; min-width: 160px; padding: 9px 11px; border: 1px solid var(--line); border-radius: 8px; font-size: 0.9rem; font-family: inherit; }
-    .approved-list { display: flex; flex-direction: column; gap: 8px; }
-    .approved-row { background: var(--paper); border-radius: 12px; padding: 12px 18px; display: flex; align-items: center; justify-content: space-between; gap: 12px; box-shadow: 0 2px 8px rgba(34,30,25,0.04); }
-    .approved-email { font-weight: 700; font-size: 0.9rem; }
-    .approved-label { color: var(--sub); font-size: 0.78rem; margin-top: 2px; }
+    .approved-toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .approved-search {
+        flex: 1; padding: 9px 12px 9px 34px; border: 1px solid var(--line); border-radius: 8px; font-size: 0.88rem; font-family: inherit;
+        background: #fff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%235C6270" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>') no-repeat 10px center / 15px 15px;
+    }
+    .approved-count { color: var(--sub); font-size: 0.78rem; white-space: nowrap; }
+    .approved-table { width: 100%; border-collapse: collapse; background: var(--paper); border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(34,30,25,0.04); }
+    .approved-table thead th {
+        text-align: left; font-size: 0.72rem; font-weight: 800; color: var(--sub); text-transform: uppercase; letter-spacing: 0.03em;
+        padding: 10px 14px; border-bottom: 1px solid var(--line); cursor: pointer; user-select: none; white-space: nowrap;
+    }
+    .approved-table thead th:hover { color: var(--ink); }
+    .approved-table thead th .sort-arrow { opacity: 0.35; font-size: 0.7rem; margin-left: 3px; }
+    .approved-table thead th.sorted .sort-arrow { opacity: 1; color: var(--accent); }
+    .approved-table tbody td { padding: 9px 14px; border-bottom: 1px solid var(--line); font-size: 0.88rem; vertical-align: middle; }
+    .approved-table tbody tr:last-child td { border-bottom: none; }
+    .approved-table tbody tr:hover { background: rgba(31,36,48,0.02); }
+    .approved-email { font-weight: 700; }
+    .approved-edit-cell { cursor: text; border-radius: 6px; padding: 5px 7px; margin: -5px -7px; display: inline-block; min-width: 40px; }
+    .approved-edit-cell:hover { background: var(--cream); }
+    .approved-edit-cell:empty::before { content: '—'; color: var(--line); }
+    .approved-edit-cell:focus { background: #fff; outline: 2px solid var(--ink); }
+    .approved-date { color: var(--sub); }
+    .approved-actions-cell { text-align: right; }
+    .approved-saved-flash { display: inline-block; font-size: 0.68rem; font-weight: 700; color: var(--accent); margin-left: 6px; opacity: 0; transition: opacity 0.3s ease; }
+    .approved-saved-flash.show { opacity: 1; }
 
     #roster-overlay { display: none; position: fixed; inset: 0; background: rgba(34,30,25,0.55); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center; padding: 20px; opacity: 0; transition: opacity 0.2s ease; }
     #roster-overlay.visible { opacity: 1; }
@@ -286,10 +308,29 @@
         <div class="hint" style="margin-bottom: 14px;">Only these addresses can register for a trip or manage an existing registration on the public site.</div>
         <div class="approved-add-row">
             <input type="email" id="newApprovedEmail" placeholder="parent@example.com">
-            <input type="text" id="newApprovedLabel" placeholder="Name (optional)">
+            <input type="text" id="newApprovedLabel" placeholder="Name">
+            <input type="tel" id="newApprovedPhone" placeholder="Phone">
             <button class="btn" onclick="addApprovedEmail()">Add</button>
         </div>
         <div id="approvedEmailsList" class="loading-state">Loading…</div>
+        <div id="approvedEmailsTableWrap" style="display: none;">
+            <div class="approved-toolbar">
+                <input class="approved-search" id="approvedSearch" placeholder="Search email, name, or phone..." oninput="applyApprovedFilter()">
+                <span class="approved-count" id="approvedCount"></span>
+            </div>
+            <table class="approved-table">
+                <thead>
+                    <tr>
+                        <th data-key="email" onclick="sortApproved('email')">Email <span class="sort-arrow">&#9650;</span></th>
+                        <th data-key="label" onclick="sortApproved('label')">Name <span class="sort-arrow">&#9650;</span></th>
+                        <th data-key="phone" onclick="sortApproved('phone')">Phone <span class="sort-arrow">&#9650;</span></th>
+                        <th data-key="dateAdded" onclick="sortApproved('dateAdded')">Added <span class="sort-arrow">&#9650;</span></th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="approvedEmailsRows"></tbody>
+            </table>
+        </div>
     </div>
 
     <div id="tabPanel-transactions" class="tab-panel">
@@ -1262,11 +1303,17 @@ async function sendGroupEmail() {
 }
 
 let approvedEmails = [];
+let approvedSortKey = 'email';
+let approvedSortDir = 1;
+let approvedFilterText = '';
 
 async function loadApprovedEmails() {
     const listEl = document.getElementById('approvedEmailsList');
+    const tableWrap = document.getElementById('approvedEmailsTableWrap');
+    listEl.style.display = '';
     listEl.className = 'loading-state';
     listEl.textContent = 'Loading…';
+    tableWrap.style.display = 'none';
     try {
         const res = await fetchWithAuthRetry('/api/manageApprovedEmailsList');
         if (!res.ok) {
@@ -1283,36 +1330,120 @@ async function loadApprovedEmails() {
     }
 }
 
+function visibleApprovedEmails() {
+    const q = approvedFilterText.trim().toLowerCase();
+    let rows = approvedEmails.filter(a => !q || [a.email, a.label, a.phone].join(' ').toLowerCase().includes(q));
+    rows.sort((a, b) => {
+        const av = (a[approvedSortKey] || '').toString().toLowerCase();
+        const bv = (b[approvedSortKey] || '').toString().toLowerCase();
+        return av < bv ? -approvedSortDir : av > bv ? approvedSortDir : 0;
+    });
+    return rows;
+}
+
+function formatDateAdded(iso) {
+    if (!iso) return '';
+    const d = new Date(iso);
+    if (isNaN(d)) return '';
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
 function renderApprovedEmails() {
     const listEl = document.getElementById('approvedEmailsList');
+    const tableWrap = document.getElementById('approvedEmailsTableWrap');
     if (approvedEmails.length === 0) {
+        listEl.style.display = '';
         listEl.className = 'empty-state';
         listEl.textContent = 'No approved emails yet.';
+        tableWrap.style.display = 'none';
         return;
     }
-    listEl.className = 'approved-list';
-    listEl.innerHTML = approvedEmails.map(a => `
-        <div class="approved-row">
-            <div>
-                <div class="approved-email">${escapeHtml(a.email)}</div>
-                ${a.label ? `<div class="approved-label">${escapeHtml(a.label)}</div>` : ''}
-            </div>
-            <button class="btn-danger" onclick="removeApprovedEmail('${a.email}')">Remove</button>
-        </div>
+    listEl.style.display = 'none';
+    tableWrap.style.display = 'block';
+
+    const rows = visibleApprovedEmails();
+    document.getElementById('approvedEmailsRows').innerHTML = rows.map(a => `
+        <tr>
+            <td class="approved-email">${escapeHtml(a.email)}</td>
+            <td><span class="approved-edit-cell" contenteditable="true" data-email="${escapeHtml(a.email)}" data-field="label" onblur="saveApprovedField(this)" onkeydown="handleApprovedEditKey(event, this)">${escapeHtml(a.label || '')}</span></td>
+            <td><span class="approved-edit-cell" contenteditable="true" data-email="${escapeHtml(a.email)}" data-field="phone" onblur="saveApprovedField(this)" onkeydown="handleApprovedEditKey(event, this)">${escapeHtml(a.phone || '')}</span></td>
+            <td class="approved-date">${formatDateAdded(a.dateAdded)}</td>
+            <td class="approved-actions-cell"><button class="btn-danger" onclick="removeApprovedEmail('${escapeHtml(a.email)}')">Remove</button></td>
+        </tr>
     `).join('');
+
+    document.querySelectorAll('.approved-table thead th[data-key]').forEach(th => {
+        const isSorted = th.dataset.key === approvedSortKey;
+        th.classList.toggle('sorted', isSorted);
+        th.querySelector('.sort-arrow').innerHTML = isSorted ? (approvedSortDir === 1 ? '&#9650;' : '&#9660;') : '&#9650;';
+    });
+    document.getElementById('approvedCount').textContent = `${rows.length} of ${approvedEmails.length}`;
+}
+
+function sortApproved(key) {
+    if (approvedSortKey === key) approvedSortDir *= -1; else { approvedSortKey = key; approvedSortDir = 1; }
+    renderApprovedEmails();
+}
+
+function applyApprovedFilter() {
+    approvedFilterText = document.getElementById('approvedSearch').value;
+    renderApprovedEmails();
+}
+
+function handleApprovedEditKey(e, el) {
+    if (e.key === 'Enter') { e.preventDefault(); el.blur(); }
+}
+
+// Table Storage upsert replaces the whole entity, so an edit to one field
+// (Name or Phone) still needs to send the other field's current value
+// alongside it, not just the one that changed.
+async function saveApprovedField(el) {
+    const email = el.dataset.email;
+    const field = el.dataset.field;
+    const record = approvedEmails.find(a => a.email === email);
+    if (!record) return;
+    const newValue = el.textContent.trim();
+    if (newValue === (record[field] || '')) return;
+
+    const previousValue = record[field] || '';
+    record[field] = newValue;
+    try {
+        const res = await fetchWithAuthRetry('/api/manageApprovedEmailsSave', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, label: record.label, phone: record.phone })
+        });
+        if (!res.ok) {
+            record[field] = previousValue;
+            el.textContent = previousValue;
+            alert(`Could not save (HTTP ${res.status}): ${await res.text() || 'no details returned by the server'}`);
+            return;
+        }
+        const flash = document.createElement('span');
+        flash.className = 'approved-saved-flash show';
+        flash.textContent = 'Saved';
+        el.parentElement.appendChild(flash);
+        setTimeout(() => flash.remove(), 900);
+    } catch (e) {
+        record[field] = previousValue;
+        el.textContent = previousValue;
+        alert('Connection error. Please try again.');
+    }
 }
 
 async function addApprovedEmail() {
     const emailInput = document.getElementById('newApprovedEmail');
     const labelInput = document.getElementById('newApprovedLabel');
+    const phoneInput = document.getElementById('newApprovedPhone');
     const email = emailInput.value.trim();
     const label = labelInput.value.trim();
+    const phone = phoneInput.value.trim();
     if (!email) return;
     try {
         const res = await fetchWithAuthRetry('/api/manageApprovedEmailsSave', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, label })
+            body: JSON.stringify({ email, label, phone })
         });
         if (!res.ok) {
             alert(`Could not add email (HTTP ${res.status}): ${await res.text() || 'no details returned by the server'}`);
@@ -1320,6 +1451,7 @@ async function addApprovedEmail() {
         }
         emailInput.value = '';
         labelInput.value = '';
+        phoneInput.value = '';
         loadApprovedEmails();
     } catch (e) {
         alert('Connection error. Please try again.');

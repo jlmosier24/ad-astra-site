@@ -11,6 +11,7 @@ function toApprovedEmailDto(entity) {
     return {
         email: entity.rowKey,
         label: entity.label || "",
+        phone: entity.phone || "",
         dateAdded: entity.dateAdded || ""
     };
 }
