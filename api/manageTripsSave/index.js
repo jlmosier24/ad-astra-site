@@ -1,22 +1,37 @@
 const { getTripsTable, toTripDto, slugify, PARTITION_KEY } = require("../shared/tripsTable");
+const { getRegistrationsTable } = require("../shared/registrationsTable");
 const { logTransaction, getClientPrincipalEmail } = require("../shared/transactionLog");
+
+async function tripIdExists(table, id) {
+    try {
+        await table.getEntity(PARTITION_KEY, id);
+        return true;
+    } catch (e) {
+        const status = e.statusCode || (e.response && e.response.status);
+        if (status === 404) return false;
+        throw e;
+    }
+}
+
+// Deleting a trip leaves its registrations behind (keyed by trip id), so an
+// id can be free in the Trips table but still have last year's registrants
+// attached. Reusing it would hand those to the new trip -- counting against
+// its capacity and showing them as registered -- so treat it as taken.
+async function hasRegistrations(id) {
+    const iter = getRegistrationsTable().listEntities({ queryOptions: { filter: `PartitionKey eq '${id}'` } });
+    const first = await iter.next();
+    return !first.done;
+}
 
 async function generateUniqueId(table, title) {
     const base = slugify(title);
     let candidate = base;
     let suffix = 1;
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
-        try {
-            await table.getEntity(PARTITION_KEY, candidate);
-            suffix += 1;
-            candidate = `${base}-${suffix}`;
-        } catch (e) {
-            const status = e.statusCode || (e.response && e.response.status);
-            if (status === 404) return candidate;
-            throw e;
-        }
+    while (await tripIdExists(table, candidate) || await hasRegistrations(candidate)) {
+        suffix += 1;
+        candidate = `${base}-${suffix}`;
     }
+    return candidate;
 }
 
 // Reachable at /api/manageTripsSave (default folder-name routing). Named to
