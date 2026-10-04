@@ -55,41 +55,41 @@ function buildConfirmationHtml({ trip, parentName, adultCount, childCount, total
         : "";
 
     return `
-        <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
+        <div style="font-family: -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #E7E3DD; border-radius: 12px; overflow: hidden;">
             ${photoHtml}
-            <div style="padding: 30px; color: #2d3748; line-height: 1.6;">
-                <h2 style="color: #2f855a; margin-top: 0;">Registration Confirmed!</h2>
+            <div style="padding: 30px; color: #1F2430; line-height: 1.6;">
+                <h2 style="color: #7D2935; margin-top: 0; font-weight: 800;">Registration Confirmed!</h2>
                 <p>Hi <strong>${escapeHtml(parentName)}</strong>, you're all set for:</p>
-                <h3 style="margin: 0 0 16px; font-size: 20px; color: #1a202c;">${escapeHtml(trip.title)}</h3>
+                <h3 style="margin: 0 0 16px; font-size: 20px; color: #1F2430; font-weight: 800;">${escapeHtml(trip.title)}</h3>
                 <table role="presentation" style="width: 100%; border-collapse: collapse; margin-bottom: 16px;">
                     <tr>
-                        <td style="padding: 8px 0; border-top: 1px solid #edf2f7; color: #718096; width: 110px; vertical-align: top;">Date</td>
-                        <td style="padding: 8px 0; border-top: 1px solid #edf2f7;">${escapeHtml(dateLabel)}</td>
+                        <td style="padding: 8px 0; border-top: 1px solid #EEEBE6; color: #5C6270; width: 110px; vertical-align: top;">Date</td>
+                        <td style="padding: 8px 0; border-top: 1px solid #EEEBE6;">${escapeHtml(dateLabel)}</td>
                     </tr>
                     <tr>
-                        <td style="padding: 8px 0; border-top: 1px solid #edf2f7; color: #718096; vertical-align: top;">Location</td>
-                        <td style="padding: 8px 0; border-top: 1px solid #edf2f7;">
+                        <td style="padding: 8px 0; border-top: 1px solid #EEEBE6; color: #5C6270; vertical-align: top;">Location</td>
+                        <td style="padding: 8px 0; border-top: 1px solid #EEEBE6;">
                             ${escapeHtml(locationLabel)}<br>
-                            <a href="${directionsUrl(trip)}" style="display: inline-block; margin-top: 6px; padding: 6px 14px; background-color: #38a169; color: white; text-decoration: none; border-radius: 999px; font-size: 0.85em;">Get Directions</a>
+                            <a href="${directionsUrl(trip)}" style="display: inline-block; margin-top: 6px; padding: 6px 14px; background-color: #1F2430; color: #FFFFFF; text-decoration: none; border-radius: 999px; font-size: 0.85em; font-weight: 700;">Get Directions</a>
                         </td>
                     </tr>
                     <tr>
-                        <td style="padding: 8px 0; border-top: 1px solid #edf2f7; color: #718096; vertical-align: top;">Attendees</td>
-                        <td style="padding: 8px 0; border-top: 1px solid #edf2f7;">${escapeHtml(attendeeLabel)}</td>
+                        <td style="padding: 8px 0; border-top: 1px solid #EEEBE6; color: #5C6270; vertical-align: top;">Attendees</td>
+                        <td style="padding: 8px 0; border-top: 1px solid #EEEBE6;">${escapeHtml(attendeeLabel)}</td>
                     </tr>
                     <tr>
-                        <td style="padding: 8px 0; border-top: 1px solid #edf2f7; color: #718096; vertical-align: top;">Total Due</td>
-                        <td style="padding: 8px 0; border-top: 1px solid #edf2f7; font-weight: 700;">$${total.toFixed(2)}</td>
+                        <td style="padding: 8px 0; border-top: 1px solid #EEEBE6; color: #5C6270; vertical-align: top;">Total Due</td>
+                        <td style="padding: 8px 0; border-top: 1px solid #EEEBE6; font-weight: 700;">$${total.toFixed(2)}</td>
                     </tr>
                 </table>
                 ${descriptionHtml}
                 <p style="margin-top: 20px;">We are excited to have you join us! More details on meeting time and what to bring will follow as we get closer to the date.</p>
-                <p style="font-size: 0.9em; color: #718096;">Need to change your headcount or cancel? Click Register on this trip on the site again and enter this same email address to update or cancel your registration.</p>
-                <hr style="border: 0; border-top: 1px solid #edf2f7; margin: 20px 0;">
-                <p style="font-size: 0.9em; color: #718096; margin-bottom: 0;">This is an automated confirmation. No reply is necessary.</p>
+                <p style="font-size: 0.9em; color: #5C6270;">Need to change your headcount or cancel? Sign in at <a href="https://adastraactive.com" style="color: #7D2935;">adastraactive.com</a>, open this trip, and choose Update Registration.</p>
+                <hr style="border: 0; border-top: 1px solid #EEEBE6; margin: 20px 0;">
+                <p style="font-size: 0.9em; color: #5C6270; margin-bottom: 0;">This is an automated confirmation. No reply is necessary.</p>
             </div>
-            <div style="background-color: #f7fafc; padding: 15px; text-align: center; font-size: 0.8em; color: #a0aec0;">
-                © 2026 Ad Astra Homeschool • Fredericksburg, VA
+            <div style="background-color: #F7F5F2; padding: 15px; text-align: center; font-size: 0.8em; color: #5C6270;">
+                Ad Astra Active · Fredericksburg, VA
             </div>
         </div>
     `;

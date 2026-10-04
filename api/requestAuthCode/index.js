@@ -14,12 +14,12 @@ function escapeHtml(str) {
 
 function buildCodeEmailHtml(code) {
     return `
-        <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 480px; margin: auto; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
-            <div style="padding: 30px; color: #2d3748; line-height: 1.6; text-align: center;">
-                <h2 style="color: #2f4a3b; margin: 0 0 8px;">Ad Astra Active</h2>
-                <p style="margin: 0 0 22px; color: #718096;">Here's your sign-in code:</p>
-                <div style="font-size: 34px; font-weight: 800; letter-spacing: 6px; color: #1a202c; margin-bottom: 22px;">${escapeHtml(code)}</div>
-                <p style="font-size: 0.9em; color: #718096; margin: 0;">This code expires in 10 minutes. If you didn't request this, you can ignore this email.</p>
+        <div style="font-family: -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 480px; margin: auto; border: 1px solid #E7E3DD; border-radius: 12px; overflow: hidden;">
+            <div style="padding: 30px; color: #1F2430; line-height: 1.6; text-align: center;">
+                <h2 style="color: #1F2430; margin: 0 0 8px; font-weight: 800;">Ad Astra Active</h2>
+                <p style="margin: 0 0 22px; color: #5C6270;">Here's your sign-in code:</p>
+                <div style="font-size: 34px; font-weight: 800; letter-spacing: 6px; color: #7D2935; margin-bottom: 22px;">${escapeHtml(code)}</div>
+                <p style="font-size: 0.9em; color: #5C6270; margin: 0;">This code expires in 10 minutes. If you didn't request this, you can ignore this email.</p>
             </div>
         </div>
     `;
