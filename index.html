@@ -741,7 +741,11 @@ async function loadRegistrationState() {
     }
 
     try {
-        const response = await fetch(`/api/verifyEmail?email=${encodeURIComponent(sessionEmail)}&tripId=${encodeURIComponent(selectedTrip.id)}`);
+        const response = await fetch(`/api/verifyEmail?tripId=${encodeURIComponent(selectedTrip.id)}`);
+        if (response.status === 401) {
+            location.href = 'signin.html?return=' + encodeURIComponent(location.pathname + location.search);
+            return;
+        }
         const data = await response.json();
         existingRegistration = data.existingRegistration || null;
         suggestedName = data.suggestedName || null;
