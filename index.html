@@ -188,6 +188,7 @@
     .grand-total-row { display: flex; justify-content: space-between; font-size: 1.1rem; font-weight: 800; border-top: 2px dashed var(--line); padding-top: 14px; margin: 6px 0 20px; color: var(--ink); }
     .btn-submit { background: var(--accent); color: #fff; border: none; padding: 13px; border-radius: 999px; font-size: 1rem; font-weight: 700; cursor: pointer; width: 100%; }
     .btn-submit:hover { background: var(--ink); }
+    .btn-submit:disabled { opacity: 0.6; cursor: default; background: var(--accent); }
     .modal-cancel { text-align: center; color: var(--sub); cursor: pointer; margin-top: 14px; font-weight: 600; font-size: 0.88rem; }
 
     .success-check-circle { stroke: var(--ink); stroke-width: 3; fill: none; stroke-dasharray: 151; stroke-dashoffset: 151; animation: successCircle 0.5s ease forwards; }
@@ -800,6 +801,7 @@ function populateRegForm() {
 
     document.getElementById('cancel-confirm').style.display = 'none';
     document.getElementById('reg-form').style.display = 'block';
+    submitBtn.disabled = false;
 
     if (existingRegistration) {
         notice.style.display = 'block';
@@ -956,6 +958,10 @@ async function submitRegistration() {
         return;
     }
 
+    // Stays disabled on success (the modal closes); re-enabled on failure.
+    const submitBtn = document.getElementById('submitBtn');
+    if (submitBtn.disabled) return;
+    submitBtn.disabled = true;
     showStatus("Sending your confirmation...", false);
 
     try {
@@ -979,10 +985,12 @@ async function submitRegistration() {
             setTimeout(closeModal, 2600);
         } else {
             const errorText = await response.text();
-            showStatus("Error: " + errorText);
+            showStatus(response.status === 409 ? errorText : "Error: " + errorText);
+            submitBtn.disabled = false;
         }
     } catch (error) {
         showStatus("Connection error. Please try again.");
+        submitBtn.disabled = false;
     }
 }
 
@@ -998,6 +1006,9 @@ async function updateExistingRegistration() {
         return;
     }
 
+    const submitBtn = document.getElementById('submitBtn');
+    if (submitBtn.disabled) return;
+    submitBtn.disabled = true;
     showStatus("Saving your changes...", false);
 
     try {
@@ -1021,9 +1032,11 @@ async function updateExistingRegistration() {
             setTimeout(closeModal, 2500);
         } else {
             showStatus("Error: " + message);
+            submitBtn.disabled = false;
         }
     } catch (error) {
         showStatus("Connection error. Please try again.");
+        submitBtn.disabled = false;
     }
 }
 

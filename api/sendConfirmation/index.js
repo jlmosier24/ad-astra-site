@@ -1,3 +1,4 @@
+const crypto = require("crypto");
 const { EmailClient } = require("@azure/communication-email");
 const { getTripsTable, isRegistrationClosed, PARTITION_KEY } = require("../shared/tripsTable");
 const { getRegistrationsTable, getRegisteredCountsByTrip, registeredCountForCapacity, attendeesForCapacity } = require("../shared/registrationsTable");
@@ -143,6 +144,21 @@ module.exports = async function (context, req) {
         return;
     }
 
+    // A family registers once per trip and edits that registration after.
+    // Without this, a double-click (or two tabs) created a second booking.
+    try {
+        for await (const entity of getRegistrationsTable().listEntities({ queryOptions: { filter: `PartitionKey eq '${trip.rowKey}'` } })) {
+            if ((entity.email || "").toLowerCase() === emailToCheck) {
+                context.res = { status: 409, body: "You're already registered for this trip. Reopen it to update your registration." };
+                return;
+            }
+        }
+    } catch (e) {
+        context.log.error("Failed to check for an existing registration:", e);
+        context.res = { status: 500, body: "Error: " + (e.message || e.code || JSON.stringify(e)) };
+        return;
+    }
+
     if (trip.capacity > 0) {
         let alreadyRegistered = 0;
         try {
@@ -166,7 +182,10 @@ module.exports = async function (context, req) {
     // matters for the roster. The confirmation email is best-effort on top.
     try {
         const registrationsTable = getRegistrationsTable();
-        const registrationId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+        // Derived from the email (within this trip's partition) so two
+        // simultaneous requests that both pass the check above still can't
+        // both be created -- the second one collides and is rejected.
+        const registrationId = crypto.createHash("sha256").update(emailToCheck).digest("hex").slice(0, 32);
         await registrationsTable.createEntity({
             partitionKey: trip.rowKey,
             rowKey: registrationId,
@@ -179,6 +198,10 @@ module.exports = async function (context, req) {
             dateRegistered: new Date().toISOString()
         });
     } catch (e) {
+        if (e.statusCode === 409) {
+            context.res = { status: 409, body: "You're already registered for this trip. Reopen it to update your registration." };
+            return;
+        }
         context.log.error("Failed to save registration:", e);
         context.res = { status: 500, body: "Error: " + (e.message || e.code || JSON.stringify(e)) };
         return;
