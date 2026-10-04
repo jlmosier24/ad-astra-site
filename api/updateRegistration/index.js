@@ -11,7 +11,9 @@ const { parseCookies, verifySessionToken, SESSION_COOKIE_NAME } = require("../sh
 // registration even if they somehow knew its id.
 module.exports = async function (context, req) {
     const body = req.body || {};
-    const { tripId, registrationId, parentName, adults, children, email } = body;
+    const { tripId, registrationId, parentName: rawParentName, adults, children, email } = body;
+    // Shown back to admins in the roster -- keep it bounded.
+    const parentName = String(rawParentName || "").trim().slice(0, 100);
 
     if (!tripId || !registrationId) {
         context.res = { status: 400, body: "Missing tripId or registrationId." };

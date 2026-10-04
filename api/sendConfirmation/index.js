@@ -96,7 +96,9 @@ function buildConfirmationHtml({ trip, parentName, adultCount, childCount, total
 
 module.exports = async function (context, req) {
     const body = req.body || {};
-    const { parentName, adults, children, email, tripId, tripTitle } = body;
+    const { parentName: rawParentName, adults, children, email, tripId, tripTitle } = body;
+    // Shown back to admins in the roster -- keep it bounded.
+    const parentName = String(rawParentName || "").trim().slice(0, 100);
 
     const emailToCheck = (email || "").toLowerCase().trim();
     if (!emailToCheck || !(await isApprovedEmail(emailToCheck))) {

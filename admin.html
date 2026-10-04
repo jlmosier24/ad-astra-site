@@ -1154,8 +1154,8 @@ function openRoster(tripId) {
     document.getElementById('rosterBody').innerHTML = regs.map(r => `
         <div class="roster-row">
             <div>
-                <div class="roster-name">${r.parentName}</div>
-                <div class="roster-detail">${r.email} · ${r.adults} adults, ${r.children} children · $${(r.total || 0).toFixed(2)}</div>
+                <div class="roster-name">${escapeHtml(r.parentName || '')}</div>
+                <div class="roster-detail">${escapeHtml(r.email || '')} · ${r.adults} adults, ${r.children} children · $${(r.total || 0).toFixed(2)}</div>
                 <div class="roster-detail">Registered ${formatRegisteredDate(r.dateRegistered)}</div>
             </div>
             <div style="display: flex; align-items: center; gap: 14px;">
