@@ -1,8 +1,9 @@
 const { EmailClient } = require("@azure/communication-email");
 const { getTripsTable, PARTITION_KEY } = require("../shared/tripsTable");
 const { getRegistrationsTable } = require("../shared/registrationsTable");
-const { listApprovedEmails } = require("../shared/approvedEmailsTable");
+const { getClientPrincipalEmail } = require("../shared/transactionLog");
 
+const SENDER_ADDRESS = "registration@adastraactive.com";
 const connectionString = process.env.AZURE_COMMUNICATION_CONNECTION_STRING;
 const client = new EmailClient(connectionString);
 
@@ -55,19 +56,12 @@ module.exports = async function (context, req) {
         return;
     }
 
-    // The "To" address is shown to every BCC'd recipient, so it should be
-    // one of the coordinator's own approved addresses rather than exposing
-    // a registrant's email to the whole group.
-    let fromDisplayAddress = recipientEmails[0];
-    try {
-        const approved = await listApprovedEmails();
-        if (approved.length > 0) fromDisplayAddress = approved[0].email;
-    } catch (e) {
-        // Fall back to a registrant address if this lookup fails.
-    }
+    // The "To" address is shown to every BCC'd recipient (and gets a copy),
+    // so it's the sending admin's own address -- never a member's.
+    const fromDisplayAddress = getClientPrincipalEmail(req) || SENDER_ADDRESS;
 
     const emailMessage = {
-        senderAddress: "registration@adastraactive.com",
+        senderAddress: SENDER_ADDRESS,
         content: {
             subject: `${trip.title}: ${subject}`,
             html: `
