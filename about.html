@@ -85,7 +85,22 @@
     .callout a { color: var(--ink); font-weight: 700; text-decoration: none; }
     .callout a:hover { text-decoration: underline; }
 
-    footer { text-align: center; padding: 30px 24px 50px; font-size: 0.8rem; color: var(--sub); border-top: 1px solid var(--line); margin-top: 20px; }
+    footer { border-top: 1px solid var(--line); background: #FAF9F7; padding: 40px 32px 28px; margin-top: 20px; }
+    .ft-inner { max-width: 1216px; margin: 0 auto; }
+    .ft-top { display: grid; grid-template-columns: 1.6fr 1fr 1.2fr; gap: 32px; }
+    .ft-brand { display: flex; align-items: center; gap: 9px; font-weight: 800; font-size: 1.05rem; color: var(--ink); margin-bottom: 10px; }
+    .ft-brand img { width: 26px; height: 26px; display: block; }
+    .ft-blurb { color: var(--sub); font-size: 0.86rem; line-height: 1.55; margin: 0; max-width: 38ch; }
+    .ft-heading { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--sub); margin: 4px 0 12px; }
+    .ft-col a { display: block; color: var(--ink); text-decoration: none; font-size: 0.88rem; font-weight: 600; margin-bottom: 8px; }
+    .ft-col a:hover { color: var(--accent); }
+    .ft-col a.ft-mail { color: var(--accent); }
+    .ft-col p { color: var(--sub); font-size: 0.84rem; line-height: 1.5; margin: 0 0 8px; }
+    .ft-bottom { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; border-top: 1px solid var(--line); margin-top: 32px; padding-top: 18px; font-size: 0.78rem; color: var(--sub); }
+    @media (max-width: 720px) {
+        footer { padding: 32px 16px 24px; }
+        .ft-top { grid-template-columns: 1fr; gap: 24px; }
+    }
 
     @media (max-width: 640px) {
         .coordinators-grid { grid-template-columns: repeat(2, 1fr); }
@@ -240,7 +255,29 @@
     </div>
 </div>
 
-<footer>Ad Astra Active · Fredericksburg, VA</footer>
+<footer>
+    <div class="ft-inner">
+        <div class="ft-top">
+            <div>
+                <div class="ft-brand"><img src="images/logo-compass.png" alt="">Ad Astra Active</div>
+                <p class="ft-blurb">Field trips for Ad Astra Active homeschool families in and around Fredericksburg, Virginia.</p>
+            </div>
+            <div class="ft-col">
+                <div class="ft-heading">Explore</div>
+                <a href="index.html">Field Trips</a>
+                <a href="about.html">About</a>
+                <a href="contact.html">Contact</a>
+            </div>
+            <div class="ft-col">
+                <div class="ft-heading">Questions?</div>
+                <p>Reach the trip coordinators any time.</p>
+                <a class="ft-mail" href="mailto:adastraactive@gmail.com">adastraactive@gmail.com</a>
+            </div>
+        </div>
+        <div class="ft-bottom"><span>&copy; <span class="ft-year">2026</span> Ad Astra Active</span><span>Fredericksburg, VA</span></div>
+    </div>
+</footer>
+<script>document.querySelectorAll('.ft-year').forEach(el => { el.textContent = new Date().getFullYear(); });</script>
 
 <script>
 function toggleNavMenu() {
