@@ -42,7 +42,7 @@
     .btn-danger:hover { background: var(--accent); color: #fff; }
 
     .trip-list { display: flex; flex-direction: column; gap: 12px; }
-    .trip-row { background: var(--paper); border-radius: 14px; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; box-shadow: 0 4px 14px rgba(34,30,25,0.05); }
+    .trip-row { background: var(--paper); border-radius: 14px; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; box-shadow: 0 4px 14px rgba(31,36,48,0.05); }
     .trip-row.hidden-trip { opacity: 0.55; }
     .trip-info h3 { margin: 0 0 4px; font-size: 1.05rem; }
     .trip-meta { font-size: 0.82rem; color: var(--sub); }
@@ -54,7 +54,7 @@
     .overflow-menu {
         display: none; position: absolute; top: 100%; right: 0; margin-top: 6px;
         background: var(--paper); border: 1px solid var(--line); border-radius: 12px;
-        box-shadow: 0 8px 24px rgba(34,30,25,0.14); overflow: hidden; z-index: 20; min-width: 160px;
+        box-shadow: 0 8px 24px rgba(31,36,48,0.14); overflow: hidden; z-index: 20; min-width: 160px;
     }
     .overflow-menu.open { display: block; }
     .overflow-menu button {
@@ -66,7 +66,7 @@
 
     .empty-state, .loading-state { text-align: center; color: var(--sub); padding: 60px 0; }
 
-    #modal-overlay, #email-overlay, #confirm-overlay { display: none; position: fixed; inset: 0; background: rgba(34,30,25,0.55); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center; padding: 20px; opacity: 0; transition: opacity 0.2s ease; }
+    #modal-overlay, #email-overlay, #confirm-overlay { display: none; position: fixed; inset: 0; background: rgba(31,36,48,0.55); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center; padding: 20px; opacity: 0; transition: opacity 0.2s ease; }
     #modal-overlay.visible, #email-overlay.visible, #confirm-overlay.visible { opacity: 1; }
     #email-overlay { z-index: 1100; }
     #confirm-overlay { z-index: 1200; }
@@ -103,7 +103,7 @@
     .address-suggestions {
         display: none; position: absolute; top: 100%; left: 0; right: 0; z-index: 10;
         background: var(--paper); border: 1px solid var(--line); border-radius: 8px; margin-top: 4px;
-        max-height: 200px; overflow-y: auto; box-shadow: 0 8px 20px rgba(34,30,25,0.12);
+        max-height: 200px; overflow-y: auto; box-shadow: 0 8px 20px rgba(31,36,48,0.12);
     }
     .address-suggestion { padding: 8px 12px; font-size: 0.86rem; cursor: pointer; }
     .address-suggestion:hover { background: var(--cream); }
@@ -116,7 +116,7 @@
     .cap-scope-toggle button:disabled { color: var(--line); cursor: not-allowed; }
     .modal-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
     #status-message, #email-status-message { display: none; padding: 10px 12px; border-radius: 8px; margin-bottom: 14px; font-size: 0.85rem; font-weight: 600; }
-    #status-message.error, #email-status-message.error { background: #FBE4DF; color: var(--accent); }
+    #status-message.error, #email-status-message.error { background: rgba(125,41,53,0.1); color: var(--accent); }
     #status-message.success, #email-status-message.success { background: var(--cream); color: var(--ink); }
 
     .trip-count { font-size: 0.78rem; color: var(--sub); margin-top: 4px; }
@@ -125,15 +125,15 @@
     #tabPanel-dashboard .section-heading:first-child { margin-top: 0; }
 
     .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-    .stat-card { background: var(--paper); border-radius: 14px; padding: 18px 20px; box-shadow: 0 4px 14px rgba(34,30,25,0.05); }
+    .stat-card { background: var(--paper); border-radius: 14px; padding: 18px 20px; box-shadow: 0 4px 14px rgba(31,36,48,0.05); }
     .stat-card.clickable { cursor: pointer; transition: box-shadow 0.15s ease, transform 0.15s ease; }
-    .stat-card.clickable:hover { box-shadow: 0 8px 22px rgba(34,30,25,0.1); transform: translateY(-2px); }
+    .stat-card.clickable:hover { box-shadow: 0 8px 22px rgba(31,36,48,0.1); transform: translateY(-2px); }
     .stat-card.clickable .stat-label { text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 3px; }
     .stat-value { font-weight: 800; font-size: 1.6rem; color: var(--ink); line-height: 1; margin-bottom: 6px; }
     .stat-value.accent { color: var(--accent); }
     .stat-label { font-size: 0.78rem; color: var(--sub); font-weight: 600; }
 
-    .chart-card { background: var(--paper); border-radius: 14px; padding: 22px 24px; box-shadow: 0 4px 14px rgba(34,30,25,0.05); margin-bottom: 14px; }
+    .chart-card { background: var(--paper); border-radius: 14px; padding: 22px 24px; box-shadow: 0 4px 14px rgba(31,36,48,0.05); margin-bottom: 14px; }
 
     .cap-row { margin-bottom: 14px; }
     .cap-row:last-child { margin-bottom: 0; }
@@ -192,7 +192,7 @@
         background: #fff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%235C6270" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>') no-repeat 10px center / 15px 15px;
     }
     .approved-count { color: var(--sub); font-size: 0.78rem; white-space: nowrap; }
-    .approved-table { width: 100%; border-collapse: collapse; background: var(--paper); border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(34,30,25,0.04); }
+    .approved-table { width: 100%; border-collapse: collapse; background: var(--paper); border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(31,36,48,0.04); }
     .approved-table thead th {
         text-align: left; font-size: 0.72rem; font-weight: 800; color: var(--sub); text-transform: uppercase; letter-spacing: 0.03em;
         padding: 10px 14px; border-bottom: 1px solid var(--line); cursor: pointer; user-select: none; white-space: nowrap;
@@ -213,7 +213,7 @@
     .approved-saved-flash { display: inline-block; font-size: 0.68rem; font-weight: 700; color: var(--accent); margin-left: 6px; opacity: 0; transition: opacity 0.3s ease; }
     .approved-saved-flash.show { opacity: 1; }
 
-    #roster-overlay { display: none; position: fixed; inset: 0; background: rgba(34,30,25,0.55); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center; padding: 20px; opacity: 0; transition: opacity 0.2s ease; }
+    #roster-overlay { display: none; position: fixed; inset: 0; background: rgba(31,36,48,0.55); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center; padding: 20px; opacity: 0; transition: opacity 0.2s ease; }
     #roster-overlay.visible { opacity: 1; }
     .roster-modal { background: var(--paper); border-radius: 20px; padding: 32px; width: 100%; max-width: 640px; max-height: 85vh; overflow-y: auto; transform: scale(0.96) translateY(8px); transition: transform 0.2s ease; }
     #roster-overlay.visible .roster-modal { transform: scale(1) translateY(0); }
