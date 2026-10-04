@@ -13,23 +13,30 @@ function escapeHtml(str) {
     return String(str || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 }
 
-// Mirrors formatTimeLabel()/formatFullDate() in index.html so the email
+// Mirrors timeRangeLabel()/formatFullDate() in index.html so the email
 // reads the same way the site does. The date components are fixed inputs,
 // not "now", so this isn't subject to the server-vs-local timezone issue
 // that affects same-day comparisons elsewhere.
-function formatTimeLabel(time) {
-    if (!time) return "";
+function timeParts(time) {
     const [h, m] = time.split(':').map(Number);
-    const period = h >= 12 ? 'PM' : 'AM';
-    const hour12 = h % 12 || 12;
-    return `${hour12}:${String(m).padStart(2, '0')} ${period}`;
+    return { clock: `${h % 12 || 12}:${String(m).padStart(2, '0')}`, period: h >= 12 ? 'PM' : 'AM' };
 }
 
-function formatFullDate(isoDate, time) {
+function timeRangeLabel(start, end) {
+    if (!start) return "";
+    const s = timeParts(start);
+    if (!end) return `${s.clock} ${s.period}`;
+    const e = timeParts(end);
+    return s.period === e.period
+        ? `${s.clock} – ${e.clock} ${e.period}`
+        : `${s.clock} ${s.period} – ${e.clock} ${e.period}`;
+}
+
+function formatFullDate(isoDate, time, endTime) {
     const [y, m, d] = isoDate.split('-').map(Number);
     const dateLabel = new Date(y, m - 1, d).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
-    const timeLabel = formatTimeLabel(time);
-    return timeLabel ? `${dateLabel} at ${timeLabel}` : dateLabel;
+    if (!time) return dateLabel;
+    return endTime ? `${dateLabel} · ${timeRangeLabel(time, endTime)}` : `${dateLabel} at ${timeRangeLabel(time)}`;
 }
 
 // Mirrors directionsUrl() in index.html.
@@ -39,7 +46,7 @@ function directionsUrl(trip) {
 }
 
 function buildConfirmationHtml({ trip, parentName, adultCount, childCount, total }) {
-    const dateLabel = trip.date ? formatFullDate(trip.date, trip.time) : "";
+    const dateLabel = trip.date ? formatFullDate(trip.date, trip.time, trip.endTime) : "";
     const locationLabel = trip.placeName ? `${trip.placeName} — ${trip.address}` : trip.address;
     const attendeeParts = [];
     if (adultCount > 0) attendeeParts.push(`${adultCount} adult${adultCount === 1 ? '' : 's'}`);

@@ -99,7 +99,12 @@
     .directions-link svg { width: 15px; height: 15px; flex-shrink: 0; }
     .directions-link:hover { background: var(--ink); color: #fff; }
     .card-desc { font-size: 0.89rem; line-height: 1.5; color: var(--sub); margin-bottom: 18px; flex-grow: 1; }
-    .card-footer { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--line); padding-top: 14px; gap: 10px; }
+    .card-when { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; color: var(--ink); font-weight: 700; margin: -4px 0 10px; }
+    .card-when svg { width: 14px; height: 14px; flex-shrink: 0; }
+    .card-when-sep { color: var(--sub); font-weight: 600; }
+    /* margin-top: auto keeps price rows lined up across a row of cards even
+       when some have a time line or a two-line title and others don't. */
+    .card-footer { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--line); padding-top: 14px; gap: 10px; margin-top: auto; }
     .price { display: flex; align-items: flex-start; gap: 14px; font-weight: 800; font-size: 0.98rem; }
     .price-item { display: flex; flex-direction: column; gap: 1px; min-width: 58px; }
     .price-amount { font-weight: 800; font-size: 0.94rem; color: var(--ink); }
@@ -416,19 +421,33 @@ function formatDateLabel(isoDate) {
     return new Date(y, m - 1, d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase();
 }
 
-function formatTimeLabel(time) {
-    if (!time) return '';
+function timeParts(time) {
     const [h, m] = time.split(':').map(Number);
-    const period = h >= 12 ? 'PM' : 'AM';
-    const hour12 = h % 12 || 12;
-    return `${hour12}:${String(m).padStart(2, '0')} ${period}`;
+    return { clock: `${h % 12 || 12}:${String(m).padStart(2, '0')}`, period: h >= 12 ? 'PM' : 'AM' };
 }
 
-function formatFullDate(isoDate, time) {
+// "12:00 – 3:00 PM" when start and end share AM/PM, "11:00 AM – 2:00 PM"
+// when they don't, just the start when there's no end, '' with no start.
+function timeRangeLabel(start, end) {
+    if (!start) return '';
+    const s = timeParts(start);
+    if (!end) return `${s.clock} ${s.period}`;
+    const e = timeParts(end);
+    return s.period === e.period
+        ? `${s.clock} – ${e.clock} ${e.period}`
+        : `${s.clock} ${s.period} – ${e.clock} ${e.period}`;
+}
+
+function weekdayLabel(isoDate) {
+    const [y, m, d] = isoDate.split('-').map(Number);
+    return new Date(y, m - 1, d).toLocaleDateString('en-US', { weekday: 'long' });
+}
+
+function formatFullDate(isoDate, time, endTime) {
     const [y, m, d] = isoDate.split('-').map(Number);
     const dateLabel = new Date(y, m - 1, d).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
-    const timeLabel = formatTimeLabel(time);
-    return timeLabel ? `${dateLabel} at ${timeLabel}` : dateLabel;
+    if (!time) return dateLabel;
+    return endTime ? `${dateLabel} · ${timeRangeLabel(time, endTime)}` : `${dateLabel} at ${timeRangeLabel(time)}`;
 }
 
 // Trips with a past date never reach the client -- /api/trips excludes them.
@@ -638,6 +657,11 @@ function renderTripCards() {
                         <span>${cityStateLabel(t.address)}</span>
                     </div>
                 </div>
+                ${t.time ? `
+                <div class="card-when">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+                    <span>${weekdayLabel(t.date)}</span><span class="card-when-sep">·</span><span>${timeRangeLabel(t.time, t.endTime)}</span>
+                </div>` : ''}
                 <div class="card-footer">
                     <div class="price">${formatCardPrice(t)}</div>
                     ${spotsLeftPillHtml(t)}
@@ -660,7 +684,7 @@ function openTripDetail(tripId) {
     detailImage.src = t.image;
     detailImage.alt = t.title;
     document.getElementById('detail-title').textContent = t.title;
-    document.getElementById('detail-date').textContent = formatFullDate(t.date, t.time);
+    document.getElementById('detail-date').textContent = formatFullDate(t.date, t.time, t.endTime);
     document.getElementById('detail-address').textContent = t.address;
     document.getElementById('detail-directions').href = directionsUrl(t);
     document.getElementById('detail-desc').textContent = t.description;
@@ -722,7 +746,7 @@ function openModal(tripId) {
     modalImage.src = selectedTrip.image;
     modalImage.alt = selectedTrip.title;
     document.getElementById('modal-title').textContent = selectedTrip.title;
-    document.getElementById('modal-details').textContent = formatFullDate(selectedTrip.date, selectedTrip.time);
+    document.getElementById('modal-details').textContent = formatFullDate(selectedTrip.date, selectedTrip.time, selectedTrip.endTime);
     document.getElementById('adultLabel').textContent = `Adult ($${selectedTrip.adultPrice.toFixed(2)})`;
     document.getElementById('childLabel').textContent = `Child (${selectedTrip.childAgeRange || '2-11'}) ($${selectedTrip.childPrice.toFixed(2)})`;
 
