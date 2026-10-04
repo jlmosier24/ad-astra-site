@@ -1,3 +1,4 @@
+const crypto = require("crypto");
 const { EmailClient } = require("@azure/communication-email");
 const { isApprovedEmail } = require("../shared/approvedEmailsTable");
 const { setAuthCode, getAuthCode } = require("../shared/authCodesTable");
@@ -44,7 +45,7 @@ module.exports = async function (context, req) {
             return;
         }
 
-        const code = Math.floor(100000 + Math.random() * 900000).toString();
+        const code = crypto.randomInt(100000, 1000000).toString();
         await setAuthCode(email, code);
 
         const emailMessage = {

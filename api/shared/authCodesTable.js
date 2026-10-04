@@ -39,13 +39,17 @@ async function getAuthCode(email) {
     }
 }
 
+// Conditional on the entity's ETag: if another guess updated the count
+// since this one was read, this throws (412) instead of overwriting it.
+// Callers treat that as a rejected attempt, so parallel guesses can't all
+// read the same count and slip past MAX_ATTEMPTS together.
 async function incrementAttempts(email, entity) {
     const table = getAuthCodesTable();
     await table.updateEntity({
         partitionKey: PARTITION_KEY,
         rowKey: email,
         attempts: (entity.attempts || 0) + 1,
-    }, "Merge");
+    }, "Merge", { etag: entity.etag });
 }
 
 async function deleteAuthCode(email) {

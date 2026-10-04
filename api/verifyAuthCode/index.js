@@ -33,8 +33,16 @@ module.exports = async function (context, req) {
         return;
     }
 
-    if (entity.code !== code) {
+    // Count the attempt before checking it, so every guess -- right or
+    // wrong -- uses one up. Fails closed if another guess raced in first.
+    try {
         await incrementAttempts(email, entity);
+    } catch (e) {
+        context.res = { status: 429, body: { message: "Too many tries at once. Wait a moment and try again." } };
+        return;
+    }
+
+    if (entity.code !== code) {
         context.res = { status: 400, body: { message: "That code doesn't match. Check your email and try again." } };
         return;
     }
