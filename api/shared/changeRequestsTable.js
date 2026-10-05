@@ -90,7 +90,7 @@ async function displayNameFor(email) {
 }
 
 module.exports = {
-    PARTITION_KEY, TYPES, AREAS, STATUSES, OPEN_STATUSES,
+    PARTITION_KEY, TYPES, AREAS, STATUSES, OPEN_STATUSES, OWNER_EMAILS,
     isOwner, getChangeRequestsTable, parseVotes, toChangeRequestDto,
     listChangeRequests, createChangeRequest, displayNameFor
 };
