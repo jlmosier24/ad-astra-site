@@ -14,7 +14,11 @@
     { "route": "/api/manageApprovedEmailsList", "allowedRoles": ["administrator"] },
     { "route": "/api/manageApprovedEmailsSave", "allowedRoles": ["administrator"] },
     { "route": "/api/manageApprovedEmailsDelete", "allowedRoles": ["administrator"] },
-    { "route": "/api/manageTransactionLogList", "allowedRoles": ["administrator"] }
+    { "route": "/api/manageTransactionLogList", "allowedRoles": ["administrator"] },
+    { "route": "/api/manageRequestsList", "allowedRoles": ["administrator"] },
+    { "route": "/api/manageRequestsSave", "allowedRoles": ["administrator"] },
+    { "route": "/api/manageRequestsVote", "allowedRoles": ["administrator"] },
+    { "route": "/api/manageRequestsUpdate", "allowedRoles": ["administrator"] }
   ],
   "responseOverrides": {
     "401": {
