@@ -490,7 +490,6 @@
                 <label>Point of Contact</label>
                 <select id="poc">
                     <option value="">— None selected —</option>
-                    <option value="Alexis Conley">Alexis Conley</option>
                     <option value="Sam Levesque">Sam Levesque</option>
                     <option value="Kristina Palmer">Kristina Palmer</option>
                     <option value="Rachel Bueng">Rachel Bueng</option>
@@ -1005,12 +1004,28 @@ function updateCapacityScopeHint() {
             : 'Adults and children both count toward the limit above.');
 }
 
+// Selects a trip's point of contact. If it's someone no longer in the list
+// (a former coordinator), they're added as an option for this trip only --
+// otherwise the select would silently blank and the next save would wipe
+// the trip's existing contact.
+function setPocValue(poc) {
+    const select = document.getElementById('poc');
+    select.querySelectorAll('option[data-former]').forEach(o => o.remove());
+    if (poc && ![...select.options].some(o => o.value === poc)) {
+        const opt = new Option(poc, poc);
+        opt.dataset.former = 'true';
+        select.add(opt);
+    }
+    select.value = poc || '';
+}
+
 function openForm() {
     document.getElementById('formTitle').textContent = 'Add Field Trip';
     document.getElementById('tripId').value = '';
     ['title', 'address', 'placeName', 'date', 'time', 'endTime', 'registrationDeadline', 'poc', 'description', 'image', 'childAgeRange'].forEach(id => document.getElementById(id).value = '');
     ['adultPrice', 'childPrice', 'capacity', 'addressLat', 'addressLon'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('addressSuggestions').style.display = 'none';
+    setPocValue('');
     setCapacityScope('everyone');
     updateCapacityScopeToggle();
     editingTripHidden = false;
@@ -1036,7 +1051,7 @@ function editTrip(id) {
     document.getElementById('time').value = t.time || '';
     document.getElementById('endTime').value = t.endTime || '';
     document.getElementById('registrationDeadline').value = t.registrationDeadline || '';
-    document.getElementById('poc').value = t.poc || '';
+    setPocValue(t.poc);
     document.getElementById('description').value = t.description;
     document.getElementById('adultPrice').value = t.adultPrice;
     document.getElementById('childPrice').value = t.childPrice;
