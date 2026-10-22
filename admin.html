@@ -833,9 +833,11 @@ function renderDashboard() {
 
 function renderCapacityByTrip() {
     const card = document.getElementById('capacityByTripCard');
-    const capTrips = trips.filter(t => t.capacity > 0).sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+    // Upcoming only (same rule as the Trips tab) -- past trips' fill no longer matters.
+    const todayIso = getTodayIso();
+    const capTrips = trips.filter(t => t.capacity > 0 && t.date >= todayIso).sort((a, b) => (a.date || '').localeCompare(b.date || ''));
     if (capTrips.length === 0) {
-        card.innerHTML = '<div class="empty-state">No trips with a capacity limit yet.</div>';
+        card.innerHTML = '<div class="empty-state">No upcoming trips with a capacity limit.</div>';
         return;
     }
     card.innerHTML = capTrips.map(t => {
