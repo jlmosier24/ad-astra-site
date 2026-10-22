@@ -28,6 +28,29 @@ async function isApprovedEmail(email) {
     }
 }
 
+// The sign-up form has no name box, so a family's first registration saved
+// their email as the parent name (and later ones copied it forward). A name
+// that's blank or just the email is a placeholder: prefer the Name from the
+// Members tab when one is set.
+function isPlaceholderName(name, email) {
+    const n = (name || "").trim().toLowerCase();
+    return !n || n === (email || "").trim().toLowerCase();
+}
+
+function preferMemberName(name, email, memberName) {
+    return isPlaceholderName(name, email) && memberName ? memberName : (name || email || "");
+}
+
+async function resolveParentName(name, email) {
+    if (!isPlaceholderName(name, email)) return name;
+    let memberName = "";
+    try {
+        const entity = await getApprovedEmailsTable().getEntity(PARTITION_KEY, (email || "").toLowerCase().trim());
+        memberName = (entity.label || "").trim();
+    } catch (e) { /* not a member, or lookup failed -- keep what we have */ }
+    return preferMemberName(name, email, memberName);
+}
+
 async function listApprovedEmails() {
     const table = getApprovedEmailsTable();
     const results = [];
@@ -37,4 +60,7 @@ async function listApprovedEmails() {
     return results.sort((a, b) => a.email.localeCompare(b.email));
 }
 
-module.exports = { getApprovedEmailsTable, toApprovedEmailDto, isApprovedEmail, listApprovedEmails, PARTITION_KEY };
+module.exports = {
+    getApprovedEmailsTable, toApprovedEmailDto, isApprovedEmail, listApprovedEmails,
+    preferMemberName, resolveParentName, PARTITION_KEY
+};

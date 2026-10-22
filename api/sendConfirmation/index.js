@@ -2,7 +2,7 @@ const crypto = require("crypto");
 const { EmailClient } = require("@azure/communication-email");
 const { getTripsTable, isRegistrationClosed, PARTITION_KEY } = require("../shared/tripsTable");
 const { getRegistrationsTable, getRegisteredCountsByTrip, registeredCountForCapacity, attendeesForCapacity } = require("../shared/registrationsTable");
-const { isApprovedEmail } = require("../shared/approvedEmailsTable");
+const { isApprovedEmail, resolveParentName } = require("../shared/approvedEmailsTable");
 const { logTransaction } = require("../shared/transactionLog");
 const { parseCookies, verifySessionToken, SESSION_COOKIE_NAME } = require("../shared/sessionAuth");
 
@@ -105,8 +105,7 @@ function buildConfirmationHtml({ trip, parentName, adultCount, childCount, total
 module.exports = async function (context, req) {
     const body = req.body || {};
     const { parentName: rawParentName, adults, children, email, tripId, tripTitle } = body;
-    // Shown back to admins in the roster -- keep it bounded.
-    const parentName = String(rawParentName || "").trim().slice(0, 100);
+    const submittedName = String(rawParentName || "").trim();
 
     const emailToCheck = (email || "").toLowerCase().trim();
     if (!emailToCheck || !(await isApprovedEmail(emailToCheck))) {
@@ -120,6 +119,9 @@ module.exports = async function (context, req) {
         context.res = { status: 401, body: "Sign in required." };
         return;
     }
+
+    // Shown back to admins in the roster -- keep it bounded.
+    const parentName = (await resolveParentName(submittedName, emailToCheck)).slice(0, 100);
 
     let trip;
     try {

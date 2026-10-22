@@ -1,4 +1,5 @@
 const { getRegistrationsTable } = require("../shared/registrationsTable");
+const { resolveParentName } = require("../shared/approvedEmailsTable");
 const { getTripsTable, PARTITION_KEY: TRIP_PARTITION_KEY } = require("../shared/tripsTable");
 const { logTransaction, getClientPrincipalEmail } = require("../shared/transactionLog");
 
@@ -21,7 +22,7 @@ module.exports = async function (context, req) {
         let tripTitle = "trip";
         try {
             const reg = await table.getEntity(tripId, id);
-            parentName = reg.parentName || parentName;
+            parentName = (await resolveParentName(reg.parentName, reg.email)) || parentName;
         } catch (e) { /* best-effort for the log summary only */ }
         try {
             const trip = await getTripsTable().getEntity(TRIP_PARTITION_KEY, tripId);
