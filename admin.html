@@ -916,7 +916,7 @@ function openUnpaidModal() {
             <div class="roster-row">
                 <div>
                     <div class="roster-name">${escapeHtml(r.parentName)}</div>
-                    <div class="roster-detail">${trip ? trip.title : 'Unknown trip'} · ${r.adults} adults, ${r.children} children · $${(r.total || 0).toFixed(2)}</div>
+                    <div class="roster-detail">${trip ? trip.title : 'Unknown trip'} · ${attendeeCounts(r.adults, r.children)} · $${(r.total || 0).toFixed(2)}</div>
                     <div class="roster-detail">${escapeHtml(r.email)}</div>
                 </div>
                 <button class="paid-pill" onclick="markPaidFromUnpaid('${r.tripId}', '${r.id}', this)">Paid</button>
@@ -930,6 +930,10 @@ function openUnpaidModal() {
 async function markPaidFromUnpaid(tripId, id, btn) {
     await togglePaid(tripId, id, btn);
     openUnpaidModal();
+}
+
+function attendeeCounts(adults, children) {
+    return `${adults} adult${adults === 1 ? '' : 's'}, ${children} child${children === 1 ? '' : 'ren'}`;
 }
 
 function escapeHtml(s) {
@@ -1272,13 +1276,13 @@ function openRoster(tripId) {
     const totalChildren = regs.reduce((sum, r) => sum + (r.children || 0), 0);
     document.getElementById('rosterSub').textContent = regs.length === 0
         ? 'No one has registered yet.'
-        : `${regs.length} registration${regs.length === 1 ? '' : 's'} · ${totalAdults} adults, ${totalChildren} children`;
+        : `${regs.length} registration${regs.length === 1 ? '' : 's'} · ${attendeeCounts(totalAdults, totalChildren)}`;
 
     document.getElementById('rosterBody').innerHTML = regs.map(r => `
         <div class="roster-row">
             <div>
                 <div class="roster-name">${escapeHtml(r.parentName || '')}</div>
-                <div class="roster-detail">${escapeHtml(r.email || '')} · ${r.adults} adults, ${r.children} children · $${(r.total || 0).toFixed(2)}</div>
+                <div class="roster-detail">${escapeHtml(r.email || '')} · ${attendeeCounts(r.adults, r.children)} · $${(r.total || 0).toFixed(2)}</div>
                 <div class="roster-detail">Registered ${formatRegisteredDate(r.dateRegistered)}</div>
             </div>
             <div style="display: flex; align-items: center; gap: 14px;">

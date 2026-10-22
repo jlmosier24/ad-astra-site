@@ -1,6 +1,6 @@
 const { getTripsTable, PARTITION_KEY } = require("../shared/tripsTable");
 const { getRegistrationsTable } = require("../shared/registrationsTable");
-const { isApprovedEmail } = require("../shared/approvedEmailsTable");
+const { isApprovedEmail, resolveParentName } = require("../shared/approvedEmailsTable");
 const { logTransaction } = require("../shared/transactionLog");
 const { parseCookies, verifySessionToken, SESSION_COOKIE_NAME } = require("../shared/sessionAuth");
 
@@ -54,12 +54,13 @@ module.exports = async function (context, req) {
         // still existing, this is just for a friendlier message.
     }
 
+    const parentName = (await resolveParentName(existing.parentName, existing.email)) || "Registrant";
     try {
         await registrationsTable.deleteEntity(tripId, registrationId);
         await logTransaction({
             action: "deleted",
             entityType: "Registration",
-            summary: `${existing.parentName || "Registrant"}'s registration for "${tripTitle}" cancelled`,
+            summary: `${parentName}'s registration for "${tripTitle}" cancelled`,
             actor: emailToCheck
         });
         context.res = { status: 200, body: `Your registration for ${tripTitle} has been cancelled.` };

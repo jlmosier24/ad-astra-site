@@ -1,6 +1,6 @@
 const { getTripsTable, isRegistrationClosed, PARTITION_KEY } = require("../shared/tripsTable");
 const { getRegistrationsTable, getRegisteredCountsByTrip, registeredCountForCapacity, attendeesForCapacity } = require("../shared/registrationsTable");
-const { isApprovedEmail } = require("../shared/approvedEmailsTable");
+const { isApprovedEmail, resolveParentName } = require("../shared/approvedEmailsTable");
 const { parseCookies, verifySessionToken, SESSION_COOKIE_NAME } = require("../shared/sessionAuth");
 
 // Public endpoint (no role gate) -- a signed-in parent can update their own
@@ -12,8 +12,7 @@ const { parseCookies, verifySessionToken, SESSION_COOKIE_NAME } = require("../sh
 module.exports = async function (context, req) {
     const body = req.body || {};
     const { tripId, registrationId, parentName: rawParentName, adults, children, email } = body;
-    // Shown back to admins in the roster -- keep it bounded.
-    const parentName = String(rawParentName || "").trim().slice(0, 100);
+    const submittedName = String(rawParentName || "").trim();
 
     if (!tripId || !registrationId) {
         context.res = { status: 400, body: "Missing tripId or registrationId." };
@@ -32,6 +31,9 @@ module.exports = async function (context, req) {
         context.res = { status: 401, body: "Sign in required." };
         return;
     }
+
+    // Shown back to admins in the roster -- keep it bounded.
+    const parentName = (await resolveParentName(submittedName, emailToCheck)).slice(0, 100);
 
     let trip;
     try {
