@@ -297,7 +297,7 @@
 <div class="wrap">
     <div class="tab-bar">
         <button class="tab-btn active" id="tabBtn-dashboard" onclick="switchTab('dashboard')">Dashboard</button>
-        <button class="tab-btn" id="tabBtn-trips" onclick="switchTab('trips')">Field Trips</button>
+        <button class="tab-btn" id="tabBtn-trips" onclick="switchTab('trips')">Trips</button>
         <button class="tab-btn" id="tabBtn-approved" onclick="switchTab('approved')">Members</button>
         <button class="tab-btn" id="tabBtn-transactions" onclick="switchTab('transactions')">Logs</button>
         <button class="tab-btn" id="tabBtn-requests" onclick="switchTab('requests')">Requests</button>
@@ -814,7 +814,7 @@ function renderTrips() {
 }
 
 // Everything below computes the Dashboard tab from the same trips/
-// registrations already loaded for the Field Trips tab -- no separate
+// registrations already loaded for the Trips tab -- no separate
 // fetch, just a different view of the same data.
 function renderDashboard() {
     const revenue = registrations.reduce((sum, r) => sum + (r.paid ? (r.total || 0) : 0), 0);
