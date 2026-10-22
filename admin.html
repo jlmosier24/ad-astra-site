@@ -465,7 +465,12 @@
             </div>
         </div>
 
-        <input type="hidden" id="placeName">
+        <!-- Directions links search for this name plus the address, so Maps
+             lands on the venue rather than a bare street-address pin. -->
+        <div class="form-group">
+            <label>Place Name (optional)</label>
+            <input type="text" id="placeName" placeholder="Smithsonian's National Zoo">
+        </div>
 
         <div class="form-row form-row-3">
             <div class="form-group">
@@ -939,7 +944,6 @@ let lastAddressSuggestions = [];
 function onAddressInput() {
     document.getElementById('addressLat').value = '';
     document.getElementById('addressLon').value = '';
-    document.getElementById('placeName').value = '';
     clearTimeout(addressDebounceTimer);
     addressDebounceTimer = setTimeout(fetchAddressSuggestions, 300);
 }
@@ -978,7 +982,9 @@ function selectAddressSuggestion(i) {
     document.getElementById('address').value = s.address;
     document.getElementById('addressLat').value = s.lat;
     document.getElementById('addressLon').value = s.lon;
-    document.getElementById('placeName').value = s.placeName || '';
+    // Only overwrite the place name when the suggestion is a named venue,
+    // so a name the admin typed survives picking a plain street address.
+    if (s.placeName) document.getElementById('placeName').value = s.placeName;
     document.getElementById('addressSuggestions').style.display = 'none';
 }
 
