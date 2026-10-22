@@ -238,7 +238,8 @@
         background: #fff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%235C6270" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>') no-repeat 10px center / 15px 15px;
     }
     .approved-count { color: var(--sub); font-size: 0.78rem; white-space: nowrap; }
-    .approved-table { width: 100%; border-collapse: collapse; background: var(--paper); border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(31,36,48,0.04); }
+    /* separate (not collapse) so the card border follows the rounded corners. */
+    .approved-table { width: 100%; border-collapse: separate; border-spacing: 0; background: var(--paper); border: var(--card-border); border-radius: 12px; overflow: hidden; box-shadow: var(--card-shadow); }
     .approved-table thead th {
         text-align: left; font-size: 0.72rem; font-weight: 800; color: var(--sub); text-transform: uppercase; letter-spacing: 0.03em;
         padding: 10px 14px; border-bottom: 1px solid var(--line); cursor: pointer; user-select: none; white-space: nowrap;
